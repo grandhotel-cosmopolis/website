@@ -34,8 +34,10 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install
+          dir: grandhotel-cosmopolis-fe
 
       - name: Build production bundle
         uses: borales/actions-yarn@v4
         with:
           cmd: build:prod
+          dir: grandhotel-cosmopolis-fe
