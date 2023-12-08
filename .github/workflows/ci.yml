@@ -52,6 +52,6 @@ jobs:
         with:
           host: ${{ secrets.FTP_SERVER_DEV }}
           user: ${{ secrets.FTP_USERNAME_DEV }}
-          password: ${{ ssecrets.FTP_PASSWORD_DEV }}
+          password: ${{ secrets.FTP_PASSWORD_DEV }}
           locaDir: "dist"
           remoteDir: ""
