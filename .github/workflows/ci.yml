@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "develop" ]
+    branches: ["develop"]
   pull_request:
-    branches: [ "develop" ]
+    branches: ["develop"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,7 +24,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      
+
       - name: Set Node.js 16.x
         uses: actions/setup-node@v3
         with:
@@ -41,3 +41,17 @@ jobs:
         with:
           cmd: build
           dir: grandhotel-cosmopolis-fe
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Upload ftp
+        uses: genietim/ftp-actions@releases/v4
+        with:
+          host: ${{ secrets.FTP_SERVER_DEV }}
+          user: ${{ secrets.FTP_USERNAME_DEV }}
+          password: ${{ ssecrets.FTP_PASSWORD_DEV }}
+          locaDir: "dist"
+          remoteDir: ""
