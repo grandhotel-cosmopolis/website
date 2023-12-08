@@ -48,10 +48,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Upload ftp
-        uses: genietim/ftp-action@releases/v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.FTP_SERVER_DEV }}
-          user: ${{ secrets.FTP_USERNAME_DEV }}
+          server: ${{ secrets.FTP_SERVER_DEV }}
+          username: ${{ secrets.FTP_USERNAME_DEV }}
           password: ${{ secrets.FTP_PASSWORD_DEV }}
-          locaDir: "dist"
-          remoteDir: ""
+          local-dir: "dist"
