@@ -1,11 +1,12 @@
 import { Box, Button } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
-export const Home = () => {
+export const Test = () => {
   const navigate = useNavigate();
+
   return (
     <Box>
-      Wilkommen <Button onClick={() => navigate("/test")}>To Test</Button>
+      Hello Test <Button onClick={() => navigate("/")}>To Home</Button>
     </Box>
   );
 };
