@@ -30,11 +30,25 @@ jobs:
         with:
           node-version: 16.x
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Run composer install
+        run: cd grandhotel-cosmopolis-be && composer install -n --prefer-dist
+
       - name: Run install
         uses: borales/actions-yarn@v4
         with:
-          cmd: install
-          dir: grandhotel-cosmopolis-fe
+          cmd: install:fe
+
+      - name: Generate api client
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: swagger
 
       - name: Build production bundle
         uses: borales/actions-yarn@v4
@@ -42,10 +56,15 @@ jobs:
           cmd: build
           dir: grandhotel-cosmopolis-fe
 
+      - name: Copy frontend build to php backend
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: copy-build-to-backend
+
       - name: Deploy bundle
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER_DEV }}
           username: ${{ secrets.FTP_USERNAME_DEV }}
           password: ${{ secrets.FTP_PASSWORD_DEV }}
-          local-dir: "grandhotel-cosmopolis-fe/dist/"
+          local-dir: "grandhotel-cosmopolis-be"
