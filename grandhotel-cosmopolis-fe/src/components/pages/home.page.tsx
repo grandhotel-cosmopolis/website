@@ -1,12 +1,5 @@
-import { Box, Button } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
 
 export const Home = () => {
-  const navigate = useNavigate();
-
-  return (
-    <Box>
-      Wilkommen <Button onClick={() => navigate("/test")}>To Test</Button>
-    </Box>
-  );
+  return <Box>Wilkommen</Box>;
 };
