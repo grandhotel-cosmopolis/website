@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host=127.0.0.1",
     "build": "tsc && vite build",
+    "copy-build-to-php-backend": "cp -r dist/* ../grandhotel-cosmopolis-be/public && mv ../grandhotel-cosmopolis-be/public/index.html ../grandhotel-cosmopolis-be/public/react.html",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -13,6 +14,8 @@
     "@chakra-ui/react": "2.8.1",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
+    "@types/axios": "^0.14.0",
+    "axios": "^1.6.2",
     "framer-motion": "10.16.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

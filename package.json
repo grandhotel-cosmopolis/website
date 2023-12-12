@@ -1,0 +1,13 @@
+{
+  "name": "grandhotel-cosmopolis",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.7.0"
+  },
+  "scripts": {
+    "generate-backend-openapi": "./grandhotel-cosmopolis-be/vendor/bin/openapi ./grandhotel-cosmopolis-be/app -o ./grandhotel-cosmopolis-be/openapi.yml",
+    "generate-ts-client": "openapi-generator-cli generate -i ./grandhotel-cosmopolis-be/openapi.yml -o ./grandhotel-cosmopolis-fe/src/infrastructure/generated/openapi -g typescript-axios --additional-properties=supportsES6=true,npmVersion=6.9.0,typescriptThreePlus=true",
+    "swagger": "yarn generate-backend-openapi && yarn generate-ts-client"
+  }
+}

@@ -1,0 +1,15 @@
+services:
+    mysql:
+        image: mysql:latest
+        environment:
+            - MYSQL_ROOT_PASSWORD=root_password
+            - MYSQL_DATABASE=ghc_backend_db
+            - MYSQL_USER=ghc_backend_user
+            - MYSQL_PASSWORD=ghc_backend_password
+        ports:
+            - "127.0.0.3:3406:3306"
+        volumes:
+            - mysql-data:/var/lib/mysql
+volumes:
+    mysql-data:
+        driver: local
