@@ -45,6 +45,11 @@ jobs:
         with:
           cmd: install:fe
 
+      - name: Install dev deps
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
       - name: Generate api client
         uses: borales/actions-yarn@v4
         with:
