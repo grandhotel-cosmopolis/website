@@ -12,6 +12,6 @@
     "generate-ts-client": "openapi-generator-cli generate -i ./grandhotel-cosmopolis-be/openapi.yml -o ./grandhotel-cosmopolis-fe/src/infrastructure/generated/openapi -g typescript-axios --additional-properties=supportsES6=true,npmVersion=6.9.0,typescriptThreePlus=true",
     "swagger": "yarn generate-backend-openapi && yarn generate-ts-client",
     "build:fe": "cd grandhotel-cosmopolis-fe && yarn build",
-    "copy-build-to-backend": "cp -r grandhotel-cosmopolis-fe/dist/* grandhotel-cosmopolis-be/public && mv ../grandhotel-cosmopolis-be/public/index.html ../grandhotel-cosmopolis-be/public/react.html"
+    "copy-build-to-backend": "cp -r grandhotel-cosmopolis-fe/dist/* grandhotel-cosmopolis-be/public && mv grandhotel-cosmopolis-be/public/index.html grandhotel-cosmopolis-be/public/react.html"
   }
 }
