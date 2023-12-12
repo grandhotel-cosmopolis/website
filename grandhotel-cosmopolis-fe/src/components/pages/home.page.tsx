@@ -1,7 +1,9 @@
 import { Box, Stack, Typography } from "@mui/material";
 import Welcome from "../../assets/willkommen.jpg";
+import { useIsMobileView } from "../hooks/screen-sizes/use-is-mobile-view";
 
 export const Home = () => {
+  const isMobileView = useIsMobileView();
   return (
     <Box width="100%">
       <Box
@@ -13,13 +15,13 @@ export const Home = () => {
           backgroundPosition: "70% 50%",
         }}
       >
-        <Stack alignItems="center" p={10}>
-          <Typography color="white" variant="h2">
+        <Stack alignItems="center" p={isMobileView ? 5 : 10}>
+          <Typography color="white" variant={isMobileView ? "h4" : "h2"}>
             Willkommen!
           </Typography>
           <Typography
             color="white"
-            variant="h6"
+            variant={isMobileView ? "body1" : "h6"}
             maxWidth={500}
             textAlign="center"
           >
