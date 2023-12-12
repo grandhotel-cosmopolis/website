@@ -6,12 +6,7 @@ export const BasePage = () => {
   return (
     <Box>
       <Header />
-      <Box
-        minHeight="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-      >
+      <Box mt={2}>
         <Outlet />
       </Box>
     </Box>
