@@ -10,9 +10,7 @@ export const TypographyWithHeart = (props: TypographyWithHeartProps) => {
   return (
     <Stack direction="row">
       <FavoriteIcon htmlColor={theme.palette.primary.main} />
-      <Typography pl={2} pt={0.2}>
-        {props.text}
-      </Typography>
+      <Typography pl={2}>{props.text}</Typography>
     </Stack>
   );
 };
