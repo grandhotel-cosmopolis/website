@@ -9,7 +9,6 @@ export const Contact = () => {
     <Stack
       spacing={isTabletView ? 0 : 2}
       direction={isTabletView ? "column" : "row"}
-      p={1}
       alignItems="center"
     >
       <Phone align={isTabletView ? "row" : "column"} />
