@@ -6,8 +6,14 @@ const theme = createTheme({
       main: "#325432",
     },
     secondary: {
-      main: "#735B4F",
+      main: "#EAE3D5",
     },
+    text: {
+      secondary: "#827453",
+    },
+  },
+  typography: {
+    body1: { lineHeight: 1.7, fontSize: 18 },
   },
 });
 

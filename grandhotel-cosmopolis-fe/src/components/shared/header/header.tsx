@@ -1,6 +1,6 @@
 import { AppBar, Box, Stack, Toolbar } from "@mui/material";
-import { SocialLinks } from "./social-links";
-import { Contact } from "./contact";
+import { SocialLinks } from "../social-links";
+import { Contact } from "../contact";
 import { useIsTabletView } from "../../hooks/screen-sizes/use-is-tablet-view";
 
 export const Header = () => {

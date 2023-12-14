@@ -1,0 +1,68 @@
+{
+  "home": {
+    "header": {
+      "title": "Willkommen!",
+      "body": "Ein leerstehendes Altenheim in der Augsburger Altstadt wird zur Verhandlungszone für die Anerkennung einer kosmopolitischen Wirklichkeit in unserer Gesellschaft. Was anfangs eine kühne Idee war, wächst tagtäglich und wirkt weit über die Hausmauern hinaus."
+    },
+    "news": {
+      "weNeedUs": {
+        "title": "Wir brauchen uns jetzt mehr denn je",
+        "body": "Wir haben viele Reaktionen, aus verschiedenen Perspektiven, zu unserem „offenen Aufruf für Kunstausstellung - Friedensstadt“ oder zu unserer „Nichtpositionierung“ bekommen. Wir wollen keine Angriffsfläche sein, sondern Raum für Wärme und Menschlichkeit bieten. Wir wollen unsere Communities in dieser überrollenden Zeit auffangen und Emotionen, Wünschen und Bedürfnissen zuhören - eine Kunstausstellung kuratieren, die Allen von Krieg und Unterdrückung betroffenen Menschen und Communities Raum für ihren Schmerz, ihre Trauer und Wut bietet. Wir arbeiten im Kollektiv mit Menschen unterschiedlicher Backgrounds, Erfahrungswerte und Sozialisation, weshalb unsere Arbeit auf Diskussion und Gespräch fußt - und vor allem auf Anerkennung individueller Realitäten und Emotionen. Wir wollen uns nicht gegenseitig verlieren, denn wir brauchen uns mehr denn je."
+      },
+      "anniversary": {
+        "title": "Wir feiern 10+ Jahre Gemeinschaft, Vielfalt und Solidarität!",
+        "subtitle": "Zeit zu feiern!",
+        "body": "Wir möchten euch einladen, mit uns das Jubiläum des GrandHotel Cosmopolis zu feiern!\n\nEs waren keine einfachen 10 Jahre, mit Höhen und Tiefen. Deshalb ist es für uns alle wichtig, dass wir uns die Zeit nehmen, den Erfolg des GrandHotels zu feiern, aus seiner Geschichte zu lernen und ein gemeinsames Wochenende mit unseren tollen Freund*innen und Partner*innen zu genießen."
+      },
+
+      "united": {
+        "title": "Vereint durch Vielfalt, geeint durch Solidarität - geteilte Macht für gleiche Chancen und Gerechtigkeit",
+        "subtitle": "Bedarfe ändern sich und das wollen wir nicht ignorieren",
+        "body": "Nach Außen wirkt es vielleicht manchmal so als ob das Grandhotel in seinem Konzept und seinen Themenschwerpunkten unverändert bleibt. Allerdings sind wir ständig im Wandel und versuchen auf die wechselnden Bedürfnissen der Gesellschaft zu reagieren. Außerdem glauben wir an Transparenz und die daraus entstehenden Möglichkeiten, weshalb wir unsere Entscheidungen und damit anstehenden Veränderungen mit euch teilen wollen.\n\nSeit einer Weile schieben wir unter anderem die Frage vor uns her, ob wir den Hotelbetrieb weiterführen sollen und können oder ob wir die Räume anderweitig nutzen oder anbieten wollen. Zwar war es immer ein wichtiger Teil des Hauses – die Möglichkeit zu übernachten und die soziale Plastik zu erleben – allerdings glauben wir, dass das auch in anderen Besuchskontexten möglich ist.\n\nZwei Themen, die wir gerade als Priorität ansehen: die Wohnraumkrise, weshalb wir Übergangs“wohnen“ anbieten wollen (Vermietung der Hotelräume bis zu 6 Monaten), und bezahlbarer Raum für Initiativen, NGOs, Orgas, Einzelpersonen, Aktivismus, Politarbeit etc."
+      }
+    },
+    "change": {
+      "title": "Lass uns etwas verändern.",
+      "body": "Unser Ziel ist eine Zukunft, die für alle gleichermaße bereichernd ist. Hierfür sehen wir diversity als Stärke und glauben daran, dass durch teilen von eine gerechte Gesellschaft ensteht. Wir wollen einander zuhören, um gemeinsam zu wirken, zu wachsen und zu verändern. Denn jeder Mensch hat das Recht auf Selbstbestimmung und Selbstwirksamkeit.",
+      "contribute": "Mitmachen",
+      "community": "Community",
+      "solidarity": "Solidarität (er)leben",
+      "projects": "inklusive Projekte",
+      "networks": "Netzwerke und Kooperationen",
+      "diversity": "Vielfalt an diversen Veranstaltungen"
+    },
+    "donate": {
+      "title": "Unterstütze uns",
+      "body": "Als soziokultureller Ort bieten wir Raum für ein breites Spektrum an Aktivitäten von engagierten Einzelpersonen und Organisationen. Wir verstehen uns als lokaler Akteur der initiiert, unterstützt und vernetzt. Wir stehen damit für praktisch gewordene Utopien hin zu einer diskriminierungsfreien und selbstverwalteten Gesellschaft, die allen Menschen gleiche und faire Bedingungen und Chancen der Teilhabe und Mitgestaltung ermöglicht.\n\nAll diese intensiven Bemühungen erfordern eine erhebliche Menge an finanziellen und personellen Ressourcen von deinem Grandhotel Cosmopolis. Deshalb brauchen wir deine Unterstützung, um diese wertvolle Arbeit aufrechtzuerhalten. Denn Gesellschaft basiert auf unbedingter Solidarität!\n\nWenn du das Projekt finanziell unterstützen willst, kannst du über Paypal spenden – oder mit weniger Gebühren für uns einen Dauerauftrag bei deiner Bank einzurichten.",
+      "bankAccount": {
+        "number": "Konto Nummer: 250 780 129",
+        "blz": "BLZ: 720 50 000 bei der Stadtsparkasse Augsburg",
+        "iban": "IBAN: DE85 7205 0000 0250 7801 29",
+        "bic": "SWIFT-BIC: AUGSDE77XXX"
+      },
+      "donate": "Spenden"
+    },
+    "hotel": {
+      "heart": "Zuflucht",
+      "music": "Kultur",
+      "home": "Awareness",
+      "room": "Räume",
+      "conversation": "Austausch",
+      "moon": "Teilhabe"
+    },
+    "together": {
+      "title": "Gemeinsam",
+      "body": "Das Grandhotel, als unser Aller Raum, lebt von kollektivem Wirken. Gemeinsam können wir Freiräume erhalten und divers bespielen."
+    }
+  },
+  "footer": {
+    "cafe": {
+      "openingHours": "Unsere Cafe Öffnungszeiten:",
+      "tuesdayToSaturday": "Dienstag - Samstag\n10:00 - 22:00",
+      "sundayToMonday": "Sonntag - Montag\nGeschlossen"
+    },
+    "imprint": "Impressum",
+    "privacy": "Datenschutzerklärung",
+    "donate": "Spenden"
+  }
+}
