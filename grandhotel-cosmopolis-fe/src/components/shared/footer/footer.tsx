@@ -18,6 +18,7 @@ export const Footer = () => {
         <Grid container spacing={2}>
           <Grid
             item
+            xs={12}
             sm={12}
             md={4}
             sx={{ display: "flex", justifyContent: "center" }}
@@ -28,6 +29,7 @@ export const Footer = () => {
           </Grid>
           <Grid
             item
+            xs={12}
             sm={12}
             md={4}
             sx={{ display: "flex", justifyContent: "center", color: "white" }}
@@ -54,6 +56,7 @@ export const Footer = () => {
           </Grid>
           <Grid
             item
+            xs={12}
             sm={12}
             md={4}
             sx={{ display: "flex", justifyContent: "center", color: "white" }}
@@ -66,6 +69,7 @@ export const Footer = () => {
           </Grid>
           <Grid
             item
+            xs={12}
             sm={12}
             md={4}
             sx={{ display: "flex", justifyContent: "center", color: "white" }}
@@ -76,6 +80,7 @@ export const Footer = () => {
           </Grid>
           <Grid
             item
+            xs={12}
             sm={12}
             md={4}
             sx={{ display: "flex", justifyContent: "center", color: "white" }}
@@ -86,6 +91,7 @@ export const Footer = () => {
           </Grid>
           <Grid
             item
+            xs={12}
             sm={12}
             md={4}
             sx={{ display: "flex", justifyContent: "center", color: "white" }}

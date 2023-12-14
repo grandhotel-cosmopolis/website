@@ -27,7 +27,7 @@ export const ListElement = (props: ListElementProps) => {
           color={theme.palette.primary.main}
           mb={2}
         >
-          <Typography variant="h4" textAlign="center">
+          <Typography variant={isMobileView ? "h6" : "h4"} textAlign="center">
             {props.title}
           </Typography>
         </Box>
@@ -47,13 +47,16 @@ export const ListElement = (props: ListElementProps) => {
             </Box>
             {props.subtitle && (
               <Typography
-                variant="h5"
+                variant={isMobileView ? "h6" : "h5"}
                 sx={(theme) => ({ mb: 2, color: theme.palette.text.secondary })}
               >
                 {props.subtitle}
               </Typography>
             )}
-            <Typography sx={{ whiteSpace: "pre-line" }}>
+            <Typography
+              variant={isMobileView ? "body2" : "body1"}
+              sx={{ whiteSpace: "pre-line" }}
+            >
               {props.body}
             </Typography>
           </Box>

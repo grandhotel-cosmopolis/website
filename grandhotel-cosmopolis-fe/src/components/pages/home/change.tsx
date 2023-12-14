@@ -10,10 +10,12 @@ import {
 import { ElementWrapper } from "../../shared/element-wrapper";
 import { TypographyWithHeart } from "../../shared/typography-with-heart";
 import { useTranslation } from "react-i18next";
+import { useIsMobileView } from "../../hooks/screen-sizes/use-is-mobile-view";
 
 export const Change = () => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const isMobileView = useIsMobileView();
   return (
     <ElementWrapper fullWidthBackgroundColor={theme.palette.secondary.main}>
       <Stack>
@@ -21,12 +23,14 @@ export const Change = () => {
           <Grid item xs={12} md={6}>
             <Stack spacing={3}>
               <Typography
-                variant="h5"
+                variant={isMobileView ? "h6" : "h5"}
                 sx={(theme) => ({ color: theme.palette.text.secondary })}
               >
                 {t("home.change.title")}
               </Typography>
-              <Typography>{t("home.change.body")}</Typography>
+              <Typography variant={isMobileView ? "body2" : "body1"}>
+                {t("home.change.body")}
+              </Typography>
               <Button variant="contained">{t("home.change.contribute")}</Button>
             </Stack>
           </Grid>

@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { ReactElement } from "react";
+import { useIsMobileView } from "../hooks/screen-sizes/use-is-mobile-view";
 
 type ElementWrapperProps = {
   readonly fullWidthBackgroundColor?: string;
@@ -15,6 +16,7 @@ type BackgroundImageProps = {
 };
 
 export const ElementWrapper = (props: ElementWrapperProps) => {
+  const isMobileView = useIsMobileView();
   return (
     <Box
       width="100%"
@@ -26,7 +28,7 @@ export const ElementWrapper = (props: ElementWrapperProps) => {
       justifyContent="center"
     >
       <Box
-        m={5}
+        m={isMobileView ? 2 : 5}
         width="100%"
         sx={(theme) => ({
           maxWidth: theme.spacing(140),

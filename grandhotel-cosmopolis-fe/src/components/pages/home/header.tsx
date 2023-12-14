@@ -22,7 +22,7 @@ export const Header = () => {
         </Typography>
         <Typography
           color="white"
-          variant={isMobileView ? "body1" : "h6"}
+          variant={isMobileView ? "body2" : "body1"}
           maxWidth={500}
           textAlign="center"
         >
