@@ -23,11 +23,11 @@ Route::prefix('/login')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-
     // UserController
     Route::prefix('/user')->group(function () {
         Route::controller(UserController::class)->group(function () {
             Route::get('/list', 'listUser');
+            Route::get('/', 'getUser');
         });
     });
 });
