@@ -1,4 +1,4 @@
-import { Divider, Grid, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Divider, Grid, Stack, Typography, useTheme } from "@mui/material";
 import { ElementWrapper } from "../element-wrapper";
 import { SocialLinks } from "../social-links";
 import { Logo } from "../../../assets/general/logo";
@@ -12,7 +12,7 @@ export const Footer = () => {
   const isTabletView = useIsTabletView();
   const { t } = useTranslation();
   return (
-    <>
+    <Box>
       <Divider />
       <ElementWrapper fullWidthBackgroundColor={theme.palette.primary.main}>
         <Grid container spacing={2}>
@@ -102,6 +102,6 @@ export const Footer = () => {
           </Grid>
         </Grid>
       </ElementWrapper>
-    </>
+    </Box>
   );
 };

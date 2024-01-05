@@ -12,6 +12,7 @@ const axiosInstance = axios.create({
   withCredentials: true,
   withXSRFToken: true,
 });
+
 export const retrieveCsrfToken = () => {
   return axios.get(`${basePath}/sanctum/csrf-cookie`, {
     withCredentials: true,

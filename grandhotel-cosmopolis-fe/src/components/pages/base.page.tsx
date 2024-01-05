@@ -5,11 +5,14 @@ import { Footer } from "../shared/footer/footer";
 
 export const BasePage = () => {
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" height="100vh">
       <Header />
       <Box
         pt={2}
-        sx={(theme) => ({ backgroundColor: theme.palette.secondary.main })}
+        sx={(theme) => ({
+          backgroundColor: theme.palette.secondary.main,
+          flexGrow: 1,
+        })}
       >
         <Outlet />
       </Box>

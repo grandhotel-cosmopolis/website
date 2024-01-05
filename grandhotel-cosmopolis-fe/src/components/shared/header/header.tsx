@@ -7,7 +7,7 @@ export const Header = () => {
   const isTabletView = useIsTabletView();
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box>
       <AppBar position="static">
         <Toolbar>
           <Box
