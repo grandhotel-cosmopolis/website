@@ -182,4 +182,6 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
+    'loginURL' => env('LOGIN_URL'),
+
 ];
