@@ -1,5 +1,10 @@
 import axios from "axios";
-import { Configuration, LoginApi, UserApi } from "./generated/openapi";
+import {
+  Configuration,
+  EventApi,
+  LoginApi,
+  UserApi,
+} from "./generated/openapi";
 
 const basePath = "http://127.0.0.1:8000";
 
@@ -27,6 +32,12 @@ export const loginClient = new LoginApi(
 );
 
 export const userClient = new UserApi(
+  customConfiguration,
+  basePath,
+  axiosInstance
+);
+
+export const eventApi = new EventApi(
   customConfiguration,
   basePath,
   axiosInstance
