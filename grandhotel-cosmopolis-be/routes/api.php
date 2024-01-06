@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Authentication\LoginController;
+use App\Http\Controllers\Event\SingleEventController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,13 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('/login')->group(function () {
     Route::controller(LoginController::class)->group(function () {
         Route::post('', 'authenticate');
+    });
+});
+
+// Public EventController
+Route::prefix('/singleEvents')->group(function () {
+    Route::controller(SingleEventController::class)->group(function () {
+        Route::get('/list', 'getSingleEvents');
     });
 });
 

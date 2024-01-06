@@ -53,6 +53,11 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+        'sqlite' => [
+            'driver' => 'sqlite',
+            'database' => storage_path('database.sqlite'),
+            'prefix' => ''
+        ]
     ],
 
     /*
