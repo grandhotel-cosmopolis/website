@@ -38,4 +38,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/', 'getUser');
         });
     });
+
+    // EventController
+    Route::prefix('/singleEvents')->group(function () {
+        Route::controller(SingleEventController::class)->group(function () {
+            Route::post('/add', 'addSingleEvent');
+        });
+    });
 });
