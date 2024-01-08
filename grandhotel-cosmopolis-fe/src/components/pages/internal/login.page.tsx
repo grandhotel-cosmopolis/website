@@ -1,5 +1,6 @@
 import { useState, MouseEvent, ChangeEvent } from "react";
 import {
+  eventApi,
   loginClient,
   retrieveCsrfToken,
   userClient,
@@ -88,6 +89,9 @@ export const Login = () => {
             )}
             <Button onClick={handleLogin}>Login</Button>
             <Button onClick={getUser}>GetUser</Button>
+            <Button onClick={() => eventApi.getSingleEvents()}>
+              test date
+            </Button>
           </Stack>
         </CardContent>
       </Card>
