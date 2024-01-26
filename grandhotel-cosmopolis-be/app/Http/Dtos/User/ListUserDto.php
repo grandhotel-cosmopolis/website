@@ -7,7 +7,7 @@ use OpenApi\Attributes as OA;
 class ListUserDto
 {
     #[OA\Property(items: new OA\Items(ref: UserDto::class))]
-    /** @var $users UserDto[] */
+    /** @var UserDto[] $users */
     public array $users;
 
     public function __construct(array $users) {

@@ -28,7 +28,7 @@ class SingleEventControllerTest extends TestCase
             ]);
 
         // Act
-        $response = $this->get('/api/singleEvents/list', ['Accept' => 'application/json']);
+        $response = $this->get('/api/singleEvent/list', ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(200);
@@ -61,7 +61,7 @@ class SingleEventControllerTest extends TestCase
             ]);
 
         // Act
-        $response = $this->get('/api/singleEvents/list', ['Accept' => 'application/json']);
+        $response = $this->get('/api/singleEvent/list', ['Accept' => 'application/json']);
         // Assert
         $response->assertStatus(200);
         /** @var SingleEventDto[] $events */
@@ -103,7 +103,7 @@ class SingleEventControllerTest extends TestCase
         ]);
 
         // Act
-        $response = $this->get("/api/singleEvents/list?start=$start&end=$end", ['Accept' => 'application/json']);
+        $response = $this->get("/api/singleEvent/list?start=$start&end=$end", ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(200);
@@ -117,7 +117,7 @@ class SingleEventControllerTest extends TestCase
         $start = '2024-01-06T16:34:42.511Z';
 
         // Act
-        $response = $this->get("/api/singleEvents/list?start=$start", ['Accept' => 'application/json']);
+        $response = $this->get("/api/singleEvent/list?start=$start", ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(400);
@@ -128,7 +128,7 @@ class SingleEventControllerTest extends TestCase
         $end = '2024-01-06T16:34:42.511Z';
 
         // Act
-        $response = $this->get("/api/singleEvents/list?end=$end", ['Accept' => 'application/json']);
+        $response = $this->get("/api/singleEvent/list?end=$end", ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(400);
@@ -140,7 +140,7 @@ class SingleEventControllerTest extends TestCase
         $end = '2024-01-06T16:34:42.511Z';
 
         // Act
-        $response = $this->get("/api/singleEvents/list?start=$start&end=$end", ['Accept' => 'application/json']);
+        $response = $this->get("/api/singleEvent/list?start=$start&end=$end", ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(400);
@@ -152,7 +152,7 @@ class SingleEventControllerTest extends TestCase
         $end = '2024-01-06T16:34:42.511Z';
 
         // Act
-        $response = $this->get("/api/singleEvents/list?start=$start&end=$end", ['Accept' => 'application/json']);
+        $response = $this->get("/api/singleEvent/list?start=$start&end=$end", ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(400);
@@ -160,7 +160,7 @@ class SingleEventControllerTest extends TestCase
 
     public function test_addSingleEvent_notLoggedIn_returnsUnauthenticated() {
         // Act
-        $response = $this->post('/api/singleEvents/add', [], ['Accept' => 'application/json']);
+        $response = $this->post('/api/singleEvent/add', [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(401);
@@ -177,7 +177,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_en' => $eventData['title_en'],
                 'title_de' => $eventData['title_de'],
                 'description_de' => $eventData['description_de'],
@@ -205,7 +205,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_en' => $eventData['title_en'],
                 'title_de' => $eventData['title_de'],
                 'description_de' => $eventData['description_de'],
@@ -228,7 +228,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->post('/api/singleEvents/add', ['end' => $end], ['Accept' => 'application/json']);
+            ->post('/api/singleEvent/add', ['end' => $end], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);
@@ -241,7 +241,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->post('/api/singleEvents/add', ['start' => $start], ['Accept' => 'application/json']);
+            ->post('/api/singleEvent/add', ['start' => $start], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);
@@ -256,7 +256,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
@@ -281,7 +281,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
@@ -306,7 +306,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_en' => $eventData['description_en'],
@@ -331,7 +331,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
@@ -355,7 +355,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
@@ -380,7 +380,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
@@ -405,7 +405,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => [
                     'bla' => 'bla'
                 ],
@@ -433,7 +433,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
@@ -472,7 +472,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
+            ->postJson('/api/singleEvent/add', [
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
@@ -495,7 +495,7 @@ class SingleEventControllerTest extends TestCase
                 ->where('eventLocation.name', $eventLocation->name)
                 ->where('eventLocation.street', $eventLocation->street)
                 ->where('eventLocation.city', $eventLocation->city)
-                ->where('image.fileUrl', 'http://localhost/storage/' . $fileUpload->file_path)
+                ->where('image.fileUrl', 'http://localhost:8000/storage/' . $fileUpload->file_path)
                 ->where('image.mimeType', 'image/png')
         );
     }

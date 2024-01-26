@@ -23,7 +23,7 @@ class SingleEventController extends Controller
 {
     /** @noinspection PhpUnused */
     #[OA\Post(
-        path: '/api/singleEvents/add',
+        path: '/api/singleEvent/add',
         operationId: 'addSingleEvent',
         description: 'Add a new single event',
         requestBody: new OA\RequestBody(
@@ -115,7 +115,7 @@ class SingleEventController extends Controller
 
     /** @noinspection PhpUnused */
     #[OA\Get(
-        path: '/api/singleEvents/list',
+        path: '/api/singleEvent/list',
         operationId: 'getSingleEvents',
         description: 'get all single events within the specified time range',
         tags: ['Event'],

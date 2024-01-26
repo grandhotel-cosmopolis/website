@@ -17,8 +17,12 @@ class EventLocationDto
     #[OA\Property]
     public ?string $city;
 
-    public function __construct(string $name, ?string $street, ?string $city) {
+    #[OA\Property]
+    public string $guid;
+
+    public function __construct(string $name, string $guid, ?string $street, ?string $city) {
         $this->name = $name;
+        $this->guid = $guid;
         $this->street = $street;
         $this->city = $city;
     }
@@ -26,6 +30,7 @@ class EventLocationDto
     public static function create(EventLocation $eventLocation): EventLocationDto {
         return new EventLocationDto(
             $eventLocation->name,
+            $eventLocation->guid,
             $eventLocation->street,
             $eventLocation->city
         );

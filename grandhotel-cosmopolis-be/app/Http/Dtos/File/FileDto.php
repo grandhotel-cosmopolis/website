@@ -14,16 +14,21 @@ class FileDto
     #[OA\Property]
     public string $mimeType;
 
-    public function __construct(string $fileUrl, string $mimeType) {
+    #[OA\Property]
+    public string $guid;
+
+    public function __construct(string $fileUrl, string $mimeType, string $guid) {
         $this->fileUrl = $fileUrl;
         $this->mimeType = $mimeType;
+        $this->guid = $guid;
     }
 
     public static function create(FileUpload $fileUpload): FileDto {
         $fileUrl = config('app.url') . '/storage/' . $fileUpload->file_path;
         return new FileDto(
             $fileUrl,
-            $fileUpload->mime_type
+            $fileUpload->mime_type,
+            $fileUpload->guid
         );
     }
 }
