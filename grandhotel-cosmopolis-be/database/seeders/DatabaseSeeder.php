@@ -15,7 +15,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             EventLocationSeeder::class,
-            SingleEventSeeder::class
+            SingleEventSeeder::class,
+            FileUploadSeeder::class
         ]);
     }
 }

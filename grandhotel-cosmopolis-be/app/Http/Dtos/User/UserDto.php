@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Dtos\User;
+use App\Models\User;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema]
@@ -14,5 +15,12 @@ class UserDto {
     {
         $this->name = $name;
         $this->email = $email;
+    }
+
+    public static function create(User $user): UserDto {
+        return new UserDto(
+            $user->name,
+            $user->email
+        );
     }
 }

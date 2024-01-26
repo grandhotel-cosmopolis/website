@@ -1,11 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Event;
+namespace App\Http\Dtos\Event;
+use App\Http\Dtos\File\FileDto;
+use App\Models\EventLocation;
+use App\Models\FileUpload;
+use App\Models\SingleEvent;
 use DateTime;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema]
-class CreateSingleEventRequestDto
+class SingleEventDto
 {
     #[OA\Property]
     public string $title_de;
@@ -28,8 +32,8 @@ class CreateSingleEventRequestDto
     #[OA\Property]
     public DateTime $end;
 
-    #[OA\Property]
-    public ?string $image_url;
+    #[OA\Property(ref: FileDto::class)]
+    public FileDto $image;
 
     public function __construct(
         string $title_de,
@@ -39,7 +43,7 @@ class CreateSingleEventRequestDto
         EventLocationDto $eventLocation,
         DateTime $start,
         DateTime $end,
-        ?string $image_url
+        FileDto $fileDto
     ) {
         $this->title_de = $title_de;
         $this->title_en = $title_en;
@@ -48,6 +52,19 @@ class CreateSingleEventRequestDto
         $this->eventLocation = $eventLocation;
         $this->start = $start;
         $this->end = $end;
-        $this->image_url = $image_url;
+        $this->image = $fileDto;
+    }
+
+    public static function create(SingleEvent $singleEvent, EventLocation $eventLocation, FileUpload $fileUpload): SingleEventDto {
+        return new SingleEventDto(
+            $singleEvent->title_de,
+            $singleEvent->title_en,
+            $singleEvent->description_de,
+            $singleEvent->description_en,
+            EventLocationDto::create($eventLocation),
+            $singleEvent->start,
+            $singleEvent->end,
+            FileDto::create($fileUpload)
+        );
     }
 }

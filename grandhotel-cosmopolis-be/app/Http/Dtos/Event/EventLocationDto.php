@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Event;
+namespace App\Http\Dtos\Event;
 
+use App\Models\EventLocation;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema]
@@ -20,5 +21,13 @@ class EventLocationDto
         $this->name = $name;
         $this->street = $street;
         $this->city = $city;
+    }
+
+    public static function create(EventLocation $eventLocation): EventLocationDto {
+        return new EventLocationDto(
+            $eventLocation->name,
+            $eventLocation->street,
+            $eventLocation->city
+        );
     }
 }

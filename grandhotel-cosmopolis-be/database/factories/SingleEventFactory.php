@@ -20,6 +20,7 @@ class SingleEventFactory extends Factory
     {
         $start = Carbon::now()->addDays(fake()->numberBetween(3, 40));
         return [
+            'guid' => uuid_create(),
             'title_de' => fake()->realText(40),
             'title_en' => fake()->realText(40),
             'description_de' => fake()->realText(),

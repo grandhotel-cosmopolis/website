@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Event;
+namespace App\Http\Dtos\Event;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema]

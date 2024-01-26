@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @mixin Builder
  *
+ * @property $guid
  * @property $name
  * @property $street
  * @property $city
@@ -19,6 +20,7 @@ class EventLocation extends Model
     use HasFactory;
 
     protected $fillable = [
+        'guid',
         'name',
         'street',
         'city'

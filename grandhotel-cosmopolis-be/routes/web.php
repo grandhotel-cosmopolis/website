@@ -15,6 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/{react?}', function() {
+Route::get('/{reactRoute?}', function() {
     return File::get(public_path().'/react.html');
-})->where('react', '.*');
+})->where('reactRoute', '^(?!\/storage\/uploads).+');

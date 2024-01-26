@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Controller;
 
-use App\Http\Controllers\Event\SingleEventDto;
+use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
+use App\Models\FileUpload;
 use App\Models\SingleEvent;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,10 +21,11 @@ class SingleEventControllerTest extends TestCase
 
         // Arrange
         /** @var SingleEvent $createdEvent */
-        $createdEvent = SingleEvent::factory()->for(EventLocation::factory()->create())->create([
-            'start' => Carbon::now()->addDays(5),
-            'end' => Carbon::now()->addDays(5)->addHours(2)
-        ]);
+        $createdEvent = static::createSingleEvent()
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2)
+            ]);
 
         // Act
         $response = $this->get('/api/singleEvents/list', ['Accept' => 'application/json']);
@@ -40,16 +43,22 @@ class SingleEventControllerTest extends TestCase
         $this->assertEquals($createdEvent->description_en, $event['description_en']);
         $this->assertEquals($createdEvent->start, new Carbon($event['start']));
         $this->assertEquals($createdEvent->end, new Carbon($event['end']));
-        $this->assertEquals($createdEvent->imageUrl, $event['image_url']);
+
+        $this->assertEquals('image/png', $event['image']['mimeType']);
+        /** @var FileUpload $fileUpload */
+        $fileUpload = $createdEvent->fileUpload()->first();
+        $this->assertStringContainsString($fileUpload->file_path, $event['image']['fileUrl']);
+
     }
 
     public function test_getSingleEvents_noEventsInNext3Weeks_returnsEmptyList () {
         // Arrange
         /** @var SingleEvent $createdEvent */
-        SingleEvent::factory()->for(EventLocation::factory()->create())->create([
-            'start' => Carbon::now()->addMonth(),
-            'end' => Carbon::now()->addMonth()->addHours(2)
-        ]);
+        static::createSingleEvent()
+            ->create([
+                'start' => Carbon::now()->addMonth(),
+                'end' => Carbon::now()->addMonth()->addHours(2)
+            ]);
 
         // Act
         $response = $this->get('/api/singleEvents/list', ['Accept' => 'application/json']);
@@ -70,25 +79,25 @@ class SingleEventControllerTest extends TestCase
         /** @var EventLocation $eventLocation */
         $eventLocation = EventLocation::factory()->create();
         // Events within requested time range
-        SingleEvent::factory()->for($eventLocation)->create([
+        static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-06T16:30:00.000Z'),
             'end' => new Carbon('2024-01-06T18:00:00.000Z')
         ]);
-        SingleEvent::factory()->for($eventLocation)->create([
+        static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-04T16:30:00.000Z'),
             'end' => new Carbon('2024-01-06T18:00:00.000Z')
         ]);
-        SingleEvent::factory()->for($eventLocation)->create([
+        static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-10T16:30:00.000Z'),
             'end' => new Carbon('2024-01-12T18:00:00.000Z')
         ]);
         // Event before requested time range
-        SingleEvent::factory()->for($eventLocation)->create([
+        static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-05T16:30:00.000Z'),
             'end' => new Carbon('2024-01-05T18:00:00.000Z')
         ]);
         // Event after requested time range
-        SingleEvent::factory()->for($eventLocation)->create([
+        static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-11T16:30:00.000Z'),
             'end' => new Carbon('2024-01-11T18:00:00.000Z')
         ]);
@@ -157,35 +166,62 @@ class SingleEventControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_addSingleEvent_notParsableTime_returnsBadRequest() {
+    public function test_addSingleEvent_notParsableTime_returnsValidationError() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $start = 'unparsable';
         $end = '2024-01-06T16:34:42.511Z';
+        $eventData = static::getTestEventData();
 
         // Act
         $response = $this->actingAs($user)
-            ->post('/api/singleEvents/add', ['start' => $start, 'end' => $end], ['Accept' => 'application/json']);
+            ->postJson('/api/singleEvents/add', [
+                'title_en' => $eventData['title_en'],
+                'title_de' => $eventData['title_de'],
+                'description_de' => $eventData['description_de'],
+                'description_en' => $eventData['description_en'],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
+                'start' => $start,
+                'end' => $end
+            ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.start'));
     }
 
-    public function test_addSingleEvent_startIsAfterEnd_returnsBadRequest() {
+    public function test_addSingleEvent_startIsAfterEnd_returnsValidationError() {
         // Arrange
         $start = '2024-02-06T16:34:42.511Z';
         $end = '2024-01-06T16:34:42.511Z';
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventData = static::getTestEventData();
 
         // Act
         $response = $this->actingAs($user)
-            ->post('/api/singleEvents/add', ['start' => $start, 'end' => $end], ['Accept' => 'application/json']);
+            ->postJson('/api/singleEvents/add', [
+                'title_en' => $eventData['title_en'],
+                'title_de' => $eventData['title_de'],
+                'description_de' => $eventData['description_de'],
+                'description_en' => $eventData['description_en'],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
+                'start' => $start,
+                'end' => $end
+            ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $response->assertContent('invalid time range');
     }
 
-    public function test_addSingleEvent_onlyEnd_returnsBadRequest() {
+    public function test_addSingleEvent_onlyEnd_returnsValidationError() {
         // Arrange
         $end = '2024-01-06T16:34:42.511Z';
         $user = User::factory()->create();
@@ -195,10 +231,10 @@ class SingleEventControllerTest extends TestCase
             ->post('/api/singleEvents/add', ['end' => $end], ['Accept' => 'application/json']);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
     }
 
-    public function test_addSingleEvent_onlyStart_returnsBadRequest() {
+    public function test_addSingleEvent_onlyStart_returnsValidationError() {
         // Arrange
         $start = '2024-01-06T16:34:42.511Z';
         $user = User::factory()->create();
@@ -208,12 +244,14 @@ class SingleEventControllerTest extends TestCase
             ->post('/api/singleEvents/add', ['start' => $start], ['Accept' => 'application/json']);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
     }
 
-    public function test_addSingleEvent_missingTitleDe_returnsBadRequest() {
+    public function test_addSingleEvent_missingTitleDe_returnsValidationError() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -222,22 +260,23 @@ class SingleEventControllerTest extends TestCase
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name'],
-                    'street' => $eventData['eventLocation_street'],
-                    'city' => $eventData['eventLocation_city']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.title_de'));
     }
 
-    public function test_addSingleEvent_missingTitleEn_returnsBadRequest() {
+    public function test_addSingleEvent_missingTitleEn_returnsValidationError() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -246,22 +285,23 @@ class SingleEventControllerTest extends TestCase
                 'title_de' => $eventData['title_de'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name'],
-                    'street' => $eventData['eventLocation_street'],
-                    'city' => $eventData['eventLocation_city']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.title_en'));
     }
 
-    public function test_addSingleEvent_missingDescriptionDE_returnsBadRequest() {
+    public function test_addSingleEvent_missingDescriptionDE_returnsValidationError() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -270,22 +310,23 @@ class SingleEventControllerTest extends TestCase
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name'],
-                    'street' => $eventData['eventLocation_street'],
-                    'city' => $eventData['eventLocation_city']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.description_de'));
     }
 
-    public function test_addSingleEvent_missingDescriptionEN_returnsBadRequest() {
+    public function test_addSingleEvent_missingDescriptionEN_returnsValidationError() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -294,42 +335,22 @@ class SingleEventControllerTest extends TestCase
                 'title_de' => $eventData['title_de'],
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name'],
-                    'street' => $eventData['eventLocation_street'],
-                    'city' => $eventData['eventLocation_city']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.description_en'));
     }
 
-    public function test_addSingleEvent_missingEventLocation_returnsBadRequest() {
+    public function test_addSingleEvent_missingEventLocation_returnsValidationError() {
         // Arrange
         $user = User::factory()->create();
-        $eventData = static::getTestEventData();
-
-        // Act
-        $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
-                'title_de' => $eventData['title_de'],
-                'title_en' => $eventData['title_en'],
-                'description_de' => $eventData['description_de'],
-                'description_en' => $eventData['description_en'],
-                'start' => $eventData['start'],
-                'end' => $eventData['end']
-            ]);
-
-        // Assert
-        $response->assertStatus(400);
-    }
-
-    public function test_addSingleEvent_eventLocationOnlyName_returnsOk() {
-        // Arrange
-        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -339,20 +360,47 @@ class SingleEventControllerTest extends TestCase
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name']
-                ],
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
 
         // Assert
-        $response->assertStatus(200);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.event_location_guid'));
+    }
+
+    public function test_addSingleEvent_nonExistingEventLocation_returnsValidationError() {
+        // Arrange
+        $user = User::factory()->create();
+        $nonExistingEventLocationGuid = uuid_create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventData = static::getTestEventData();
+
+        // Act
+        $response = $this->actingAs($user)
+            ->postJson('/api/singleEvents/add', [
+                'title_de' => $eventData['title_de'],
+                'title_en' => $eventData['title_en'],
+                'description_de' => $eventData['description_de'],
+                'description_en' => $eventData['description_en'],
+                'event_location_guid' => $nonExistingEventLocationGuid,
+                'file_upload_guid' => $fileUpload->guid,
+                'start' => $eventData['start'],
+                'end' => $eventData['end']
+            ]);
+
+        // Assert
+        $response->assertStatus(422);
+        $response->assertContent('invalid input');
     }
 
     public function test_addSingleEvent_invalidTitleDeObject_returnsBadRequest() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -364,20 +412,23 @@ class SingleEventControllerTest extends TestCase
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
 
         // Assert
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $this->assertCount(1, $response->json('errors'));
+        $this->assertCount(1, $response->json('errors.title_de'));
     }
 
     public function test_addSingleEvent_validEvent_eventIsStoredInDb() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -387,9 +438,8 @@ class SingleEventControllerTest extends TestCase
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
@@ -408,14 +458,16 @@ class SingleEventControllerTest extends TestCase
         $this->assertEquals($eventData['description_en'], $newEvent->description_en);
         $this->assertEquals(new Carbon($eventData['start']), $newEvent->start);
         $this->assertEquals(new Carbon($eventData['end']), $newEvent->end);
-        $this->assertEquals($eventData['eventLocation_name'], $newEventLocation->name);
-        $this->assertNull($newEventLocation->street);
-        $this->assertNull($newEventLocation->city);
+        $this->assertEquals($eventLocation->name, $newEventLocation->name);
+        $this->assertEquals($eventLocation->street, $newEventLocation->street);
+        $this->assertEquals($eventLocation->city, $newEventLocation->city);
     }
 
     public function test_addSingleEvent_validEvent_createdEventIsReturned() {
         // Arrange
         $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
         $eventData = static::getTestEventData();
 
         // Act
@@ -425,9 +477,8 @@ class SingleEventControllerTest extends TestCase
                 'title_en' => $eventData['title_en'],
                 'description_de' => $eventData['description_de'],
                 'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $eventData['eventLocation_name']
-                ],
+                'event_location_guid' => $eventLocation->guid,
+                'file_upload_guid' => $fileUpload->guid,
                 'start' => $eventData['start'],
                 'end' => $eventData['end']
             ]);
@@ -441,68 +492,12 @@ class SingleEventControllerTest extends TestCase
                 ->where('description_en', $eventData['description_en'])
                 ->where('start', fn (string $start) => new Carbon($start) == new Carbon($eventData['start']))
                 ->where('end', fn (string $end) => new Carbon($end) == new Carbon($eventData['end']))
-                ->where('eventLocation.name', $eventData['eventLocation_name'])
-                ->where('image_url', fn (?string $imageUrl) => is_null($imageUrl))
+                ->where('eventLocation.name', $eventLocation->name)
+                ->where('eventLocation.street', $eventLocation->street)
+                ->where('eventLocation.city', $eventLocation->city)
+                ->where('image.fileUrl', 'http://localhost/storage/' . $fileUpload->file_path)
+                ->where('image.mimeType', 'image/png')
         );
-    }
-
-    public function test_addSingleEvent_validEventWithExistingEventLocation_noNewEventLocationIsSaved() {
-        // Arrange
-        $user = User::factory()->create();
-        $existingEventLocation = EventLocation::factory()->create([
-            'street' => null,
-            'city' => null
-        ]);
-        $eventData = static::getTestEventData();
-
-        // Act
-        $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
-                'title_de' => $eventData['title_de'],
-                'title_en' => $eventData['title_en'],
-                'description_de' => $eventData['description_de'],
-                'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $existingEventLocation->name
-                ],
-                'start' => $eventData['start'],
-                'end' => $eventData['end']
-            ]);
-
-        // Assert
-        $response->assertStatus(200);
-        $allEventLocations = EventLocation::all();
-        $this->assertCount(1, $allEventLocations);
-    }
-
-    public function test_addSingleEvent_validEventWithoutExistingEventLocation_newEventLocationIsSaved() {
-        // Arrange
-        $user = User::factory()->create();
-        $existingEventLocation = EventLocation::factory()->create([
-            'street' => null,
-            'city' => null
-        ]);
-        $eventData = static::getTestEventData();
-
-        // Act
-        $response = $this->actingAs($user)
-            ->postJson('/api/singleEvents/add', [
-                'title_de' => $eventData['title_de'],
-                'title_en' => $eventData['title_en'],
-                'description_de' => $eventData['description_de'],
-                'description_en' => $eventData['description_en'],
-                'eventLocation' => [
-                    'name' => $existingEventLocation->name,
-                    'street' => 'test street'
-                ],
-                'start' => $eventData['start'],
-                'end' => $eventData['end']
-            ]);
-
-        // Assert
-        $response->assertStatus(200);
-        $allEventLocations = EventLocation::all();
-        $this->assertCount(2, $allEventLocations);
     }
 
     private static function getTestEventData(): array {
@@ -517,5 +512,19 @@ class SingleEventControllerTest extends TestCase
             'start' => '2024-01-06T16:30:00.0Z',
             'end' => '2024-01-06T18:30:00.0Z'
         ];
+    }
+
+    private static function createSingleEvent(
+        ?EventLocation $eventLocation = null,
+        ?User $user = null,
+        ?FileUpload $fileUpload = null
+    ): Factory {
+        $eventLocation = !is_null($eventLocation) ? $eventLocation : EventLocation::factory()->create();
+        $user = !is_null($user) ? $user : User::factory()->create();
+        $fileUpload = !is_null($fileUpload) ? $fileUpload : FileUpload::factory()->for($user, 'uploadedBy')->create();
+        return SingleEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy');
     }
 }

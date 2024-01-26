@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Authentication\LoginController;
 use App\Http\Controllers\Event\SingleEventController;
+use App\Http\Controllers\File\FileController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('/singleEvents')->group(function () {
         Route::controller(SingleEventController::class)->group(function () {
             Route::post('/add', 'addSingleEvent');
+        });
+    });
+
+    // FileController
+    Route::prefix('/files')->group(function () {
+        Route::controller(FileController::class)->group(function () {
+            Route::post('', 'uploadImage');
         });
     });
 });

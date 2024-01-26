@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\EventLocation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EventLocation>
+ * @extends Factory<EventLocation>
  */
 class EventLocationFactory extends Factory
 {
@@ -17,6 +18,7 @@ class EventLocationFactory extends Factory
     public function definition(): array
     {
         return [
+            'guid' => uuid_create(),
             'name' => fake()->name(),
             'street' => fake()->streetName(),
             'city' => fake()->city()

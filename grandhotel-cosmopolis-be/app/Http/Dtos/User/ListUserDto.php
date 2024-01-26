@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Dtos\User;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema]
 class ListUserDto
 {
-    #[OA\Property(items: new OA\Items(ref: "#/components/schemas/UserDto"))]
+    #[OA\Property(items: new OA\Items(ref: UserDto::class))]
     /** @var $users UserDto[] */
     public array $users;
 

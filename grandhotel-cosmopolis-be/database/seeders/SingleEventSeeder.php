@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\EventLocation;
+use App\Models\FileUpload;
 use App\Models\SingleEvent;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Seeder;
 
 class SingleEventSeeder extends Seeder
@@ -17,6 +19,12 @@ class SingleEventSeeder extends Seeder
         SingleEvent::factory()
             ->count(5)
             ->for(EventLocation::factory()->create())
+            ->for(
+                FileUpload::factory()->for(
+                    User::factory()->create(),
+                    'uploadedBy'
+                )->create())
+            ->for(User::factory()->create(), 'createdBy')
             ->create();
     }
 }

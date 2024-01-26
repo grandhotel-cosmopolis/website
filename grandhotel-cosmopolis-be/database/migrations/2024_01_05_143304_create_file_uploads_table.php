@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('event_locations', function (Blueprint $table) {
+        Schema::create('file_uploads', function (Blueprint $table) {
             $table->id();
             $table->string('guid')->index();
-            $table->string('name');
-            $table->string('street')->nullable();
-            $table->string('city')->nullable();
+            $table->string('file_path');
+            $table->string('mime_type');
+            $table->unsignedBigInteger('user_id')->index();
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
 
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('event_locations');
+        Schema::dropIfExists('file_uploads');
     }
 };

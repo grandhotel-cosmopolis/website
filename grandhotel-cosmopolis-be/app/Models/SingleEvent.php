@@ -10,26 +10,26 @@ use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @mixin Builder
+ * @property string $guid
  * @property string $title_de
  * @property string $title_en
  * @property string $description_de
  * @property string $description_en
  * @property DateTime $start
  * @property DateTime $end
- * @property string $imageUrl
  */
 class SingleEvent extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'guid',
         'title_de',
         'title_en',
         'description_de',
         'description_en',
         'start',
         'end',
-        'image_url'
     ];
 
     protected $casts = [
@@ -39,5 +39,13 @@ class SingleEvent extends Model
 
     public function eventLocation(): BelongsTo {
         return $this->belongsTo(EventLocation::class, 'event_location_id');
+    }
+
+    public function fileUpload(): BelongsTo {
+        return $this->belongsTo(FileUpload::class, 'file_upload_id');
+    }
+
+    public function createdBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
