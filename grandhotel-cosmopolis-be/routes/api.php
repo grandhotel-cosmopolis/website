@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Authentication\LoginController;
 use App\Http\Controllers\Event\EventLocationController;
+use App\Http\Controllers\Event\RecurringEventController;
 use App\Http\Controllers\Event\SingleEventController;
 use App\Http\Controllers\File\FileController;
 use App\Http\Controllers\User\UserController;
@@ -45,6 +46,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('/singleEvent')->group(function () {
         Route::controller(SingleEventController::class)->group(function () {
             Route::post('/add', 'addSingleEvent');
+        });
+    });
+
+    // RecurringEventController
+    Route::prefix('/recurringEvent')->group(function () {
+        Route::controller(RecurringEventController::class)->group(function () {
+            Route::post('/add', 'addRecurringEvent');
         });
     });
 

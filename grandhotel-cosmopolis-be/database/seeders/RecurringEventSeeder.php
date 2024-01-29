@@ -4,11 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\EventLocation;
 use App\Models\FileUpload;
+use App\Models\RecurringEvent;
 use App\Models\SingleEvent;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class SingleEventSeeder extends Seeder
+class RecurringEventSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,10 +17,12 @@ class SingleEventSeeder extends Seeder
     public function run(): void
     {
         $user = User::factory()->create();
-        SingleEvent::factory()
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        RecurringEvent::factory()
             ->count(5)
-            ->for(EventLocation::factory()->create())
-            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($eventLocation, 'defaultEventLocation')
+            ->for($fileUpload,'defaultFileUpload')
             ->for($user, 'createdBy')
             ->create();
     }

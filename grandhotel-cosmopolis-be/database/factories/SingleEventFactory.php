@@ -26,7 +26,8 @@ class SingleEventFactory extends Factory
             'description_de' => fake()->realText(),
             'description_en' => fake()->realText(),
             'start' => $start,
-            'end' => $start->addHours(2)
+            'end' => $start->addHours(2),
+            'is_recurring' => false
         ];
     }
 }

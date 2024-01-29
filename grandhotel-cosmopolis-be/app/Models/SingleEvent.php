@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $description_en
  * @property DateTime $start
  * @property DateTime $end
+ * @property boolean $is_recurring
  */
 class SingleEvent extends Model
 {
@@ -30,11 +31,13 @@ class SingleEvent extends Model
         'description_en',
         'start',
         'end',
+        'is_recurring'
     ];
 
     protected $casts = [
         'start' => 'datetime',
-        'end' => 'datetime'
+        'end' => 'datetime',
+        'is_recurring' => 'bool'
     ];
 
     public function eventLocation(): BelongsTo {
@@ -47,5 +50,9 @@ class SingleEvent extends Model
 
     public function createdBy(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function recurringEvent(): BelongsTo {
+        return $this->belongsTo(RecurringEvent::class, 'recurring_event_id');
     }
 }

@@ -11,17 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('single_events', function (Blueprint $table) {
+        Schema::create('recurring_events', function (Blueprint $table) {
             $table->id();
             $table->string('guid')->index();
-            $table->string('title_de');
-            $table->string('title_en');
-            $table->longText('description_de');
-            $table->longText('description_en');
-            $table->timestamp('start');
-            $table->timestamp('end');
-            $table->boolean('is_recurring')->default(false);
-            $table->unsignedBigInteger('recurring_event_id')->nullable()->default(null)->index();
+            $table->string('default_title_de');
+            $table->string('default_title_en');
+            $table->longText('default_description_de');
+            $table->longText('default_description_en');
+            $table->string('recurrence');
+            $table->integer('recurrence_metadata');
+            $table->timestamp('start_first_occurrence');
+            $table->timestamp('end_first_occurrence');
+            $table->timestamp('end_recurrence')->nullable();
             /** @noinspection DuplicatedCode */
             $table->unsignedBigInteger('event_location_id')->index();
             $table->unsignedBigInteger('file_upload_id')->index();
@@ -31,7 +32,6 @@ return new class extends Migration
             $table->foreign('event_location_id')->references('id')->on('event_locations')->cascadeOnDelete();
             $table->foreign('file_upload_id')->references('id')->on('file_uploads')->cascadeOnDelete();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('recurring_event_id')->references('id')->on('recurring_events')->cascadeOnDelete();
         });
     }
 
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('single_events');
+        Schema::dropIfExists('recurring_events');
     }
 };

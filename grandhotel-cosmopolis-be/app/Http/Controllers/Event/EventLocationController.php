@@ -14,12 +14,15 @@ class EventLocationController extends Controller
 {
     /** @noinspection PhpUnused */
     #[OA\Get(
-        path: 'api/eventLocation/list',
+        path: '/api/eventLocation/list',
         operationId: 'listEventLocations',
         description: 'List Event Locations',
         tags: ['EventLocation'],
         responses: [
-            new OA\Response(response: 200, description: 'list of all event locations', content: new OA\JsonContent(ref: ListEventLocationDto::class)),
+            new OA\Response(
+                response: 200,
+                description: 'list of all event locations',
+                content: new OA\JsonContent(ref: ListEventLocationDto::class)),
             new OA\Response(response: 401, description: 'unauthenticated')
         ]
     )]
@@ -47,7 +50,17 @@ class EventLocationController extends Controller
                     ]
                 )
             )
-        )
+        ),
+        tags: ['EventLocation'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'created EventLocation',
+                content: new OA\JsonContent(ref: EventLocationDto::class)
+            ),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+            new OA\Response(response: 422, description: 'input validation error')
+        ]
     )]
     public function addEventLocation(Request $request): JsonResponse {
         $request->validate([

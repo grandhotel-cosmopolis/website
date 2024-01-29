@@ -10,6 +10,7 @@ class ListSingleEventDto
     /** @var $events SingleEventDto[] */
     public array $events;
 
+    /** @param SingleEventDto[] $events */
     public function __construct(array $events) {
         $this->events = $events;
     }

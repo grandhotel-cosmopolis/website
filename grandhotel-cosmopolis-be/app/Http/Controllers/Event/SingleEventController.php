@@ -159,7 +159,9 @@ class SingleEventController extends Controller
                 $query
                     ->where('end', '>', $end)
                     ->where('start', '<', $end);
-            })->get();
+            })
+            ->orderBy('start')
+            ->get();
 
         $eventDtos = $events->map(function (SingleEvent $event) {
             /** @var EventLocation $eventLocation */
@@ -171,7 +173,7 @@ class SingleEventController extends Controller
         return new JsonResponse(new ListSingleEventDto($eventDtos->toArray()));
     }
 
-    private static function validateTimeRange(?string $start, ?string $end, bool $is_null_allowed = true): bool {
+    public static function validateTimeRange(?string $start, ?string $end, bool $is_null_allowed = true): bool {
         if ($is_null_allowed && is_null($start) && is_null($end)) {
             return true;
         }
@@ -191,6 +193,15 @@ class SingleEventController extends Controller
             return false;
         }
 
+        return true;
+    }
+
+    public static function validateTime(?string $time): bool {
+        try {
+            Carbon::parse($time);
+        } catch(Exception) {
+            return false;
+        }
         return true;
     }
 

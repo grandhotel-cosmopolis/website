@@ -7,7 +7,7 @@ use OpenApi\Attributes as OA;
 class ListEventLocationDto
 {
     #[OA\Property(items: new OA\Items(ref: EventLocationDto::class))]
-    /** @var EventLocationDto[] $eventLocations */
+    /** @var $evenervetLocations EventLocationDto[] */
     public array $eventLocations;
 
     /** @param EventLocationDto[] $eventLocations */
