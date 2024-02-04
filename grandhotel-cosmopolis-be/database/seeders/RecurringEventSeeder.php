@@ -16,14 +16,16 @@ class RecurringEventSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::factory()->create();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-        RecurringEvent::factory()
-            ->count(5)
-            ->for($eventLocation, 'defaultEventLocation')
-            ->for($fileUpload,'defaultFileUpload')
-            ->for($user, 'createdBy')
-            ->create();
+        if (config('app.env') === 'local') {
+            $user = User::factory()->create();
+            $eventLocation = EventLocation::factory()->create();
+            $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+            RecurringEvent::factory()
+                ->count(5)
+                ->for($eventLocation, 'defaultEventLocation')
+                ->for($fileUpload, 'defaultFileUpload')
+                ->for($user, 'createdBy')
+                ->create();
+        }
     }
 }

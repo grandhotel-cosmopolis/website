@@ -13,9 +13,11 @@ class FileUploadSeeder extends Seeder
      */
     public function run(): void
     {
-        FileUpload::factory()
-            ->count(1)
-            ->for(User::factory()->create(), 'uploadedBy')
-            ->create();
+        if (config('app.env') === 'local') {
+            FileUpload::factory()
+                ->count(1)
+                ->for(User::factory()->create(), 'uploadedBy')
+                ->create();
+        }
     }
 }

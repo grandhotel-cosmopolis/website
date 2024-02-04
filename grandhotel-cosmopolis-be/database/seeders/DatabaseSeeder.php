@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
             EventLocationSeeder::class,
             SingleEventSeeder::class,
             FileUploadSeeder::class,
-            RecurringEventSeeder::class
+            RecurringEventSeeder::class,
+            RoleAndPermissionSeeder::class,
         ]);
     }
 }
