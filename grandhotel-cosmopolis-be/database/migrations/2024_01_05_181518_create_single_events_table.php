@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamp('start');
             $table->timestamp('end');
             $table->boolean('is_recurring')->default(false);
+            $table->boolean('is_public')->default(false);
             $table->unsignedBigInteger('recurring_event_id')->nullable()->default(null)->index();
             /** @noinspection DuplicatedCode */
             $table->unsignedBigInteger('event_location_id')->index();
