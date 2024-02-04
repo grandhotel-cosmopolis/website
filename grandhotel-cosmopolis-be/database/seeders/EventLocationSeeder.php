@@ -13,8 +13,10 @@ class EventLocationSeeder extends Seeder
      */
     public function run(): void
     {
-        EventLocation::factory()
-            ->count(5)
-            ->create();
+        if (config('app.env') === 'local') {
+            EventLocation::factory()
+                ->count(5)
+                ->create();
+        }
     }
 }
