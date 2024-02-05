@@ -6,6 +6,7 @@ use App\Http\Controllers\Event\RecurringEventController;
 use App\Http\Controllers\Event\SingleEventController;
 use App\Http\Controllers\File\FileController;
 use App\Http\Controllers\User\UserController;
+use App\Models\Permissions;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,7 +46,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // EventController
     Route::prefix('/singleEvent')->group(function () {
         Route::controller(SingleEventController::class)->group(function () {
-            Route::post('/add', 'addSingleEvent');
+            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('', 'create');
+            Route::middleware('permission:' . Permissions::DELETE_EVENT->value)->delete('/{eventId}', 'delete');
+            Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventId}/edit', 'edit');
+            Route::middleware('permission:' . Permissions::PUBLISH_EVENT->value)->post('/{eventId}/publish', 'publish');
+            Route::middleware('permission:' . Permissions::UNPUBLISH_EVENT->value)->post('/{eventId}/unpublish', 'unpublish');
         });
     });
 

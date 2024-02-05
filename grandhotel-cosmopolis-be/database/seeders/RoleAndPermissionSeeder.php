@@ -13,7 +13,7 @@ class RoleAndPermissionSeeder extends Seeder
     public function run(): void
     {
         foreach (Permissions::cases() as $permission) {
-            Permission::create(['name' => $permission->value]);
+            Permission::query()->firstOrCreate(['name' => $permission->value]);
         }
     }
 }

@@ -55,7 +55,15 @@ class SingleEventDto
         $this->image = $fileDto;
     }
 
-    public static function create(SingleEvent $singleEvent, EventLocation $eventLocation, FileUpload $fileUpload): SingleEventDto {
+    public static function create(SingleEvent $singleEvent, ?EventLocation $eventLocation = null, ?FileUpload $fileUpload = null): SingleEventDto {
+        if (is_null($eventLocation)) {
+            /** @var EventLocation $eventLocation */
+            $eventLocation = $singleEvent->eventLocation()->first();
+        }
+        if (is_null($fileUpload)) {
+            /** @var FileUpload $fileUpload */
+            $fileUpload = $singleEvent->fileUpload()->first();
+        }
         return new SingleEventDto(
             $singleEvent->title_de,
             $singleEvent->title_en,

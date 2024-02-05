@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use DateTime;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,9 +15,10 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $title_en
  * @property string $description_de
  * @property string $description_en
- * @property DateTime $start
- * @property DateTime $end
+ * @property Carbon $start
+ * @property Carbon $end
  * @property boolean $is_recurring
+ * @property boolean $is_public
  */
 class SingleEvent extends Model
 {
@@ -31,13 +32,15 @@ class SingleEvent extends Model
         'description_en',
         'start',
         'end',
-        'is_recurring'
+        'is_recurring',
+        'is_public'
     ];
 
     protected $casts = [
         'start' => 'datetime',
         'end' => 'datetime',
-        'is_recurring' => 'bool'
+        'is_recurring' => 'bool',
+        'is_public' => 'bool'
     ];
 
     public function eventLocation(): BelongsTo {
