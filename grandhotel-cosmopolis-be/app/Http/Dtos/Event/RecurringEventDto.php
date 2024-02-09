@@ -71,12 +71,14 @@ class RecurringEventDto
         $this->image = $fileDto;
     }
 
-    public static function create(RecurringEvent $recurringEvent, EventLocation $eventLocation, FileUpload $fileUpload): RecurringEventDto {
+    public static function create(RecurringEvent $recurringEvent, ?EventLocation $eventLocation = null, ?FileUpload $fileUpload = null): RecurringEventDto {
+        $eventLocation = $eventLocation ?? $recurringEvent->eventLocation()->first();
+        $fileUpload = $fileUpload ?? $recurringEvent->fileUpload()->first();
         return new RecurringEventDto(
-            $recurringEvent->default_title_de,
-            $recurringEvent->default_title_en,
-            $recurringEvent->default_description_de,
-            $recurringEvent->default_description_en,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             EventLocationDto::create($eventLocation),

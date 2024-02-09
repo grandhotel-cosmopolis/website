@@ -22,14 +22,14 @@ class RecurringEventFactory extends Factory
         $start = Carbon::now();
         return [
             'guid' => uuid_create(),
-            'default_title_de' => fake()->realText(40),
-            'default_title_en' => fake()->realText(40),
-            'default_description_de' => fake()->realText(),
-            'default_description_en' => fake()->realText(),
+            'title_de' => fake()->realText(40),
+            'title_en' => fake()->realText(40),
+            'description_de' => fake()->realText(),
+            'description_en' => fake()->realText(),
             'recurrence' => Recurrence::EVERY_X_DAYS,
             'recurrence_metadata' => 14,
             'start_first_occurrence' => $start,
-            'end_first_occurrence' => $start->addHours(2)
+            'end_first_occurrence' => $start->clone()->addHours(2)
         ];
     }
 }

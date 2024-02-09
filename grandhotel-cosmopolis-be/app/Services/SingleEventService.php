@@ -7,13 +7,13 @@ use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\SingleEvent;
 use App\Repositories\Interfaces\ISingleEventRepository;
-use App\Services\Interfaces\IEventService;
+use App\Services\Interfaces\ISingleEventService;
 use App\Services\Interfaces\ITimeService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class EventService implements IEventService
+class SingleEventService implements ISingleEventService
 {
     public function __construct(
         protected ISingleEventRepository $eventRepository,

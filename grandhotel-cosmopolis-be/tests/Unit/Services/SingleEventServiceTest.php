@@ -8,7 +8,7 @@ use App\Models\FileUpload;
 use App\Models\SingleEvent;
 use App\Models\User;
 use App\Repositories\Interfaces\ISingleEventRepository;
-use App\Services\EventService;
+use App\Services\SingleEventService;
 use App\Services\TimeService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,11 +16,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\TestCase;
 
-class EventServiceTest extends TestCase
+class SingleEventServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private EventService $cut;
+    private SingleEventService $cut;
 
     private ISingleEventRepository & MockObject $singleEventRepositoryMock;
 
@@ -28,7 +28,7 @@ class EventServiceTest extends TestCase
     {
         parent::__construct($name);
         $this->singleEventRepositoryMock = $this->getMockBuilder(ISingleEventRepository::class)->getMock();
-        $this->cut = new EventService($this->singleEventRepositoryMock, new TimeService());
+        $this->cut = new SingleEventService($this->singleEventRepositoryMock, new TimeService());
     }
 
     /** @test */

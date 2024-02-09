@@ -6,7 +6,7 @@ use App\Models\SingleEvent;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-interface IEventService
+interface ISingleEventService
 {
     public function createSingleEvent(
         string $titleDe,

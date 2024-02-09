@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('recurring_events', function (Blueprint $table) {
             $table->id();
             $table->string('guid')->index();
-            $table->string('default_title_de');
-            $table->string('default_title_en');
-            $table->longText('default_description_de');
-            $table->longText('default_description_en');
+            $table->string('title_de');
+            $table->string('title_en');
+            $table->longText('description_de');
+            $table->longText('description_en');
             $table->string('recurrence');
             $table->integer('recurrence_metadata');
             $table->timestamp('start_first_occurrence');

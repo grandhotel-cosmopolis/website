@@ -9,7 +9,7 @@ use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\SingleEvent;
-use App\Services\Interfaces\IEventService;
+use App\Services\Interfaces\ISingleEventService;
 use App\Services\Interfaces\ITimeService;
 use Carbon\Carbon;
 use Exception;
@@ -21,8 +21,8 @@ use OpenApi\Attributes as OA;
 class SingleEventController extends Controller
 {
     public function __construct(
-        protected IEventService $eventService,
-        protected ITimeService $timeService
+        protected ISingleEventService $eventService,
+        protected ITimeService        $timeService
     ) {}
 
     /** @noinspection PhpUnused */
@@ -85,14 +85,14 @@ class SingleEventController extends Controller
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
                     properties: [
-                        new OA\Property(property: 'title_de', type: 'string'),
-                        new OA\Property(property: 'title_en', type: 'string'),
-                        new OA\Property(property: 'description_de', type: 'string'),
-                        new OA\Property(property: 'description_en', type: 'string'),
+                        new OA\Property(property: 'titleDe', type: 'string'),
+                        new OA\Property(property: 'titleEn', type: 'string'),
+                        new OA\Property(property: 'descriptionDe', type: 'string'),
+                        new OA\Property(property: 'descriptionEn', type: 'string'),
                         new OA\Property(property: 'start', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'end', type: 'string', format: 'date-time'),
-                        new OA\Property(property: 'event_location_guid', type: 'string'),
-                        new OA\Property(property: 'file_upload_guid', type: 'string')
+                        new OA\Property(property: 'eventLocationGuid', type: 'string'),
+                        new OA\Property(property: 'fileUploadGuid', type: 'string')
                     ]
                 )
             )
@@ -111,14 +111,14 @@ class SingleEventController extends Controller
     public function create(Request $request): Response | JsonResponse {
         static::validateSingleEventInput($request);
         $singleEvent = $this->eventService->createSingleEvent(
-            $request['title_de'],
-            $request['title_en'],
-            $request['description_de'],
-            $request['description_en'],
+            $request['titleDe'],
+            $request['titleEn'],
+            $request['descriptionDe'],
+            $request['descriptionEn'],
             Carbon::parse($request['start']),
             Carbon::parse($request['end']),
-            $request['event_location_guid'],
-            $request['file_upload_guid']
+            $request['eventLocationGuid'],
+            $request['fileUploadGuid']
         );
 
         return new JsonResponse(SingleEventDto::create($singleEvent));
@@ -126,7 +126,7 @@ class SingleEventController extends Controller
 
     /** @noinspection PhpUnused */
     #[OA\Post(
-        path: '/api/singleEvent/{eventId}/edit',
+        path: '/api/singleEvent/{eventGuid}/update',
         operationId: 'editSingleEVent',
         description: 'Edit an existing single event',
         requestBody: new OA\RequestBody(
@@ -134,14 +134,14 @@ class SingleEventController extends Controller
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
                     properties: [
-                        new OA\Property(property: 'title_de', type: 'string'),
-                        new OA\Property(property: 'title_en', type: 'string'),
-                        new OA\Property(property: 'description_de', type: 'string'),
-                        new OA\Property(property: 'description_en', type: 'string'),
+                        new OA\Property(property: 'titleDe', type: 'string'),
+                        new OA\Property(property: 'titleEn', type: 'string'),
+                        new OA\Property(property: 'descriptionDe', type: 'string'),
+                        new OA\Property(property: 'descriptionEn', type: 'string'),
                         new OA\Property(property: 'start', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'end', type: 'string', format: 'date-time'),
-                        new OA\Property(property: 'event_location_guid', type: 'string'),
-                        new OA\Property(property: 'file_upload_guid', type: 'string')
+                        new OA\Property(property: 'eventLocationGuid', type: 'string'),
+                        new OA\Property(property: 'fileUploadGuid', type: 'string')
                     ]
                 )
             )
@@ -157,19 +157,19 @@ class SingleEventController extends Controller
             new OA\Response(response: 400, description: 'invalid event')
         ]
     )]
-    public function edit(Request $request, string $eventId): Response | JsonResponse {
+    public function update(Request $request, string $eventGuid): Response | JsonResponse {
         static::validateSingleEventInput($request);
 
         $updatedEvent = $this->eventService->updateSingleEvent(
-            $eventId,
-            $request['title_de'],
-            $request['title_en'],
-            $request['description_de'],
-            $request['description_en'],
+            $eventGuid,
+            $request['titleDe'],
+            $request['titleEn'],
+            $request['descriptionDe'],
+            $request['descriptionEn'],
             Carbon::parse($request['start']),
             Carbon::parse($request['end']),
-            $request['event_location_guid'],
-            $request['file_upload_guid']
+            $request['eventLocationGuid'],
+            $request['fileUploadGuid']
         );
 
         return new JsonResponse(SingleEventDto::create($updatedEvent));
@@ -177,7 +177,7 @@ class SingleEventController extends Controller
 
     /** @noinspection PhpUnused */
     #[OA\Delete(
-        path: '/api/singleEvent/{$eventId}',
+        path: '/api/singleEvent/{eventGuid}',
         operationId: 'deleteSingleEvent',
         description: 'Delete an existing event',
         tags: ['Event'],
@@ -187,14 +187,14 @@ class SingleEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function delete(string $eventId): Response {
-        $this->eventService->deleteSingleEvent($eventId);
+    public function delete(string $eventGuid): Response {
+        $this->eventService->deleteSingleEvent($eventGuid);
         return new Response('deleted');
     }
 
     /** @noinspection PhpUnused */
     #[OA\Post(
-        path: '/api/singleEvent/{eventId}/publish',
+        path: '/api/singleEvent/{eventGuid}/publish',
         operationId: 'publishSingleEvent',
         description: 'Publish a single event',
         tags: ['Event'],
@@ -207,14 +207,14 @@ class SingleEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function publish(string $eventId): JsonResponse {
-        $event = $this->eventService->publishSingleEvent($eventId);
+    public function publish(string $eventGuid): JsonResponse {
+        $event = $this->eventService->publishSingleEvent($eventGuid);
         return new JsonResponse(SingleEventDto::create($event));
     }
 
     /** @noinspection PhpUnused */
     #[OA\Post(
-        path: '/api/singleEvent/{eventId}/unpublish',
+        path: '/api/singleEvent/{eventGuid}/unpublish',
         operationId: 'unpublishSingleEvent',
         description: 'Unpublish a single event',
         tags: ['Event'],
@@ -227,19 +227,19 @@ class SingleEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function unpublish(string $eventId): JsonResponse {
-        $event = $this->eventService->unpublishSingleEvent($eventId);
+    public function unpublish(string $eventGuid): JsonResponse {
+        $event = $this->eventService->unpublishSingleEvent($eventGuid);
         return new JsonResponse(SingleEventDto::create($event));
     }
 
     private static function validateSingleEventInput(Request $request): void {
         $request->validate([
-            'title_de' => ['required', 'string'],
-            'title_en' => ['required', 'string'],
-            'description_de' => ['required', 'string'],
-            'description_en' => ['required', 'string'],
-            'event_location_guid' => ['required', 'string'],
-            'file_upload_guid' => ['required', 'string'],
+            'titleDe' => ['required', 'string'],
+            'titleEn' => ['required', 'string'],
+            'descriptionDe' => ['required', 'string'],
+            'descriptionEn' => ['required', 'string'],
+            'eventLocationGuid' => ['required', 'string'],
+            'fileUploadGuid' => ['required', 'string'],
             'start' => ['required' ,'date'],
             'end' => ['required', 'date']
         ]);

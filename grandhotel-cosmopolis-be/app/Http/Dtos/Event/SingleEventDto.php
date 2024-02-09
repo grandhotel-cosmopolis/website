@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Dtos\Event;
+
 use App\Http\Dtos\File\FileDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
@@ -12,16 +13,16 @@ use OpenApi\Attributes as OA;
 class SingleEventDto
 {
     #[OA\Property]
-    public string $title_de;
+    public string $titleDe;
 
     #[OA\Property]
-    public string $title_en;
+    public string $titleEn;
 
     #[OA\Property]
-    public string $description_de;
+    public string $descriptionDe;
 
     #[OA\Property]
-    public string $description_en;
+    public string $descriptionEn;
 
     #[OA\Property(ref: EventLocationDto::class)]
     public EventLocationDto $eventLocation;
@@ -36,26 +37,32 @@ class SingleEventDto
     public FileDto $image;
 
     public function __construct(
-        string $title_de,
-        string $title_en,
-        string $description_de,
-        string $description_en,
+        string           $titleDe,
+        string           $titleEn,
+        string           $descriptionDe,
+        string           $descriptionEn,
         EventLocationDto $eventLocation,
-        DateTime $start,
-        DateTime $end,
-        FileDto $fileDto
-    ) {
-        $this->title_de = $title_de;
-        $this->title_en = $title_en;
-        $this->description_de = $description_de;
-        $this->description_en = $description_en;
+        DateTime         $start,
+        DateTime         $end,
+        FileDto          $fileDto
+    )
+    {
+        $this->titleDe = $titleDe;
+        $this->titleEn = $titleEn;
+        $this->descriptionDe = $descriptionDe;
+        $this->descriptionEn = $descriptionEn;
         $this->eventLocation = $eventLocation;
         $this->start = $start;
         $this->end = $end;
         $this->image = $fileDto;
     }
 
-    public static function create(SingleEvent $singleEvent, ?EventLocation $eventLocation = null, ?FileUpload $fileUpload = null): SingleEventDto {
+    public static function create(
+        SingleEvent    $singleEvent,
+        ?EventLocation $eventLocation = null,
+        ?FileUpload    $fileUpload = null
+    ): SingleEventDto
+    {
         if (is_null($eventLocation)) {
             /** @var EventLocation $eventLocation */
             $eventLocation = $singleEvent->eventLocation()->first();

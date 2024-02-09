@@ -13,10 +13,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @mixin Builder
  * @property string $guid
- * @property string $default_title_de
- * @property string $default_title_en
- * @property string $default_description_de
- * @property string $default_description_en
+ * @property string $title_de
+ * @property string $title_en
+ * @property string $description_de
+ * @property string $description_en
  * @property Recurrence $recurrence
  * @property int $recurrence_metadata
  * @property DateTime $start_first_occurrence
@@ -29,10 +29,10 @@ class RecurringEvent extends Model
 
     protected $fillable = [
         'guid',
-        'default_title_de',
-        'default_title_en',
-        'default_description_de',
-        'default_description_en',
+        'title_de',
+        'title_en',
+        'description_de',
+        'description_en',
         'recurrence',
         'recurrence_metadata',
         'start_first_occurrence',
@@ -41,16 +41,17 @@ class RecurringEvent extends Model
     ];
 
     protected $casts = [
-        'start' => 'datetime',
-        'end' => 'datetime',
+        'start_first_occurrence' => 'datetime',
+        'end_first_occurrence' => 'datetime',
+        'end_recurrence' => 'datetime',
         'recurrence' => Recurrence::class
     ];
 
-    public function defaultEventLocation(): BelongsTo {
+    public function eventLocation(): BelongsTo {
         return $this->belongsTo(EventLocation::class, 'event_location_id');
     }
 
-    public function defaultFileUpload(): BelongsTo {
+    public function fileUpload(): BelongsTo {
         return $this->belongsTo(FileUpload::class, 'file_upload_id');
     }
 

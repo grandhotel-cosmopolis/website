@@ -5,6 +5,7 @@ namespace App\Http\Controllers\File;
 use App\Http\Dtos\File\FileDto;
 use App\Models\FileUpload;
 use App\Models\User;
+use App\Repositories\Interfaces\IFileUploadRepository;
 use App\Traits\Upload;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -19,8 +20,12 @@ class FileController extends Controller
 {
     use Upload;
 
+    public function __construct(
+        protected IFileUploadRepository $fileUploadRepository
+    ) {}
+
     /** @noinspection PhpUnused */
-    #[OA\Post(
+    #[OA\Put(
         path: '/api/file/upload',
         operationId: 'uploadFile',
         description: 'Upload a single file',
@@ -46,6 +51,10 @@ class FileController extends Controller
     )]
     public function uploadImage(Request $request): Response | JsonResponse
     {
+        $request->validate([
+            'file' => ['required', 'image']
+        ]);
+
         /** @var UploadedFile $test */
         $file = $request->file('file');
 
@@ -54,14 +63,7 @@ class FileController extends Controller
             return response('unable to store file', 500);
         }
 
-        $fileUpload = new FileUpload;
-        $fileUpload->file_path = $savedFile;
-        $fileUpload->mime_type = $file->getMimeType();
-        $fileUpload->guid = uuid_create();
-
-        /** @var User $user */
-        $user = Auth::user();
-        $user->fileUploads()->save($fileUpload);
+        $fileUpload = $this->fileUploadRepository->create($savedFile, $file->getMimeType());
 
         return new JsonResponse(FileDto::create($fileUpload));
     }

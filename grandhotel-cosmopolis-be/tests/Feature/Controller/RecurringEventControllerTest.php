@@ -5,455 +5,261 @@ namespace Tests\Feature\Controller;
 use App\Http\Controllers\Event\Recurrence;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
+use App\Models\Permissions;
 use App\Models\RecurringEvent;
 use App\Models\SingleEvent;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class RecurringEventControllerTest extends TestCase
 {
+    use RefreshDatabase;
+
     private string $basePath = "/api/recurringEvent";
 
-    public function test_addRecurringEvent_notLoggedIn_ReturnsUnauthenticated() {
+    private User $user;
+    private FileUpload $fileUpload;
+    private EventLocation $eventLocation;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleAndPermissionSeeder::class);
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $this->user = User::factory()->create();
+        $this->user->givePermissionTo([
+            Permissions::CREATE_EVENT,
+            Permissions::EDIT_EVENT,
+            Permissions::DELETE_EVENT,
+            Permissions::PUBLISH_EVENT,
+            Permissions::UNPUBLISH_EVENT
+        ]);
+        $this->fileUpload = FileUpload::factory()->for($this->user, 'uploadedBy')->create();
+        $this->eventLocation = EventLocation::factory()->create();
+    }
+
+    /** @test */
+    public function create_notLoggedIn_returnsUnauthenticated()
+    {
         // Act
-        $response = $this->post("$this->basePath/add", [], ['Accept' => 'application/json']);
+        $response = $this->put("$this->basePath", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(401);
     }
 
-    public function test_addRecurringEvent_invalidDataMissingTitleDe_ReturnsValidationError() {
+    /** @test */
+    public function create_notAuthorized_returnsUnauthorized()
+    {
         // Arrange
         $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(user: $user);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+
+    /** @test */
+    public function create_invalidDataMissingTitleDe_returnsValidationError()
+    {
+        // Act
+        $response = $this->createRequestWithMissing(missingTitleDe: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.default_title_de'));
+        $this->assertCount(1, $response->json('errors.titleDe'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingTitleEn_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingTitleEn_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingTitleEn: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.default_title_en'));
+        $this->assertCount(1, $response->json('errors.titleEn'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingDescriptionDe_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingDescriptionDe_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingDescriptionDe: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.default_description_de'));
+        $this->assertCount(1, $response->json('errors.descriptionDe'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingDescriptionEn_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingDescriptionEn_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingDescriptionEn: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.default_description_en'));
+        $this->assertCount(1, $response->json('errors.descriptionEn'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingStart_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingStart_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingStartFirstOccurrence: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.start_first_occurrence'));
+        $this->assertCount(1, $response->json('errors.startFirstOccurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingEnd_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingEnd_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingEndFirstOccurrence: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.end_first_occurrence'));
+        $this->assertCount(1, $response->json('errors.endFirstOccurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingRecurrence_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingRecurrence_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingRecurrence: true);
 
         // Assert
         $response->assertStatus(422);
         $this->assertCount(1, $response->json('errors.recurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingRecurrenceMetadata_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingRecurrenceMetadata_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingRecurrenceMetadata: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.recurrence_metadata'));
+        $this->assertCount(1, $response->json('errors.recurrenceMetadata'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingEventLocation_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataMissingEventLocation_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingEventLocationGuid: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.default_event_location_guid'));
+        $this->assertCount(1, $response->json('errors.eventLocationGuid'));
     }
 
-    public function test_addRecurringEvent_invalidDataMissingFileUpload_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-
+    /** @test */
+    public function create_invalidDataMissingFileUpload_ReturnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequestWithMissing(missingFileUploadGuid: true);
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.default_file_upload_guid'));
+        $this->assertCount(1, $response->json('errors.fileUploadGuid'));
     }
 
-    public function test_addRecurringEvent_invalidDataInvalidRecurrence_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataInvalidRecurrence_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => 'invalid',
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(recurrence: 'invalid');
 
         // Assert
         $response->assertStatus(422);
         $this->assertCount(1, $response->json('errors.recurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataStartNotParsable_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataStartNotParsable_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => 'invalid',
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(startFirstOccurrence: 'invalid');
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.start_first_occurrence'));
+        $this->assertCount(1, $response->json('errors.startFirstOccurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataEndFirstNotParsable_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataEndFirstNotParsable_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => 'invalid',
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(endFirstOccurrence: 'invalid');
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.end_first_occurrence'));
+        $this->assertCount(1, $response->json('errors.endFirstOccurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataEndNotParsable_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataEndNotParsable_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => $sample['start_first_occurrence'],
-            'end_first_occurrence' => $sample['end_first_occurrence'],
-            'end_recurrence' => 'invalid',
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(endRecurrence: 'invalid');
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.end_recurrence'));
+        $this->assertCount(1, $response->json('errors.endRecurrence'));
     }
 
-    public function test_addRecurringEvent_invalidDataStartAfterEnd_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataStartAfterEnd_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T14:00:00.0Z',
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(startFirstOccurrence: '2024-01-06T16:30:00.0Z', endFirstOccurrence: '2024-01-06T14:00:00.0Z');
 
         // Assert
-        $response->assertStatus(422);
+        $response->assertStatus(400);
         $response->assertContent('invalid time range');
     }
 
-    public function test_addRecurringEvent_invalidDataEndBeforeFirstStart_ReturnsValidationError() {
-        // Arrange
-        $user = User::factory()->create();
-        $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
+    /** @test */
+    public function create_invalidDataEndBeforeFirstStart_returnsValidationError()
+    {
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $sample['default_title_de'],
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'end_recurrence' => '2024-01-05T18:00:00.0Z',
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            endRecurrence: '2024-01-05T18:00:00.0Z'
+        );
 
         // Assert
-        $response->assertStatus(422);
-        $response->assertContent('invalid end_recurrence date');
+        $response->assertStatus(400);
+        $response->assertContent('invalid time range');
     }
 
-    public function test_addRecurringEvent_validData_eventsAreCreated() {
+    /** @test */
+    public function create_validData_eventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
 
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(titleDe: $titleDe);
 
         // Assert
         $response->assertStatus(200);
@@ -461,399 +267,333 @@ class RecurringEventControllerTest extends TestCase
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()
-            ->where('default_title_de', $titleDe)
+            ->where('title_de', $titleDe)
             ->get()
             ->first();
 
-        $this->assertEquals($titleDe, $recurringEvent->default_title_de);
-        $this->assertEquals($sample['default_title_en'], $recurringEvent->default_title_en);
-        $this->assertEquals($sample['default_description_de'], $recurringEvent->default_description_de);
-        $this->assertEquals($sample['default_description_en'], $recurringEvent->default_description_en);
+        $this->assertEquals($titleDe, $recurringEvent->title_de);
+        $this->assertEquals($sample['titleEn'], $recurringEvent->title_en);
+        $this->assertEquals($sample['descriptionDe'], $recurringEvent->description_de);
+        $this->assertEquals($sample['descriptionEn'], $recurringEvent->description_en);
         $this->assertEquals($sample['recurrence'], $recurringEvent->recurrence->value);
-        $this->assertEquals($sample['recurrence_metadata'], $recurringEvent->recurrence_metadata);
-        $this->assertEquals($eventLocation->guid, $recurringEvent->defaultEventLocation()->get()->first()->guid);
-        $this->assertEquals($fileUpload->guid, $recurringEvent->defaultFileUpload()->get()->first()->guid);
+        $this->assertEquals($sample['recurrenceMetadata'], $recurringEvent->recurrence_metadata);
+        $this->assertEquals($this->eventLocation->guid, $recurringEvent->eventLocation()->get()->first()->guid);
+        $this->assertEquals($this->fileUpload->guid, $recurringEvent->fileUpload()->get()->first()->guid);
 
         /** @var SingleEvent[] $singleEvents */
         $singleEvents = $recurringEvent->singleEvents()->get();
 
         foreach ($singleEvents as $singleEvent) {
             $this->assertEquals($titleDe, $singleEvent->title_de);
-            $this->assertEquals($sample['default_title_en'], $singleEvent->title_en);
-            $this->assertEquals($sample['default_description_de'], $singleEvent->description_de);
-            $this->assertEquals($sample['default_description_en'], $singleEvent->description_en);
+            $this->assertEquals($sample['titleEn'], $singleEvent->title_en);
+            $this->assertEquals($sample['descriptionDe'], $singleEvent->description_de);
+            $this->assertEquals($sample['descriptionEn'], $singleEvent->description_en);
             $this->assertTrue($singleEvent->is_recurring);
-            $this->assertEquals($eventLocation->guid, $singleEvent->eventLocation()->get()->first()->guid);
-            $this->assertEquals($fileUpload->guid, $singleEvent->fileUpload()->get()->first()->guid);
+            $this->assertEquals($this->eventLocation->guid, $singleEvent->eventLocation()->get()->first()->guid);
+            $this->assertEquals($this->fileUpload->guid, $singleEvent->fileUpload()->get()->first()->guid);
         }
 
     }
 
-    public function test_addRecurringEvent_validData_recurringEventIsReturned()
+    /** @test */
+    public function create_validData_recurringEventIsReturned()
     {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
 
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => $sample['recurrence'],
-            'recurrence_metadata' => $sample['recurrence_metadata']
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(titleDe: $titleDe, startFirstOccurrence: '2024-01-06T16:30:00.0Z', endFirstOccurrence: '2024-01-06T18:00:00.0Z');
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
-        $response->assertJson(fn (AssertableJson $json) =>
-            $json->where('title_de', $titleDe)
-                ->where('title_en', $sample['default_title_en'])
-                ->where('description_de', $sample['default_description_de'])
-                ->where('description_en', $sample['default_description_en'])
-                ->where("eventLocation.name", $eventLocation->name)
-                ->where('eventLocation.street', $eventLocation->street)
-                ->where('eventLocation.city', $eventLocation->city)
-                ->where('image.fileUrl', 'http://localhost:8000/storage/' . $fileUpload->file_path)
-                ->where('image.mimeType', 'image/png')
-                ->where('recurrence', $sample['recurrence'])
-                ->where('recurrenceMetadata', $sample['recurrence_metadata'])
-                ->etc());
+        $response->assertJson(fn(AssertableJson $json) => $json->where('title_de', $titleDe)
+            ->where('title_en', $sample['titleEn'])
+            ->where('description_de', $sample['descriptionDe'])
+            ->where('description_en', $sample['descriptionEn'])
+            ->where("eventLocation.name", $this->eventLocation->name)
+            ->where('eventLocation.street', $this->eventLocation->street)
+            ->where('eventLocation.city', $this->eventLocation->city)
+            ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
+            ->where('image.mimeType', 'image/png')
+            ->where('recurrence', $sample['recurrence'])
+            ->where('recurrenceMetadata', $sample['recurrenceMetadata'])
+            ->etc());
     }
 
-    public function test_addRecurringEvent_everyMonthAtDayX_correctEventsAreCreated() {
+    /** @test */
+    public function create_everyMonthAtDayX_correctEventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
 
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_MONTH_AT_DAY_X->value,
-            'recurrence_metadata' => 10
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            titleDe: $titleDe,
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            recurrence: Recurrence::EVERY_MONTH_AT_DAY_X->value,
+            recurrenceMetadata: 10
+        );
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
-        $recurringEvent = RecurringEvent::query()->where('default_title_de', $titleDe)->get()->first();
+        $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->get()->first();
 
-        /** @var SingleEvent[] $singleEVents*/
-        $singleEVents = $recurringEvent->singleEvents()->get();
-
-        /** @var int[] $months */
-        $months = [];
-
-        foreach ($singleEVents as $singleEvent) {
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->hour, Carbon::parse($singleEvent->start)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
-            $this->assertEquals(Carbon::parse($recurringEvent->end_first_occurrence)->hour, Carbon::parse($singleEvent->end)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
+        $this->assertSingleEvents($recurringEvent, function ($singleEvent, $recurringEvent) {
             if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
                 $this->assertEquals(10, Carbon::parse($singleEvent->start)->day);
                 $this->assertEquals(10, Carbon::parse($singleEvent->end)->day);
             }
-            $months[] = Carbon::parse($singleEvent->start)->month;
-        }
-
-        $this->assertSameSize($months, array_unique($months));
+        });
     }
 
-    public function test_addRecurringEvent_everyMonthAtDayXEndOfMonth_correctAmountOfEventsAreCreated() {
+    /** @test */
+    public function create_everyMonthAtDayXEndOfMonth_correctAmountOfEventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_MONTH_AT_DAY_X->value,
-            'recurrence_metadata' => 31
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            titleDe: $titleDe,
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            recurrence: Recurrence::EVERY_MONTH_AT_DAY_X->value,
+            recurrenceMetadata: 31
+        );
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
-        $recurringEvent = RecurringEvent::query()->where('default_title_de', $titleDe)->get()->first();
+        $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
 
-        /** @var SingleEvent[] $singleEVents*/
-        $singleEVents = $recurringEvent->singleEvents()->get();
-
-        /** @var int[] $months */
-        $months = [];
-
-        foreach ($singleEVents as $singleEvent) {
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->hour, Carbon::parse($singleEvent->start)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
-            $this->assertEquals(Carbon::parse($recurringEvent->end_first_occurrence)->hour, Carbon::parse($singleEvent->end)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
+        $this->assertSingleEvents($recurringEvent, function ($singleEvent, $recurringEvent) {
             if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
                 $this->assertGreaterThan(28, Carbon::parse($singleEvent->start)->day);
                 $this->assertGreaterThan(28, Carbon::parse($singleEvent->end)->day);
             }
-            $months[] = Carbon::parse($singleEvent->start)->month;
-        }
-
-        $this->assertSameSize($months, array_unique($months));
+        });
     }
 
-    public function test_addRecurringEvent_everyLastDayInMonth_correctAmountOfEventsAreCreated() {
+    /** @test */
+    public function create_everyLastDayInMonth_correctAmountOfEventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_LAST_DAY_IN_MONTH->value,
-            'recurrence_metadata' => 0
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            titleDe: $titleDe,
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            recurrence: Recurrence::EVERY_LAST_DAY_IN_MONTH->value,
+            recurrenceMetadata: 0
+        );
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
-        $recurringEvent = RecurringEvent::query()->where('default_title_de', $titleDe)->get()->first();
+        $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->get()->first();
 
-        /** @var SingleEvent[] $singleEVents*/
-        $singleEVents = $recurringEvent->singleEvents()->get();
-
-        /** @var int[] $months */
-        $months = [];
-
-        foreach ($singleEVents as $singleEvent) {
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->hour, Carbon::parse($singleEvent->start)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
-            $this->assertEquals(Carbon::parse($recurringEvent->end_first_occurrence)->hour, Carbon::parse($singleEvent->end)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
+        $this->assertSingleEvents($recurringEvent, function ($singleEvent, $recurringEvent) {
             if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
                 $this->assertGreaterThan(21, Carbon::parse($singleEvent->start)->day);
                 $this->assertGreaterThan(21, Carbon::parse($singleEvent->end)->day);
             }
-            $months[] = Carbon::parse($singleEvent->start)->month;
-        }
-
-        $this->assertSameSize($months, array_unique($months));
+        });
     }
 
-    public function test_addRecurringEvent_everyFirstDayInMonth_correctAmountOfEventsAreCreated() {
+    /** @test */
+    public function create_everyFirstDayInMonth_correctAmountOfEventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_FIRST_DAY_IN_MONTH->value,
-            'recurrence_metadata' => 3
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            titleDe: $titleDe,
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            recurrence: Recurrence::EVERY_FIRST_DAY_IN_MONTH->value,
+            recurrenceMetadata: 3
+        );
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
-        $recurringEvent = RecurringEvent::query()->where('default_title_de', $titleDe)->get()->first();
+        $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
 
-        /** @var SingleEvent[] $singleEVents*/
-        $singleEVents = $recurringEvent->singleEvents()->get();
-
-        /** @var int[] $months */
-        $months = [];
-
-        foreach ($singleEVents as $singleEvent) {
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->hour, Carbon::parse($singleEvent->start)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
-            $this->assertEquals(Carbon::parse($recurringEvent->end_first_occurrence)->hour, Carbon::parse($singleEvent->end)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
+        $this->assertSingleEvents($recurringEvent, function ($singleEvent, $recurringEvent) {
             if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
                 $this->assertEquals(CarbonInterface::WEDNESDAY, Carbon::parse($singleEvent->start)->dayOfWeek);
                 $this->assertEquals(CarbonInterface::WEDNESDAY, Carbon::parse($singleEvent->end)->dayOfWeek);
             }
-            $months[] = Carbon::parse($singleEvent->start)->month;
-        }
-
-        $this->assertSameSize($months, array_unique($months));
+        });
     }
 
-    public function test_addRecurringEvent_everySecondDayInMonth_correctAmountOfEventsAreCreated() {
+    /** @test */
+    public function create_everySecondDayInMonth_correctAmountOfEventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_SECOND_DAY_IN_MONTH->value,
-            'recurrence_metadata' => 5
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            titleDe: $titleDe,
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            recurrence: Recurrence::EVERY_SECOND_DAY_IN_MONTH->value,
+            recurrenceMetadata: 5
+        );
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
-        $recurringEvent = RecurringEvent::query()->where('default_title_de', $titleDe)->get()->first();
+        $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
 
-        /** @var SingleEvent[] $singleEVents*/
-        $singleEVents = $recurringEvent->singleEvents()->get();
-
-        /** @var int[] $months */
-        $months = [];
-
-        foreach ($singleEVents as $singleEvent) {
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->hour, Carbon::parse($singleEvent->start)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
-            $this->assertEquals(Carbon::parse($recurringEvent->end_first_occurrence)->hour, Carbon::parse($singleEvent->end)->hour);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
-            $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
-
+        $this->assertSingleEvents($recurringEvent, function ($singleEvent, $recurringEvent) {
             if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
                 $this->assertEquals(CarbonInterface::FRIDAY, Carbon::parse($singleEvent->start)->dayOfWeek);
                 $this->assertEquals(CarbonInterface::FRIDAY, Carbon::parse($singleEvent->end)->dayOfWeek);
             }
-            $months[] = Carbon::parse($singleEvent->start)->month;
-        }
-
-        $this->assertSameSize($months, array_unique($months));
+        });
     }
 
-    public function test_addRecurringEvent_everyThirdDayInMonth_correctEventsAreCreated() {
+    /** @test */
+    public function create_everyThirdDayInMonth_correctEventsAreCreated()
+    {
         // Arrange
         $singleEventCount = SingleEvent::query()->count();
-        $user = User::factory()->create();
         $sample = static::getTestEventData();
-        $eventLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-
-        $titleDe = $sample['default_title_de'] . uuid_create();
+        $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->post("$this->basePath/add", [
-            'default_title_en' => $sample['default_title_en'],
-            'default_title_de' => $titleDe,
-            'default_description_de' => $sample['default_description_de'],
-            'default_description_en' => $sample['default_description_en'],
-            'default_event_location_guid' => $eventLocation->guid,
-            'default_file_upload_guid' => $fileUpload->guid,
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_THIRD_DAY_IN_MONTH->value,
-            'recurrence_metadata' => 6
-        ], ['Accept' => 'application/json']);
+        $response = $this->createRequest(
+            titleDe: $titleDe,
+            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
+            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
+            recurrence: Recurrence::EVERY_THIRD_DAY_IN_MONTH->value,
+            recurrenceMetadata: 6
+        );
 
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
-        $recurringEvent = RecurringEvent::query()->where('default_title_de', $titleDe)->get()->first();
+        $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
 
-        /** @var SingleEvent[] $singleEVents*/
+        $this->assertSingleEvents($recurringEvent, function ($singleEvent, $recurringEvent) {
+            if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
+                $this->assertEquals(CarbonInterface::SATURDAY, Carbon::parse($singleEvent->start)->dayOfWeek);
+                $this->assertEquals(CarbonInterface::SATURDAY, Carbon::parse($singleEvent->end)->dayOfWeek);
+            }
+        });
+    }
+
+    private static function getTestEventData(): array
+    {
+        return [
+            'titleDe' => 'test title de',
+            'titleEn' => 'test title en',
+            'descriptionDe' => 'test description de',
+            'descriptionEn' => 'test description en',
+            'startFirstOccurrence' => '2024-01-06T16:30:00.0Z',
+            'endFirstOccurrence' => '2024-01-06T18:00:00.0Z',
+            'recurrence' => Recurrence::EVERY_X_DAYS->value,
+            'recurrenceMetadata' => 31,
+            'endRecurrence' => '2025-01-06T16:30:00.0Z'
+        ];
+    }
+
+    private function createRequest(
+        ?User                  $user = null,
+        ?string                $titleDe = null,
+        ?string                $titleEn = null,
+        ?string                $descriptionDe = null,
+        ?string                $descriptionEn = null,
+        ?string                $startFirstOccurrence = null,
+        ?string                $endFirstOccurrence = null,
+        Recurrence|string|null $recurrence = null,
+        ?int                   $recurrenceMetadata = null,
+        ?string                $eventLocationGuid = null,
+        ?string                $fileUploadGuid = null,
+        ?string                $endRecurrence = null,
+    ): TestResponse
+    {
+        $sample = static::getTestEventData();
+        return $this->actingAs($user ?? $this->user)->put("$this->basePath", [
+            'titleEn' => $titleEn ?? $sample['titleEn'],
+            'titleDe' => $titleDe ?? $sample['titleDe'],
+            'descriptionDe' => $descriptionDe ?? $sample['descriptionDe'],
+            'descriptionEn' => $descriptionEn ?? $sample['descriptionEn'],
+            'eventLocationGuid' => $eventLocationGuid ?? $this->eventLocation->guid,
+            'fileUploadGuid' => $fileUploadGuid ?? $this->fileUpload->guid,
+            'startFirstOccurrence' => $startFirstOccurrence ?? $sample['startFirstOccurrence'],
+            'endFirstOccurrence' => $endFirstOccurrence ?? $sample['endFirstOccurrence'],
+            'recurrence' => $recurrence ?? $sample['recurrence'],
+            'recurrenceMetadata' => $recurrenceMetadata ?? $sample['recurrenceMetadata'],
+            'endRecurrence' => $endRecurrence ?? $sample['endRecurrence']
+        ], ['Accept' => 'application/json']);
+    }
+
+    private function createRequestWithMissing(
+        bool $missingTitleDe = null,
+        bool $missingTitleEn = null,
+        bool $missingDescriptionDe = null,
+        bool $missingDescriptionEn = null,
+        bool $missingStartFirstOccurrence = null,
+        bool $missingEndFirstOccurrence = null,
+        bool $missingRecurrence = null,
+        bool $missingRecurrenceMetadata = null,
+        bool $missingEventLocationGuid = null,
+        bool $missingFileUploadGuid = null
+    ): TestResponse
+    {
+        $sample = static::getTestEventData();
+        return $this->actingAs($user ?? $this->user)->put("$this->basePath", [
+            'titleEn' => $missingTitleEn ? null : $sample['titleEn'],
+            'titleDe' => $missingTitleDe ? null : $sample['titleDe'],
+            'descriptionDe' => $missingDescriptionDe ? null : $sample['descriptionDe'],
+            'descriptionEn' => $missingDescriptionEn ? null : $sample['descriptionEn'],
+            'eventLocationGuid' => $missingEventLocationGuid ? null : $this->eventLocation->guid,
+            'fileUploadGuid' => $missingFileUploadGuid ? null : $this->fileUpload->guid,
+            'startFirstOccurrence' => $missingStartFirstOccurrence ? null : $sample['startFirstOccurrence'],
+            'endFirstOccurrence' => $missingEndFirstOccurrence ? null : $sample['endFirstOccurrence'],
+            'recurrence' => $missingRecurrence ? null : $sample['recurrence'],
+            'recurrenceMetadata' => $missingRecurrenceMetadata ? null : $sample['recurrenceMetadata']
+        ], ['Accept' => 'application/json']);
+    }
+
+    private function assertSingleEvents(RecurringEvent $recurringEvent, $assertDays): void
+    {
+        /** @var SingleEvent[] $singleEVents */
         $singleEVents = $recurringEvent->singleEvents()->get();
 
         /** @var int[] $months */
@@ -870,26 +610,9 @@ class RecurringEventControllerTest extends TestCase
             $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
             $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->millisecond, Carbon::parse($singleEvent->start)->millisecond);
 
-            if (Carbon::parse($singleEvent->start)->day !== Carbon::parse($recurringEvent->start_first_occurrence)->day) {
-                $this->assertEquals(CarbonInterface::SATURDAY, Carbon::parse($singleEvent->start)->dayOfWeek);
-                $this->assertEquals(CarbonInterface::SATURDAY, Carbon::parse($singleEvent->end)->dayOfWeek);
-            }
+            $assertDays($singleEvent, $recurringEvent);
             $months[] = Carbon::parse($singleEvent->start)->month;
         }
-
         $this->assertSameSize($months, array_unique($months));
-    }
-
-    private static function getTestEventData(): array {
-        return [
-            'default_title_de' => 'test title de',
-            'default_title_en' => 'test title en',
-            'default_description_de' => 'test description de',
-            'default_description_en' => 'test description en',
-            'start_first_occurrence' => '2024-01-06T16:30:00.0Z',
-            'end_first_occurrence' => '2024-01-06T18:00:00.0Z',
-            'recurrence' => Recurrence::EVERY_X_DAYS->value,
-            'recurrence_metadata' => 31
-        ];
     }
 }

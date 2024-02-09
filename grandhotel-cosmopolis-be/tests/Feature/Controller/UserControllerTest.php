@@ -7,7 +7,8 @@ use Tests\TestCase;
 
 class UserControllerTest extends TestCase
 {
-    public function test_getUser_unauthenticated_return401(): void
+    /** @test */
+    public function getUser_unauthenticated_return401(): void
     {
         // Act
         $response = $this->get('/api/user', ['Accept' => 'application/json']);
@@ -16,7 +17,8 @@ class UserControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_getUser_authenticated_returnsCorrectUser(): void {
+    /** @test */
+    public function getUser_authenticated_returnsCorrectUser(): void {
         // Arrange
         $user = User::factory()->make();
 
