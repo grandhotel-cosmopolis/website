@@ -12,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Database\Seeders\RoleAndPermissionSeeder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -1023,6 +1024,121 @@ class RecurringEventControllerTest extends TestCase
 
         // Assert
         $this->assertCount(0, SingleEvent::query()->where('guid', $singleEvent->guid)->get());
+    }
+
+    /** @test */
+    public function delete_notAuthenticated_returnsUnauthenticated()
+    {
+        // Arrange
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+
+        // Act
+        $response = $this->delete("$this->basePath/$oldEvent->guid", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function delete_notAuthorized_returnsUnauthorized()
+    {
+        // Arrange
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->delete("$this->basePath/$oldEvent->guid", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function delete_unknownEvent_returnsNotFound()
+    {
+        // Act
+        $response = $this->deleteRequest('unknown');
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function delete_allValid_eventIsDeleted()
+    {
+        // Arrange
+        /** @var RecurringEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+
+        // Act
+        $response = $this->deleteRequest($oldEvent->guid);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertEquals(0, RecurringEvent::query()->where('guid', $oldEvent->guid)->count());
+    }
+
+    /** @test */
+    public function delete_allValid_singleEventsAreIsDeleted()
+    {
+        // Arrange
+        /** @var RecurringEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+        $singleEvents =  SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->count(10)
+            ->create();
+
+        /** @var string[] $singleEventGuids */
+        $singleEventGuids = [];
+
+        /** @var SingleEvent $singleEvent */
+        foreach ($singleEvents as $singleEvent) {
+            $singleEvent->recurringEvent()->associate($oldEvent);
+            $singleEvent->save();
+            $singleEventGuids[] = $singleEvent->guid;
+        }
+
+        // Act
+        $response = $this->deleteRequest($oldEvent->guid);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertEquals(0, RecurringEvent::query()->where('guid', $oldEvent->guid)->count());
+
+        foreach ($singleEventGuids as $singleEventGuid) {
+            $this->assertCount(0, SingleEvent::query()->where('guid', $singleEventGuid)->get());
+        }
+    }
+
+    public function deleteRequest(string|null $oldEventGuid = null): TestResponse {
+        if (is_null($oldEventGuid)) {
+            /** @var SingleEvent $oldEvent */
+            $oldEvent = static::createRecurringEvent()->create();
+            $oldEventGuid = $oldEvent->guid;
+        }
+
+
+        return $this->actingAs($this->user)->delete("$this->basePath/$oldEventGuid", [], ['Accept' => 'application/json']);
+    }
+
+    private static function createRecurringEvent(
+        ?EventLocation $eventLocation = null,
+        ?User          $user = null,
+        ?FileUpload    $fileUpload = null
+    ): Factory
+    {
+        $eventLocation = !is_null($eventLocation) ? $eventLocation : EventLocation::factory()->create();
+        $user = !is_null($user) ? $user : User::factory()->create();
+        $fileUpload = !is_null($fileUpload) ? $fileUpload : FileUpload::factory()->for($user, 'uploadedBy')->create();
+        return RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy');
     }
 
     private static function getTestEventData(): array
