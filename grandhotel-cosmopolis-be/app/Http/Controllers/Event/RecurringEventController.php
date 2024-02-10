@@ -133,6 +133,22 @@ class RecurringEventController extends Controller
         return new JsonResponse(RecurringEventDto::create($newEvent));
     }
 
+    #[OA\Delete(
+        path: '/api/recurringEvent/{eventGuid}',
+        operationId: 'deleteRecurringEvent',
+        description: 'Delete an existing recurring event with all its single events',
+        tags: ['Event'],
+        responses: [
+            new OA\Response(response: 200, description: 'deleted event successfully'),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+            new OA\Response(response: 404, description: 'not found')
+        ]
+    )]
+    public function delete(string $eventGuid): Response {
+        $this->recurringEventService->delete($eventGuid);
+        return new Response('deleted');
+    }
+
     private static function validateRecurringEventInput(Request $request): void {
         $request->validate([
             'titleDe' => ['required', 'string'],

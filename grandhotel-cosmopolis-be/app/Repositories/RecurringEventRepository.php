@@ -116,4 +116,14 @@ class RecurringEventRepository implements IRecurringEventRepository
         $event->save();
         return $event;
     }
+
+    public function delete(string $guid): void
+    {
+        $deleted = RecurringEvent::query()
+            ->where('guid', $guid)
+            ->delete();
+        if ($deleted != 1) {
+            throw new NotFoundHttpException();
+        }
+    }
 }

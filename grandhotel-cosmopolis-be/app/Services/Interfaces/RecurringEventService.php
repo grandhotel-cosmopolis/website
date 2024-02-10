@@ -7,6 +7,7 @@ use App\Http\Controllers\Event\Recurrence;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\RecurringEvent;
+use App\Models\SingleEvent;
 use App\Repositories\Interfaces\IRecurringEventRepository;
 use App\Repositories\Interfaces\ISingleEventRepository;
 use Carbon\Carbon;
@@ -123,6 +124,24 @@ class RecurringEventService implements IRecurringEventService
         $this->updateSingleEvents($updatedEvent);
 
         return $updatedEvent;
+    }
+
+    public function delete(string $eventGuid): void
+    {
+        /** @var RecurringEvent $recurringEvent */
+        $recurringEvent = RecurringEvent::query()->where('guid', $eventGuid)->first();
+        if (is_null($recurringEvent)) {
+            throw new NotFoundHttpException();
+        }
+
+        $singleEvents = $recurringEvent->singleEvents()->get();
+
+        /** @var SingleEvent $singleEvent */
+        foreach($singleEvents as $singleEvent) {
+            $this->singleEventRepository->deleteSingleEvent($singleEvent->guid);
+        }
+
+        $this->recurringEventRepository->delete($recurringEvent->guid);
     }
 
     private function updateSingleEvents(

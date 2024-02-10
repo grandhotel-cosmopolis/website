@@ -5,6 +5,7 @@ namespace Tests\Unit\Repositories;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\RecurringEvent;
+use App\Models\SingleEvent;
 use App\Models\User;
 use App\Repositories\RecurringEventRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -114,7 +115,7 @@ class RecurringEventRepositoryTest extends TestCase
     }
 
     /** @test */
-    public function createSingleEvent_allValid_newEventIsStoredInDb() {
+    public function create_allValid_newEventIsStoredInDb() {
         // Arrange
         $user = User::factory()->create();
         $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
@@ -300,7 +301,7 @@ class RecurringEventRepositoryTest extends TestCase
     }
 
     /** @test */
-    public function updateSingleEvent_allValid_updatedEventIsStoredInDb() {
+    public function update_allValid_updatedEventIsStoredInDb() {
         // Arrange
         $user = User::factory()->create();
         $newFileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
@@ -354,5 +355,80 @@ class RecurringEventRepositoryTest extends TestCase
         /** @var FileUpload $fileUpload */
         $fileUpload = $updatedEvent->fileUpload()->first();
         $this->assertEquals($newFileUpload->guid, $fileUpload->guid);
+    }
+
+    /** @test */
+    public function delete_notExistingEvent_ThrowsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act & Assert
+        $this->cut->delete('not existing');
+    }
+
+    /** @test */
+    public function delete_existingEvent_eventIsDeleted() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $event = RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy')
+            ->create();
+
+        // Act
+        $this->cut->delete($event->guid);
+
+        // Assert
+        $this->assertCount(
+            0,
+            RecurringEvent::query()
+                ->where('guid', $event->guid)
+                ->get());
+    }
+
+    /** @test */
+    public function delete_existingEvent_foreignModelsAreNotDeleted() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $event = RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy')
+            ->create();
+
+        // Act
+        $this->cut->delete($event->guid);
+
+        // Assert
+        $this->assertCount(
+            0,
+            RecurringEvent::query()
+                ->where('guid', $event->guid)
+                ->get()
+        );
+        $this->assertCount(
+            1,
+            EventLocation::query()
+                ->where('guid', $eventLocation->guid)
+                ->get()
+        );
+        $this->assertCount(
+            1,
+            FileUpload::query()
+                ->where('guid', $fileUpload->guid)
+                ->get()
+        );
+        $this->assertCount(
+            1,
+            User::query()
+                ->where('name', $user->name)
+                ->where('email', $user->email)
+                ->get()
+        );
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Event\Recurrence;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\RecurringEvent;
+use App\Models\SingleEvent;
 use App\Models\User;
 use App\Repositories\Interfaces\IRecurringEventRepository;
 use App\Repositories\Interfaces\ISingleEventRepository;
@@ -299,5 +300,32 @@ class RecurringEventServiceTest extends TestCase
             $evenLocation->guid,
             $fileUpload->guid
         );
+    }
+
+    /** @test */
+    public function delete_allValid_repositoryIsCalled() {
+        // Arrange
+        $event = RecurringEvent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+
+        $singleEvent = SingleEvent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+        $singleEvent->recurringEvent()->associate($event);
+        $singleEvent->save();
+        $this->singleEventRepositoryMock->expects($this->once())
+            ->method('deleteSingleEvent')
+            ->with($singleEvent->guid);
+        $this->recurringEventRepositoryMock->expects($this->once())
+            ->method('delete')
+            ->with($event->guid);
+
+        // Act & Assert
+        $this->cut->delete($event->guid);
     }
 }

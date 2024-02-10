@@ -36,4 +36,6 @@ interface IRecurringEventService
         string     $eventLocationGuid,
         string     $fileUploadGuid
     ): RecurringEvent;
+
+    public function delete(string $eventGuid): void;
 }

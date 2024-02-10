@@ -1139,8 +1139,7 @@ class RecurringEventControllerTest extends TestCase
         ], ['Accept' => 'application/json']);
     }
 
-    private
-    function updateRequestWithMissing(
+    private function updateRequestWithMissing(
         ?string $oldEventGuid = null,
         bool    $missingTitleDe = null,
         bool    $missingTitleEn = null,
@@ -1177,8 +1176,7 @@ class RecurringEventControllerTest extends TestCase
         ], ['Accept' => 'application/json']);
     }
 
-    private
-    function assertSingleEvents(RecurringEvent $recurringEvent, $assertDays): void
+    private function assertSingleEvents(RecurringEvent $recurringEvent, $assertDays): void
     {
         /** @var SingleEvent[] $singleEVents */
         $singleEVents = $recurringEvent->singleEvents()->get();
