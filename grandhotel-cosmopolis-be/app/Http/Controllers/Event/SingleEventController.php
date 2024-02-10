@@ -63,7 +63,7 @@ class SingleEventController extends Controller
             throw new InvalidTimeRangeException();
         }
 
-        $events = $this->eventService->getSingleEvents($start, $end);
+        $events = $this->eventService->list($start, $end);
 
         $eventDtos = $events->map(function (SingleEvent $event) {
             /** @var EventLocation $eventLocation */
@@ -110,7 +110,7 @@ class SingleEventController extends Controller
     )]
     public function create(Request $request): Response | JsonResponse {
         static::validateSingleEventInput($request);
-        $singleEvent = $this->eventService->createSingleEvent(
+        $singleEvent = $this->eventService->create(
             $request['titleDe'],
             $request['titleEn'],
             $request['descriptionDe'],
@@ -160,7 +160,7 @@ class SingleEventController extends Controller
     public function update(Request $request, string $eventGuid): Response | JsonResponse {
         static::validateSingleEventInput($request);
 
-        $updatedEvent = $this->eventService->updateSingleEvent(
+        $updatedEvent = $this->eventService->update(
             $eventGuid,
             $request['titleDe'],
             $request['titleEn'],
@@ -188,7 +188,7 @@ class SingleEventController extends Controller
         ]
     )]
     public function delete(string $eventGuid): Response {
-        $this->eventService->deleteSingleEvent($eventGuid);
+        $this->eventService->delete($eventGuid);
         return new Response('deleted');
     }
 
@@ -208,7 +208,7 @@ class SingleEventController extends Controller
         ]
     )]
     public function publish(string $eventGuid): JsonResponse {
-        $event = $this->eventService->publishSingleEvent($eventGuid);
+        $event = $this->eventService->publish($eventGuid);
         return new JsonResponse(SingleEventDto::create($event));
     }
 
@@ -228,7 +228,7 @@ class SingleEventController extends Controller
         ]
     )]
     public function unpublish(string $eventGuid): JsonResponse {
-        $event = $this->eventService->unpublishSingleEvent($eventGuid);
+        $event = $this->eventService->unpublish($eventGuid);
         return new JsonResponse(SingleEventDto::create($event));
     }
 

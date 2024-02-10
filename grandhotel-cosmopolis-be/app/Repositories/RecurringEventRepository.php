@@ -15,18 +15,19 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RecurringEventRepository implements IRecurringEventRepository
 {
     public function create(
-        string $titleDe,
-        string $titleEn,
-        string $descriptionDe,
-        string $descriptionEn,
-        Carbon $startFirstOccurrence,
-        Carbon $endFirstOccurrence,
-        ?Carbon $endRecurrence,
+        string     $titleDe,
+        string     $titleEn,
+        string     $descriptionDe,
+        string     $descriptionEn,
+        Carbon     $startFirstOccurrence,
+        Carbon     $endFirstOccurrence,
+        ?Carbon    $endRecurrence,
         Recurrence $recurrence,
-        int $recurrenceMetadata,
-        string $eventLocationGuid,
-        string $fileUploadGuid
-    ): RecurringEvent {
+        int        $recurrenceMetadata,
+        string     $eventLocationGuid,
+        string     $fileUploadGuid
+    ): RecurringEvent
+    {
         $newEvent = new RecurringEvent([
             'title_de' => $titleDe,
             'title_en' => $titleEn,
@@ -42,7 +43,7 @@ class RecurringEventRepository implements IRecurringEventRepository
 
         /** @var EventLocation $eventLocation */
         $eventLocation = EventLocation::query()
-            ->where('guid',$eventLocationGuid)
+            ->where('guid', $eventLocationGuid)
             ->first();
 
         /** @var FileUpload $fileUpload */
@@ -53,7 +54,7 @@ class RecurringEventRepository implements IRecurringEventRepository
         /** @var User $user */
         $user = Auth::user();
 
-        if(is_null($eventLocation) || is_null($fileUpload) || is_null($user)) {
+        if (is_null($eventLocation) || is_null($fileUpload) || is_null($user)) {
             throw new NotFoundHttpException();
         }
 
@@ -63,5 +64,56 @@ class RecurringEventRepository implements IRecurringEventRepository
         $newEvent->save();
 
         return $newEvent;
+    }
+
+    public function update(
+        string     $eventGuid,
+        string     $titleDe,
+        string     $titleEn,
+        string     $descriptionDe,
+        string     $descriptionEn,
+        Carbon     $startFirstOccurrence,
+        Carbon     $endFirstOccurrence,
+        ?Carbon    $endRecurrence,
+        Recurrence $recurrence,
+        int        $recurrenceMetadata,
+        string     $eventLocationGuid,
+        string     $fileUploadGuid
+    ): RecurringEvent
+    {
+        /** @var RecurringEvent $event */
+        $event = RecurringEvent::query()
+            ->where('guid', $eventGuid)
+            ->first();
+
+        /** @noinspection DuplicatedCode */
+        /** @var EventLocation $eventLocation */
+        $eventLocation = EventLocation::query()
+            ->where('guid', $eventLocationGuid)
+            ->first();
+
+        /** @var FileUpload $fileUpload */
+        $fileUpload = FileUpload::query()
+            ->where('guid', $fileUploadGuid)
+            ->first();
+
+        if (is_null($event) || is_null($eventLocation) || is_null($fileUpload)) {
+            throw new NotFoundHttpException();
+        }
+
+        $event->title_de = $titleDe;
+        $event->title_en = $titleEn;
+        $event->description_de = $descriptionDe;
+        $event->description_en = $descriptionEn;
+        $event->start_first_occurrence = $startFirstOccurrence;
+        $event->end_first_occurrence = $endFirstOccurrence;
+        $event->end_recurrence = $endRecurrence;
+        $event->recurrence = $recurrence;
+        $event->recurrence_metadata = $recurrenceMetadata;
+
+        $event->eventLocation()->associate($eventLocation);
+        $event->fileUpload()->associate($fileUpload);
+        $event->save();
+        return $event;
     }
 }

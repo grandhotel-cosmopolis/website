@@ -15,6 +15,7 @@ use App\Services\TimeService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\TestCase;
 
 class RecurringEventServiceTest extends TestCase
@@ -152,6 +153,151 @@ class RecurringEventServiceTest extends TestCase
             1,
             'eventLocationGuid',
             'fileUploadGuid'
+        );
+    }
+
+    /** @test */
+    public function update_invalidFileUpload_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+        $user = User::factory()->create();
+        $evenLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $existingEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for($fileUpload)
+            ->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for($evenLocation)
+            ->for($fileUpload)
+            ->make();
+
+        // Act & Assert
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->cut->update(
+            $existingEvent->guid,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $evenLocation->guid,
+            'invalid'
+        );
+    }
+
+    /** @test */
+    public function update_invalidEventLocation_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+        $user = User::factory()->create();
+        $evenLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $existingEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for($fileUpload)
+            ->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for($evenLocation)
+            ->for($fileUpload)
+            ->make();
+
+        // Act & Assert
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->cut->update(
+            $existingEvent->guid,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $evenLocation->guid,
+            'invalid'
+        );
+    }
+
+    /** @test */
+    public function update_invalidTimeRange_throwsException() {
+        // Arrange
+        $this->expectException(InvalidTimeRangeException::class);
+        $user = User::factory()->create();
+        $evenLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $existingEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for($fileUpload)
+            ->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for($evenLocation)
+            ->for($fileUpload)
+            ->make();
+
+        // Act & Assert
+        $this->cut->update(
+            $existingEvent->guid,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_first_occurrence->subMinutes(30),
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $evenLocation->guid,
+            $fileUpload->guid
+        );
+    }
+
+    /** @test */
+    public function update_allValid_repositoryIsCalled() {
+        // Arrange
+        $user = User::factory()->create();
+        $evenLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $existingEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for($fileUpload)
+            ->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for($evenLocation)
+            ->for($fileUpload)
+            ->make(['guid' => $existingEvent->guid]);
+        $this->recurringEventRepositoryMock->expects($this->once())
+            ->method('update')
+            ->willReturn($recurringEvent);
+
+        // Act & Assert
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->cut->update(
+            $existingEvent->guid,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $evenLocation->guid,
+            $fileUpload->guid
         );
     }
 }

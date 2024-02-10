@@ -72,6 +72,7 @@ class SingleEventRepository implements ISingleEventRepository
             ->where('guid', $eventGuid)
             ->first();
 
+        /** @noinspection DuplicatedCode */
         /** @var EventLocation $eventLocation */
         $eventLocation = EventLocation::query()
             ->where('guid', $eventLocationGuid)

@@ -161,4 +161,198 @@ class RecurringEventRepositoryTest extends TestCase
         $upload = $createdEvent->fileUpload()->first();
         $this->assertEquals($fileUpload->guid, $upload->guid);
     }
+
+    /** @test */
+    public function update_notExistingEventLocation_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($user, 'createdBy')
+            ->create();
+
+        // Act & Assert
+        $this->cut->update(
+            $recurringEvent->guid,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            'not existing',
+            $fileUpload->guid
+        );
+    }
+
+    /** @test */
+    public function update_notExistingFileUpload_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+        $user = User::factory()->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($user, 'createdBy')
+            ->create();
+
+        // Act & Assert
+        $this->cut->update(
+            $recurringEvent->guid,
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $recurringEvent->guid,
+            'not existing'
+        );
+    }
+
+    /** @test */
+    public function update_notExistingEventGuid_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+        $user = User::factory()->create();
+        $eventLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($user, 'createdBy')
+            ->create();
+
+        // Act & Assert
+        $this->cut->update(
+            'not existing',
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $eventLocation->guid,
+            $fileUpload->guid
+        );
+    }
+
+    /** @test */
+    public function update_allValid_updatedEventIsReturned() {
+        // Arrange
+        $user = User::factory()->create();
+        $newFileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $newEventLocation = EventLocation::factory()->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($user, 'createdBy')
+            ->create();
+
+        $newSingleEventData = RecurringEvent::factory()->make();
+
+        // Act
+        $updatedEvent = $this->cut->update(
+            $recurringEvent->guid,
+            $newSingleEventData->title_de,
+            $newSingleEventData->title_en,
+            $newSingleEventData->description_de,
+            $newSingleEventData->description_en,
+            $newSingleEventData->start_first_occurrence,
+            $newSingleEventData->end_first_occurrence,
+            $newSingleEventData->end_recurrence,
+            $newSingleEventData->recurrence,
+            $newSingleEventData->recurrence_metadata,
+            $newEventLocation->guid,
+            $newFileUpload->guid
+        );
+
+        // Assert
+        $this->assertNotEquals($newSingleEventData->guid, $updatedEvent->guid);
+        $this->assertEquals($recurringEvent->guid, $updatedEvent->guid);
+        $this->assertEquals($newSingleEventData->title_de, $updatedEvent->title_de);
+        $this->assertEquals($newSingleEventData->title_en, $updatedEvent->title_en);
+        $this->assertEquals($newSingleEventData->description_de, $updatedEvent->description_de);
+        $this->assertEquals($newSingleEventData->description_en, $updatedEvent->description_en);
+        $this->assertEquals($newSingleEventData->start_first_occurrence, $updatedEvent->start_first_occurrence);
+        $this->assertEquals($newSingleEventData->end_first_occurrence, $updatedEvent->end_first_occurrence);
+        $this->assertEquals($newSingleEventData->end_recurrence, $updatedEvent->end_recurrence);
+        $this->assertEquals($newSingleEventData->recurrence, $updatedEvent->recurrence);
+        $this->assertEquals($newSingleEventData->recurrence_metadata, $updatedEvent->recurrence_metadata);
+        /** @var EventLocation $location */
+        $location = $updatedEvent->eventLocation()->first();
+        $this->assertEquals($newEventLocation->guid, $location->guid);
+        /** @var FileUpload $upload */
+        $upload = $updatedEvent->fileUpload()->first();
+        $this->assertEquals($newFileUpload->guid, $upload->guid);
+    }
+
+    /** @test */
+    public function updateSingleEvent_allValid_updatedEventIsStoredInDb() {
+        // Arrange
+        $user = User::factory()->create();
+        $newFileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $newEventLocation = EventLocation::factory()->create();
+        $recurringEvent = RecurringEvent::factory()
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($user, 'createdBy')
+            ->create();
+
+        $newSingleEventData = RecurringEvent::factory()->make();
+
+        // Act
+        $this->cut->update(
+            $recurringEvent->guid,
+            $newSingleEventData->title_de,
+            $newSingleEventData->title_en,
+            $newSingleEventData->description_de,
+            $newSingleEventData->description_en,
+            $newSingleEventData->start_first_occurrence,
+            $newSingleEventData->end_first_occurrence,
+            $newSingleEventData->end_recurrence,
+            $newSingleEventData->recurrence,
+            $newSingleEventData->recurrence_metadata,
+            $newEventLocation->guid,
+            $newFileUpload->guid
+        );
+
+        // Assert
+        $events = RecurringEvent::query()
+            ->where('title_de', $newSingleEventData->title_de)
+            ->where('title_en', $newSingleEventData->title_en)
+            ->get();
+        $this->assertCount(1, $events);
+        /** @var RecurringEvent $updatedEvent */
+        $updatedEvent = $events[0];
+        $this->assertNotEquals($newSingleEventData->guid, $updatedEvent->guid);
+        $this->assertEquals($recurringEvent->guid, $updatedEvent->guid);
+        $this->assertEquals($newSingleEventData->title_de, $updatedEvent->title_de);
+        $this->assertEquals($newSingleEventData->title_en, $updatedEvent->title_en);
+        $this->assertEquals($newSingleEventData->description_de, $updatedEvent->description_de);
+        $this->assertEquals($newSingleEventData->description_en, $updatedEvent->description_en);
+        $this->assertEquals($newSingleEventData->start_first_occurrence, $updatedEvent->start_first_occurrence);
+        $this->assertEquals($newSingleEventData->end_first_occurrence, $updatedEvent->end_first_occurrence);
+        $this->assertEquals($newSingleEventData->end_recurrence, $updatedEvent->end_recurrence);
+        $this->assertEquals($newSingleEventData->recurrence, $updatedEvent->recurrence);
+        $this->assertEquals($newSingleEventData->recurrence_metadata, $updatedEvent->recurrence_metadata);
+        /** @var EventLocation $location */
+        $location = $updatedEvent->eventLocation()->first();
+        $this->assertEquals($newEventLocation->guid, $location->guid);
+        /** @var FileUpload $fileUpload */
+        $fileUpload = $updatedEvent->fileUpload()->first();
+        $this->assertEquals($newFileUpload->guid, $fileUpload->guid);
+    }
 }

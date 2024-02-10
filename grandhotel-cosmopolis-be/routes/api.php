@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('/recurringEvent')->group(function () {
         Route::controller(RecurringEventController::class)->group(function () {
             Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('/', 'create');
+            Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/update', 'update');
         });
     });
 

@@ -22,4 +22,18 @@ interface IRecurringEventRepository
         string $fileUploadGuid
     ): RecurringEvent;
 
+    public function update(
+        string $eventGuid,
+        string $titleDe,
+        string $titleEn,
+        string $descriptionDe,
+        string $descriptionEn,
+        Carbon $startFirstOccurrence,
+        Carbon $endFirstOccurrence,
+        ?Carbon $endRecurrence,
+        Recurrence $recurrence,
+        int $recurrenceMetadata,
+        string $eventLocationGuid,
+        string $fileUploadGuid
+    ): RecurringEvent;
 }

@@ -23,7 +23,7 @@ class SingleEventService implements ISingleEventService
     /**
      * @throws InvalidTimeRangeException
      */
-    public function createSingleEvent(
+    public function create(
         string $titleDe,
         string $titleEn,
         string $descriptionDe,
@@ -58,7 +58,7 @@ class SingleEventService implements ISingleEventService
     /**
      * @throws InvalidTimeRangeException
      */
-    public function updateSingleEvent(
+    public function update(
         string $eventGuid,
         string $titleDe,
         string $titleEn,
@@ -92,17 +92,17 @@ class SingleEventService implements ISingleEventService
         );
     }
 
-    public function deleteSingleEvent(string $eventGuid): void
+    public function delete(string $eventGuid): void
     {
         $this->eventRepository->deleteSingleEvent($eventGuid);
     }
 
-    public function publishSingleEvent(string $eventGuid): SingleEvent
+    public function publish(string $eventGuid): SingleEvent
     {
         return $this->eventRepository->publishSingleEvent($eventGuid);
     }
 
-    public function unpublishSingleEvent(string $eventGuid): SingleEvent
+    public function unpublish(string $eventGuid): SingleEvent
     {
         return $this->eventRepository->unpublishSingleEvent($eventGuid);
     }
@@ -110,7 +110,7 @@ class SingleEventService implements ISingleEventService
     /**
      * @return Collection<int, SingleEvent>
      */
-    public function getSingleEvents(Carbon $start, Carbon $end): Collection
+    public function list(Carbon $start, Carbon $end): Collection
     {
         return $this->eventRepository->getSingleEvents($start, $end);
     }

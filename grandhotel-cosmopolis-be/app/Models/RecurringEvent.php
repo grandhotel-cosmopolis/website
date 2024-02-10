@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Controllers\Event\Recurrence;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $description_en
  * @property Recurrence $recurrence
  * @property int $recurrence_metadata
- * @property DateTime $start_first_occurrence
- * @property DateTime $end_first_occurrence
- * @property DateTime | null $end_recurrence
+ * @property Carbon $start_first_occurrence
+ * @property Carbon $end_first_occurrence
+ * @property Carbon | null $end_recurrence
  */
 class RecurringEvent extends Model
 {

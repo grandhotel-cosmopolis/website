@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 interface ISingleEventService
 {
-    public function createSingleEvent(
+    public function create(
         string $titleDe,
         string $titleEn,
         string $descriptionDe,
@@ -19,7 +19,7 @@ interface ISingleEventService
         string $fileUploadGuid
     ): SingleEvent;
 
-    public function updateSingleEvent(
+    public function update(
         string $eventGuid,
         string $titleDe,
         string $titleEn,
@@ -31,14 +31,14 @@ interface ISingleEventService
         string $fileUploadGuid
     ): SingleEvent;
 
-    public function deleteSingleEvent(string $eventGuid): void;
+    public function delete(string $eventGuid): void;
 
-    public function publishSingleEvent(string $eventGuid): SingleEvent;
+    public function publish(string $eventGuid): SingleEvent;
 
-    public function unpublishSingleEvent(string $eventGuid): SingleEvent;
+    public function unpublish(string $eventGuid): SingleEvent;
 
     /**
      * @return Collection<int, SingleEvent>
      */
-    public function getSingleEvents(Carbon $start, Carbon $end): Collection;
+    public function list(Carbon $start, Carbon $end): Collection;
 }

@@ -10,34 +10,37 @@ use App\Models\RecurringEvent;
 use App\Repositories\Interfaces\IRecurringEventRepository;
 use App\Repositories\Interfaces\ISingleEventRepository;
 use Carbon\Carbon;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RecurringEventService implements IRecurringEventService
 {
 
     public function __construct(
-        protected ITimeService $timeService,
+        protected ITimeService              $timeService,
         protected IRecurringEventRepository $recurringEventRepository,
-        protected ISingleEventRepository $singleEventRepository
-    ) {}
+        protected ISingleEventRepository    $singleEventRepository
+    )
+    {
+    }
 
     /**
      * @throws InvalidTimeRangeException
      */
     public function create(
-        string $titleDe,
-        string $titleEn,
-        string $descriptionDe,
-        string $descriptionEn,
-        Carbon $startFirstOccurrence,
-        Carbon $endFirstOccurrence,
-        ?Carbon $endRecurrence,
+        string     $titleDe,
+        string     $titleEn,
+        string     $descriptionDe,
+        string     $descriptionEn,
+        Carbon     $startFirstOccurrence,
+        Carbon     $endFirstOccurrence,
+        ?Carbon    $endRecurrence,
         Recurrence $recurrence,
-        string $recurrenceMetadata,
-        string $eventLocationGuid,
-        string $fileUploadGuid
+        string     $recurrenceMetadata,
+        string     $eventLocationGuid,
+        string     $fileUploadGuid
     ): RecurringEvent
     {
-        if(!$this->timeService->validateTimeRange($startFirstOccurrence, $endFirstOccurrence)
+        if (!$this->timeService->validateTimeRange($startFirstOccurrence, $endFirstOccurrence)
             || (!is_null($endRecurrence) && !$this->timeService->validateTimeRange($startFirstOccurrence, $endRecurrence))) {
             throw new InvalidTimeRangeException();
         }
@@ -74,14 +77,85 @@ class RecurringEventService implements IRecurringEventService
         return $createdEvent;
     }
 
+    /**
+     * @throws InvalidTimeRangeException
+     */
+    public function update(
+        string     $eventGuid,
+        string     $titleDe,
+        string     $titleEn,
+        string     $descriptionDe,
+        string     $descriptionEn,
+        Carbon     $startFirstOccurrence,
+        Carbon     $endFirstOccurrence,
+        ?Carbon    $endRecurrence,
+        Recurrence $recurrence,
+        int        $recurrenceMetadata,
+        string     $eventLocationGuid,
+        string     $fileUploadGuid
+    ): RecurringEvent
+    {
+        if (FileUpload::query()->where('guid', $fileUploadGuid)->count() != 1
+            || EventLocation::query()->where('guid', $eventLocationGuid)->count() != 1) {
+            throw new NotFoundHttpException();
+        }
+
+        if (!$this->timeService->validateTimeRange($startFirstOccurrence, $endFirstOccurrence)
+            || (!is_null($endRecurrence) && !$this->timeService->validateTimeRange($startFirstOccurrence, $endRecurrence))) {
+            throw new InvalidTimeRangeException();
+        }
+
+        $updatedEvent = $this->recurringEventRepository->update(
+            $eventGuid,
+            $titleDe,
+            $titleEn,
+            $descriptionDe,
+            $descriptionEn,
+            $startFirstOccurrence,
+            $endFirstOccurrence,
+            $endRecurrence,
+            $recurrence,
+            $recurrenceMetadata,
+            $eventLocationGuid,
+            $fileUploadGuid
+        );
+
+        $this->updateSingleEvents($updatedEvent);
+
+        return $updatedEvent;
+    }
+
+    private function updateSingleEvents(
+        RecurringEvent $recurringEvent
+    ): void
+    {
+        /** @var EventLocation $eventLocation */
+        $eventLocation = $recurringEvent->eventLocation()->first();
+
+        /** @var FileUpload $fileUpload */
+        $fileUpload = $recurringEvent->fileUpload()->first();
+
+        $recurringEvent->singleEvents()->delete();
+
+        $this->generateSingleEvents(
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent,
+            $eventLocation,
+            $fileUpload
+        );
+    }
+
     private function generateSingleEvents(
-        Carbon $startFirstOccurrence,
-        Carbon $endFirstOccurrence,
-        Carbon | null $endRecurrence,
+        Carbon         $startFirstOccurrence,
+        Carbon         $endFirstOccurrence,
+        Carbon|null    $endRecurrence,
         RecurringEvent $recurringEvent,
-        EventLocation $eventLocation,
-        FileUpload $fileUpload,
-    ): void {
+        EventLocation  $eventLocation,
+        FileUpload     $fileUpload,
+    ): void
+    {
         if (is_null($endRecurrence) || $endRecurrence > Carbon::now()->endOfYear()) {
             $endRecurrence = Carbon::now()->endOfYear();
         }
@@ -104,7 +178,7 @@ class RecurringEventService implements IRecurringEventService
             $singleEvent->recurringEvent()->associate($recurringEvent);
             $singleEvent->save();
 
-            [$currentStart, $currentEnd] = match($recurringEvent->recurrence) {
+            [$currentStart, $currentEnd] = match ($recurringEvent->recurrence) {
                 Recurrence::EVERY_X_DAYS => $this->timeService->updateTimesForEveryXDays($currentStart, $currentEnd, $recurringEvent->recurrence_metadata),
                 Recurrence::EVERY_MONTH_AT_DAY_X => $this->timeService->updateTimesForEveryMonthAtDayX($currentStart, $currentEnd, $recurringEvent->recurrence_metadata),
                 Recurrence::EVERY_LAST_DAY_IN_MONTH => $this->timeService->updateTimesForEveyLastDayInMonth($currentStart, $currentEnd, $recurringEvent->recurrence_metadata),

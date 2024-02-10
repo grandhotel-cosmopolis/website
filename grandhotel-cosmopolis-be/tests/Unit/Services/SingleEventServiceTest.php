@@ -32,7 +32,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createSingleEvent_invalidFileUpload_ThrowsException() {
+    public function create_invalidFileUpload_throwsException() {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -46,7 +46,7 @@ class SingleEventServiceTest extends TestCase
 
         // Act & Assert
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->createSingleEvent(
+        $this->cut->create(
             $singleEvent->title_de,
             $singleEvent->title_en,
             $singleEvent->description_de,
@@ -59,7 +59,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createSingleEvent_invalidEventLocation_ThrowsException() {
+    public function create_invalidEventLocation_throwsException() {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -73,7 +73,7 @@ class SingleEventServiceTest extends TestCase
 
         // Act & Assert
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->createSingleEvent(
+        $this->cut->create(
             $singleEvent->title_de,
             $singleEvent->title_en,
             $singleEvent->description_de,
@@ -86,7 +86,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createSingleEvent_invalidTimeRange_ThrowsException() {
+    public function create_invalidTimeRange_throwsException() {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         $user = User::factory()->create();
@@ -99,7 +99,7 @@ class SingleEventServiceTest extends TestCase
             ->make();
 
         // Act & Assert
-        $this->cut->createSingleEvent(
+        $this->cut->create(
             $singleEvent->title_de,
             $singleEvent->title_en,
             $singleEvent->description_de,
@@ -112,7 +112,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createSingleEvent_allValid_repositoryIsCalled() {
+    public function create_allValid_repositoryIsCalled() {
         // Arrange
         $user = User::factory()->create();
         $evenLocation = EventLocation::factory()->create();
@@ -127,7 +127,7 @@ class SingleEventServiceTest extends TestCase
 
         // Act & Assert
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->createSingleEvent(
+        $this->cut->create(
             $singleEvent->title_de,
             $singleEvent->title_en,
             $singleEvent->description_de,
@@ -140,7 +140,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function updateSingleEvent_invalidFileUpload_ThrowsException() {
+    public function update_invalidFileUpload_throwsException() {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -159,7 +159,7 @@ class SingleEventServiceTest extends TestCase
 
         // Act & Assert
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->updateSingleEvent(
+        $this->cut->update(
             $existingEvent->guid,
             $singleEvent->title_de,
             $singleEvent->title_en,
@@ -173,7 +173,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function updateSingleEvent_invalidEventLocation_ThrowsException() {
+    public function update_invalidEventLocation_throwsException() {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -192,7 +192,7 @@ class SingleEventServiceTest extends TestCase
 
         // Act & Assert
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->updateSingleEvent(
+        $this->cut->update(
             $existingEvent->guid,
             $singleEvent->title_de,
             $singleEvent->title_en,
@@ -206,7 +206,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function updateSingleEvent_invalidTimeRange_ThrowsException() {
+    public function update_invalidTimeRange_throwsException() {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         $user = User::factory()->create();
@@ -224,7 +224,7 @@ class SingleEventServiceTest extends TestCase
             ->make();
 
         // Act & Assert
-        $this->cut->updateSingleEvent(
+        $this->cut->update(
             $existingEvent->guid,
             $singleEvent->title_de,
             $singleEvent->title_en,
@@ -238,7 +238,7 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function updateSingleEvent_allValid_repositoryIsCalled() {
+    public function update_allValid_repositoryIsCalled() {
         // Arrange
         $user = User::factory()->create();
         $evenLocation = EventLocation::factory()->create();
@@ -259,7 +259,7 @@ class SingleEventServiceTest extends TestCase
 
         // Act & Assert
         /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->updateSingleEvent(
+        $this->cut->update(
             $existingEvent->guid,
             $singleEvent->title_de,
             $singleEvent->title_en,
@@ -273,45 +273,45 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function deleteSingleEvent_allValid_repositoryIsCalled() {
+    public function delete_allValid_repositoryIsCalled() {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('deleteSingleEvent')
             ->with('test-guid');
 
         // Act & Assert
-        $this->cut->deleteSingleEvent('test-guid');
+        $this->cut->delete('test-guid');
     }
 
     /** @test */
-    public function publishSingleEvent_allValid_repositoryIsCalled() {
+    public function publish_allValid_repositoryIsCalled() {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('publishSingleEvent')
             ->with('test-guid');
 
         // Act & Assert
-        $this->cut->publishSingleEvent('test-guid');
+        $this->cut->publish('test-guid');
     }
 
     /** @test */
-    public function unpublishSingleEvent_allValid_repositoryIsCalled() {
+    public function unpublish_allValid_repositoryIsCalled() {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('unpublishSingleEvent')
             ->with('test-guid');
 
         // Act & Assert
-        $this->cut->unpublishSingleEvent('test-guid');
+        $this->cut->unpublish('test-guid');
     }
 
     /** @test */
-    public function getSingleEvents_allValid_repositoryIsCalled() {
+    public function list_allValid_repositoryIsCalled() {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('getSingleEvents');
 
         // Act & Assert
-        $this->cut->getSingleEvents(Carbon::now(), Carbon::now()->addWeeks(3));
+        $this->cut->list(Carbon::now(), Carbon::now()->addWeeks(3));
     }
 }
