@@ -102,6 +102,9 @@ class RecurringEventController extends Controller
             )
         ),
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -138,6 +141,9 @@ class RecurringEventController extends Controller
         operationId: 'deleteRecurringEvent',
         description: 'Delete an existing recurring event with all its single events',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(response: 200, description: 'deleted event successfully'),
             new OA\Response(response: 401, description: 'unauthenticated'),
@@ -154,6 +160,9 @@ class RecurringEventController extends Controller
         operationId: 'publishRecurringEvent',
         description: 'Publish a recurring event and all its single events.',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -174,6 +183,9 @@ class RecurringEventController extends Controller
         operationId: 'unpublishRecurringEvent',
         description: 'unpublishes a recurring event and all its single events',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,

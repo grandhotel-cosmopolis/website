@@ -75,6 +75,9 @@ class EventLocationController extends Controller
             )
         ),
         tags: ['EventLocation'],
+        parameters: [
+            new OA\Parameter(name: 'eventLocationGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -102,14 +105,17 @@ class EventLocationController extends Controller
         operationId: 'deleteEventLocation',
         description: 'Delete an existing eventLocation',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: '$eventId', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(response: 200, description: 'deleted event location successfully'),
             new OA\Response(response: 401, description: 'unauthenticated'),
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function delete(string $eventLocationGuid): Response | JsonResponse {
-        $this->eventLocationRepository->delete($eventLocationGuid);
+    public function delete(string $eventId): Response | JsonResponse {
+        $this->eventLocationRepository->delete($eventId);
         return new Response('deleted');
     }
 

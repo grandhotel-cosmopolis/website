@@ -147,6 +147,9 @@ class SingleEventController extends Controller
             )
         ),
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -181,6 +184,9 @@ class SingleEventController extends Controller
         operationId: 'deleteSingleEvent',
         description: 'Delete an existing event',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(response: 200, description: 'deleted event successfully'),
             new OA\Response(response: 401, description: 'unauthenticated'),
@@ -198,6 +204,9 @@ class SingleEventController extends Controller
         operationId: 'publishSingleEvent',
         description: 'Publish a single event',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -218,6 +227,9 @@ class SingleEventController extends Controller
         operationId: 'unpublishSingleEvent',
         description: 'Unpublish a single event',
         tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
         responses: [
             new OA\Response(
                 response: 200,
