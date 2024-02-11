@@ -144,6 +144,42 @@ class RecurringEventService implements IRecurringEventService
         $this->recurringEventRepository->delete($recurringEvent->guid);
     }
 
+    public function publish(string $eventGuid): RecurringEvent
+    {
+        /** @var RecurringEvent $recurringEvent */
+        $recurringEvent = RecurringEvent::query()->where('guid', $eventGuid)->first();
+        if (is_null($recurringEvent)) {
+            throw new NotFoundHttpException();
+        }
+
+        $singleEvents = $recurringEvent->singleEvents()->get();
+
+        /** @var SingleEvent $singleEvent */
+        foreach($singleEvents as $singleEvent) {
+            $this->singleEventRepository->publishSingleEvent($singleEvent->guid);
+        }
+
+        return $this->recurringEventRepository->publish($recurringEvent->guid);
+    }
+
+    public function unpublish(string $eventGuid): RecurringEvent
+    {
+        /** @var RecurringEvent $recurringEvent */
+        $recurringEvent = RecurringEvent::query()->where('guid', $eventGuid)->first();
+        if (is_null($recurringEvent)) {
+            throw new NotFoundHttpException();
+        }
+
+        $singleEvents = $recurringEvent->singleEvents()->get();
+
+        /** @var SingleEvent $singleEvent */
+        foreach($singleEvents as $singleEvent) {
+            $this->singleEventRepository->unpublishSingleEvent($singleEvent->guid);
+        }
+
+        return $this->recurringEventRepository->unpublish($recurringEvent->guid);
+    }
+
     private function updateSingleEvents(
         RecurringEvent $recurringEvent
     ): void

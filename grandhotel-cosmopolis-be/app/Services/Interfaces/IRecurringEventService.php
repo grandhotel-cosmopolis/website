@@ -38,4 +38,8 @@ interface IRecurringEventService
     ): RecurringEvent;
 
     public function delete(string $eventGuid): void;
+
+    public function publish(string $eventGuid): RecurringEvent;
+
+    public function unpublish(string $eventGuid): RecurringEvent;
 }

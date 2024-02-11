@@ -29,7 +29,8 @@ class RecurringEventFactory extends Factory
             'recurrence' => Recurrence::EVERY_X_DAYS,
             'recurrence_metadata' => 14,
             'start_first_occurrence' => $start,
-            'end_first_occurrence' => $start->clone()->addHours(2)
+            'end_first_occurrence' => $start->clone()->addHours(2),
+            'is_public' => false
         ];
     }
 }

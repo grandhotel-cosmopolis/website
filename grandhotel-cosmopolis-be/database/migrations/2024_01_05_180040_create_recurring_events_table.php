@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamp('start_first_occurrence');
             $table->timestamp('end_first_occurrence');
             $table->timestamp('end_recurrence')->nullable();
+            $table->boolean('is_public')->default(false);
             /** @noinspection DuplicatedCode */
             $table->unsignedBigInteger('event_location_id')->index();
             $table->unsignedBigInteger('file_upload_id')->index();

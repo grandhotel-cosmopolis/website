@@ -38,4 +38,8 @@ interface IRecurringEventRepository
     ): RecurringEvent;
 
     public function delete(string $guid): void;
+
+    public function publish(string $guid): RecurringEvent;
+
+    public function unpublish(string $guid): RecurringEvent;
 }

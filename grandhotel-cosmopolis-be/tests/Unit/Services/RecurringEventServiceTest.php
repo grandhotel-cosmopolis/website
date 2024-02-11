@@ -158,7 +158,8 @@ class RecurringEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_invalidFileUpload_throwsException() {
+    public function update_invalidFileUpload_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -194,7 +195,8 @@ class RecurringEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_invalidEventLocation_throwsException() {
+    public function update_invalidEventLocation_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -230,7 +232,8 @@ class RecurringEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_invalidTimeRange_throwsException() {
+    public function update_invalidTimeRange_throwsException()
+    {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         $user = User::factory()->create();
@@ -265,7 +268,8 @@ class RecurringEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_allValid_repositoryIsCalled() {
+    public function update_allValid_repositoryIsCalled()
+    {
         // Arrange
         $user = User::factory()->create();
         $evenLocation = EventLocation::factory()->create();
@@ -303,7 +307,8 @@ class RecurringEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function delete_allValid_repositoryIsCalled() {
+    public function delete_allValid_repositoryIsCalled()
+    {
         // Arrange
         $event = RecurringEvent::factory()
             ->for(User::factory()->create(), 'createdBy')
@@ -327,5 +332,83 @@ class RecurringEventServiceTest extends TestCase
 
         // Act & Assert
         $this->cut->delete($event->guid);
+    }
+
+    /** @test */
+    public function publish_allValid_repositoryIsCalled()
+    {
+        // Arrange
+        $event = RecurringEvent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+
+        $singleEvent = SingleEvent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+        $singleEvent->recurringEvent()->associate($event);
+        $singleEvent->save();
+
+        $this->recurringEventRepositoryMock->expects($this->once())
+            ->method('publish')
+            ->with($event->guid);
+        $this->singleEventRepositoryMock->expects($this->once())
+            ->method('publishSingleEvent')
+            ->with($singleEvent->guid);
+
+        // Act & Assert
+        $this->cut->publish($event->guid);
+    }
+
+    /** @test */
+    public function publish_notExistingEvent_throwsException()
+    {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act & Assert
+        $this->cut->publish('not-existing');
+    }
+
+    /** @test */
+    public function unpublish_allValid_repositoryIsCalled()
+    {
+        // Arrange
+        $event = RecurringEvent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+
+        $singleEvent = SingleEvent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+        $singleEvent->recurringEvent()->associate($event);
+        $singleEvent->save();
+
+        $this->recurringEventRepositoryMock->expects($this->once())
+            ->method('unpublish')
+            ->with($event->guid);
+        $this->singleEventRepositoryMock->expects($this->once())
+            ->method('unpublishSingleEvent')
+            ->with($singleEvent->guid);
+
+        // Act & Assert
+        $this->cut->unpublish($event->guid);
+    }
+
+    /** @test */
+    public function unpublish_notExistingEvent_throwsException()
+    {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act & Assert
+        $this->cut->unpublish('not-existing');
     }
 }

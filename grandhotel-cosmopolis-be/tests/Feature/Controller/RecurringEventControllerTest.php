@@ -1126,6 +1126,162 @@ class RecurringEventControllerTest extends TestCase
         return $this->actingAs($this->user)->delete("$this->basePath/$oldEventGuid", [], ['Accept' => 'application/json']);
     }
 
+    /** @test */
+    public function publish_notAuthenticated_returnsUnauthenticated()
+    {
+        // Arrange
+        /** @var RecurringEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+
+        // Act
+        $response = $this->post("$this->basePath/$oldEvent->guid/publish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function publish_notAuthorized_returnsUnauthorized()
+    {
+        // Arrange
+        /** @var RecurringEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post("$this->basePath/$oldEvent->guid/publish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function publish_unknownEvent_returnsNotFound()
+    {
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/unknown/publish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function publish_allValid_eventIsPublished()
+    {
+        // Arrange
+        /** @var RecurringEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create(['is_public' => false]);
+        $singleEvents = SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->count(10)
+            ->create(['is_public' => false]);
+
+        /** @var string[] $singleEventGuids */
+        $singleEventGuids = [];
+
+        /** @var SingleEvent $singleEvent */
+        foreach ($singleEvents as $singleEvent) {
+            $singleEvent->recurringEvent()->associate($oldEvent);
+            $singleEvent->save();
+            $singleEventGuids[] = $singleEvent->guid;
+        }
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$oldEvent->guid/publish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var RecurringEvent $updatedEvent */
+        $updatedEvent = RecurringEvent::query()->where('guid', $oldEvent->guid)->first();
+        $this->assertTrue($updatedEvent->is_public);
+
+        foreach ($singleEventGuids as $singleEventGuid) {
+            /** @var SingleEvent $singleEvent */
+            $singleEvent = SingleEvent::query()->where('guid', $singleEventGuid)->first();
+            $this->assertTrue($singleEvent->is_public);
+        }
+    }
+
+    /** @test */
+    public function unpublish_notAuthenticated_returnsUnauthenticated()
+    {
+        // Arrange
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+
+        // Act
+        $response = $this->post("$this->basePath/$oldEvent->guid/unpublish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function unpublish_notAuthorized_returnsUnauthorized()
+    {
+        // Arrange
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create();
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post("$this->basePath/$oldEvent->guid/unpublish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function unpublish_unknownEvent_returnsNotFound()
+    {
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/unknown/unpublish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function unpublish_allValid_eventIsUnpublished()
+    {
+        // Arrange
+        /** @var RecurringEvent $oldEvent */
+        $oldEvent = static::createRecurringEvent()->create(['is_public' => true]);
+        $singleEvents = SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->count(10)
+            ->create(['is_public' => true]);
+
+        /** @var string[] $singleEventGuids */
+        $singleEventGuids = [];
+
+        /** @var SingleEvent $singleEvent */
+        foreach ($singleEvents as $singleEvent) {
+            $singleEvent->recurringEvent()->associate($oldEvent);
+            $singleEvent->save();
+            $singleEventGuids[] = $singleEvent->guid;
+        }
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$oldEvent->guid/unpublish", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var RecurringEvent $updatedEvent */
+        $updatedEvent = RecurringEvent::query()->where('guid', $oldEvent->guid)->first();
+        $this->assertFalse($updatedEvent->is_public);
+
+        foreach ($singleEventGuids as $singleEventGuid) {
+            /** @var SingleEvent $singleEvent */
+            $singleEvent = SingleEvent::query()->where('guid', $singleEventGuid)->first();
+            $this->assertFalse($singleEvent->is_public);
+        }
+    }
+
     private static function createRecurringEvent(
         ?EventLocation $eventLocation = null,
         ?User          $user = null,

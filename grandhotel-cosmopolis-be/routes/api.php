@@ -60,6 +60,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('/', 'create');
             Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/update', 'update');
             Route::middleware('permission:' . Permissions::DELETE_EVENT->value)->delete('/{eventGuid}', 'delete');
+            Route::middleware('permission:' . Permissions::PUBLISH_EVENT->value)->post('/{eventGuid}/publish', 'publish');
+            Route::middleware('permission:' . Permissions::UNPUBLISH_EVENT->value)->post('/{eventGuid}/unpublish', 'unpublish');
         });
     });
 

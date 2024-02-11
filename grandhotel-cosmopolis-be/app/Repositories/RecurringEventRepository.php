@@ -126,4 +126,30 @@ class RecurringEventRepository implements IRecurringEventRepository
             throw new NotFoundHttpException();
         }
     }
+
+    public function publish(string $guid): RecurringEvent
+    {
+        /** @var RecurringEvent $event */
+        $event = RecurringEvent::query()->where('guid', $guid)->first();
+
+        if (is_null($event)) {
+            throw  new NotFoundHttpException();
+        }
+        $event->is_public = true;
+        $event->save();
+        return $event;
+    }
+
+    public function unpublish(string $guid): RecurringEvent
+    {
+        /** @var RecurringEvent $event */
+        $event = RecurringEvent::query()->where('guid', $guid)->first();
+
+        if (is_null($event)) {
+            throw  new NotFoundHttpException();
+        }
+        $event->is_public = false;
+        $event->save();
+        return $event;
+    }
 }

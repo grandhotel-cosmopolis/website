@@ -5,7 +5,6 @@ namespace Tests\Unit\Repositories;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\RecurringEvent;
-use App\Models\SingleEvent;
 use App\Models\User;
 use App\Repositories\RecurringEventRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -430,5 +429,111 @@ class RecurringEventRepositoryTest extends TestCase
                 ->where('email', $user->email)
                 ->get()
         );
+    }
+
+    /** @test */
+    public function publish_notExistingEvent_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act & Assert
+        $this->cut->publish('not existing');
+    }
+
+    /** @test */
+    public function publish_existingPrivateEvent_eventIsPublished() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $event = RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy')
+            ->create(['is_public' => false]);
+
+        // Act
+        $returnedEvent = $this->cut->publish($event->guid);
+
+        // Assert
+        /** @var RecurringEvent $dbEvent */
+        $dbEvent = RecurringEvent::query()->where('guid', $event->guid)->first();
+        $this->assertTrue($returnedEvent->is_public);
+        $this->assertTrue($dbEvent->is_public);
+    }
+
+    /** @test */
+    public function publish_existingPublicEvent_noChanges() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $event = RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy')
+            ->create(['is_public' => true]);
+
+        // Act
+        $returnedEvent = $this->cut->publish($event->guid);
+
+        // Assert
+        /** @var RecurringEvent $dbEvent */
+        $dbEvent = RecurringEvent::query()->where('guid', $event->guid)->first();
+        $this->assertTrue($returnedEvent->is_public);
+        $this->assertTrue($dbEvent->is_public);
+    }
+
+    /** @test */
+    public function unpublish_notExistingEvent_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act & Assert
+        $this->cut->unpublish('not existing');
+    }
+
+    /** @test */
+    public function unpublish_existingPrivateEvent_noChanges() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $event = RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy')
+            ->create(['is_public' => false]);
+
+        // Act
+        $returnedEvent = $this->cut->unpublish($event->guid);
+
+        // Assert
+        /** @var RecurringEvent $dbEvent */
+        $dbEvent = RecurringEvent::query()->where('guid', $event->guid)->first();
+        $this->assertFalse($returnedEvent->is_public);
+        $this->assertFalse($dbEvent->is_public);
+    }
+
+    /** @test */
+    public function unpublish_existingPublicEvent_eventIsUnpublished() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $event = RecurringEvent::factory()
+            ->for($eventLocation)
+            ->for($fileUpload)
+            ->for($user, 'createdBy')
+            ->create(['is_public' => true]);
+
+        // Act
+        $returnedEvent = $this->cut->unpublish($event->guid);
+
+        // Assert
+        /** @var RecurringEvent $dbEvent */
+        $dbEvent = RecurringEvent::query()->where('guid', $event->guid)->first();
+        $this->assertFalse($returnedEvent->is_public);
+        $this->assertFalse($dbEvent->is_public);
     }
 }

@@ -149,6 +149,46 @@ class RecurringEventController extends Controller
         return new Response('deleted');
     }
 
+    #[OA\Post(
+        path: '/api/recurringEvent/{eventGuid}/publish',
+        operationId: 'publishRecurringEvent',
+        description: 'Publish a recurring event and all its single events.',
+        tags: ['Event'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'published event successfully',
+                content: new OA\JsonContent(ref: RecurringEventDto::class)),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+            new OA\Response(response: 404, description: 'not found')
+        ]
+    )]
+    public function publish(string $eventGuid): JsonResponse
+    {
+        $event = $this->recurringEventService->publish($eventGuid);
+        return new JsonResponse(RecurringEventDto::create($event));
+    }
+
+    #[OA\Post(
+        path: '/api/recurringEvent/{eventGuid}/unpublish',
+        operationId: 'unpublishRecurringEvent',
+        description: 'unpublishes a recurring event and all its single events',
+        tags: ['Event'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'unpublished event successfully',
+                content: new OA\JsonContent(ref: RecurringEventDto::class)
+            ),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+            new OA\Response(response: 404, description: 'not found')
+        ]
+    )]
+    public function unpublish(string $eventGuid): JsonResponse {
+        $event = $this->recurringEventService->unpublish($eventGuid);
+        return new JsonResponse(RecurringEventDto::create($event));
+    }
+
     private static function validateRecurringEventInput(Request $request): void {
         $request->validate([
             'titleDe' => ['required', 'string'],
