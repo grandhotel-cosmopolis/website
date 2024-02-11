@@ -6,6 +6,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Dtos\User\ListUserDto;
 use App\Http\Dtos\User\UserDto;
+use App\Models\Permissions;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
