@@ -144,19 +144,29 @@ class SingleEventRepository implements ISingleEventRepository
             ->where(function (Builder $query) use ($start, $end) {
                 $query
                     ->where('start', '>', $start)
-                    ->where('end', '<', $end);
+                    ->where('end', '<', $end)
+                    ->where('is_public', true);
             })
             ->orWhere(function (Builder $query) use ($start) {
                 $query
                     ->where('start', '<', $start)
-                    ->where('end', '>', $start);
+                    ->where('end', '>', $start)
+                    ->where('is_public', true);
             })
             ->orWhere(function (Builder $query) use ($end) {
                 $query
                     ->where('end', '>', $end)
-                    ->where('start', '<', $end);
+                    ->where('start', '<', $end)
+                    ->where('is_public', true);
             })
             ->orderBy('start')
+            ->get();
+    }
+
+    public function listAll(): Collection
+    {
+        return SingleEvent::query()
+            ->where('end', '>', Carbon::now())
             ->get();
     }
 }

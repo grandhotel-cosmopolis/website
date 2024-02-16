@@ -24,7 +24,7 @@ class UserController extends Controller
             new OA\Response(response: 401, description: 'unauthenticated')
         ]
     )]
-    public function listUser(): JsonResponse {
+    public function list(): JsonResponse {
         $users = User::all();
         $userDtos = $users->map(function (User $user) {
             return UserDto::create($user);

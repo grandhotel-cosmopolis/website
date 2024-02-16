@@ -22,8 +22,8 @@ class RecurringEventSeeder extends Seeder
             $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
             RecurringEvent::factory()
                 ->count(5)
-                ->for($eventLocation, 'defaultEventLocation')
-                ->for($fileUpload, 'defaultFileUpload')
+                ->for($eventLocation, 'eventLocation')
+                ->for($fileUpload, 'fileUpload')
                 ->for($user, 'createdBy')
                 ->create();
         }

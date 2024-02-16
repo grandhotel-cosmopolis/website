@@ -11,4 +11,10 @@ enum Permissions: string
     case UNPUBLISH_EVENT = 'unpublish_event';
     case EDIT_EVENT = 'edit_event';
     case DELETE_EVENT = 'delete_event';
+    case VIEW_EVENTS = 'view_events';
+
+    case CREATE_USER = 'create_user';
+    case UPDATE_USER = 'update_user';
+    case DELETE_USER = 'delete_user';
+    case VIEW_USERS = 'view_users';
 }

@@ -9,6 +9,7 @@ use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\SingleEvent;
+use App\Repositories\Interfaces\ISingleEventRepository;
 use App\Services\Interfaces\ISingleEventService;
 use App\Services\Interfaces\ITimeService;
 use Carbon\Carbon;
@@ -21,9 +22,12 @@ use OpenApi\Attributes as OA;
 class SingleEventController extends Controller
 {
     public function __construct(
-        protected ISingleEventService $eventService,
-        protected ITimeService        $timeService
-    ) {}
+        protected ISingleEventService    $eventService,
+        protected ISingleEventRepository $eventRepository,
+        protected ITimeService           $timeService
+    )
+    {
+    }
 
     /** @noinspection PhpUnused */
     /**
@@ -32,7 +36,7 @@ class SingleEventController extends Controller
     #[OA\Get(
         path: '/api/singleEvent/list',
         operationId: 'getSingleEvents',
-        description: 'get all single events within the specified time range',
+        description: 'get all public single events within the specified time range',
         tags: ['Event'],
         parameters: [
             new OA\Parameter(name: 'start', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'date-time')),
@@ -48,15 +52,16 @@ class SingleEventController extends Controller
                 description: 'invalid time range'
             )
         ])]
-    public function getSingleEvents(): JsonResponse | Response {
-        if((is_null(request()->query('start')) && !is_null(request()->query('end')))
+    public function getSingleEvents(): JsonResponse|Response
+    {
+        if ((is_null(request()->query('start')) && !is_null(request()->query('end')))
             || (!is_null(request()->query('start')) && is_null(request()->query('end')))) {
             throw new InvalidTimeRangeException();
         }
         try {
             $start = is_null(request()->query('start')) ? Carbon::now() : Carbon::parse(request()->query('start'));
             $end = is_null(request()->query('end')) ? Carbon::now()->addWeeks(3) : Carbon::parse(request()->query('end'));
-        } catch(Exception) {
+        } catch (Exception) {
             throw new InvalidTimeRangeException();
         }
         if (!$this->timeService->validateTimeRange($start, $end)) {
@@ -64,6 +69,32 @@ class SingleEventController extends Controller
         }
 
         $events = $this->eventService->list($start, $end);
+
+        $eventDtos = $events->map(function (SingleEvent $event) {
+            /** @var EventLocation $eventLocation */
+            $eventLocation = $event->eventLocation()->first();
+            /** @var FileUpload $fileUpload */
+            $fileUpload = $event->fileUpload()->first();
+            return SingleEventDto::create($event, $eventLocation, $fileUpload);
+        });
+        return new JsonResponse(new ListSingleEventDto($eventDtos->toArray()));
+    }
+
+    /** @noinspection PhpUnused */
+    #[OA\Get(
+        path: '/api/singleEvent/listAll',
+        operationId: 'getAllSingleEvents',
+        description: 'get all single events',
+        tags: ['Event'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'all requested events',
+                content: new OA\JsonContent(ref: ListSingleEventDto::class))
+        ])]
+    public function listAll(): JsonResponse
+    {
+        $events = $this->eventRepository->listAll();
 
         $eventDtos = $events->map(function (SingleEvent $event) {
             /** @var EventLocation $eventLocation */
@@ -108,7 +139,8 @@ class SingleEventController extends Controller
             new OA\Response(response: 400, description: 'invalid event')
         ]
     )]
-    public function create(Request $request): Response | JsonResponse {
+    public function create(Request $request): Response|JsonResponse
+    {
         static::validateSingleEventInput($request);
         $singleEvent = $this->eventService->create(
             $request['titleDe'],
@@ -160,7 +192,8 @@ class SingleEventController extends Controller
             new OA\Response(response: 400, description: 'invalid event')
         ]
     )]
-    public function update(Request $request, string $eventGuid): Response | JsonResponse {
+    public function update(Request $request, string $eventGuid): Response|JsonResponse
+    {
         static::validateSingleEventInput($request);
 
         $updatedEvent = $this->eventService->update(
@@ -193,7 +226,8 @@ class SingleEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function delete(string $eventGuid): Response {
+    public function delete(string $eventGuid): Response
+    {
         $this->eventService->delete($eventGuid);
         return new Response('deleted');
     }
@@ -216,7 +250,8 @@ class SingleEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function publish(string $eventGuid): JsonResponse {
+    public function publish(string $eventGuid): JsonResponse
+    {
         $event = $this->eventService->publish($eventGuid);
         return new JsonResponse(SingleEventDto::create($event));
     }
@@ -239,12 +274,14 @@ class SingleEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function unpublish(string $eventGuid): JsonResponse {
+    public function unpublish(string $eventGuid): JsonResponse
+    {
         $event = $this->eventService->unpublish($eventGuid);
         return new JsonResponse(SingleEventDto::create($event));
     }
 
-    private static function validateSingleEventInput(Request $request): void {
+    private static function validateSingleEventInput(Request $request): void
+    {
         $request->validate([
             'titleDe' => ['required', 'string'],
             'titleEn' => ['required', 'string'],
@@ -252,7 +289,7 @@ class SingleEventController extends Controller
             'descriptionEn' => ['required', 'string'],
             'eventLocationGuid' => ['required', 'string'],
             'fileUploadGuid' => ['required', 'string'],
-            'start' => ['required' ,'date'],
+            'start' => ['required', 'date'],
             'end' => ['required', 'date']
         ]);
     }

@@ -39,7 +39,8 @@ class SingleEventControllerTest extends TestCase
             Permissions::EDIT_EVENT->value,
             Permissions::DELETE_EVENT->value,
             Permissions::PUBLISH_EVENT->value,
-            Permissions::UNPUBLISH_EVENT->value
+            Permissions::UNPUBLISH_EVENT->value,
+            Permissions::VIEW_EVENTS->value
         ]);
 
         $this->eventLocation = EventLocation::factory()->create();
@@ -54,7 +55,8 @@ class SingleEventControllerTest extends TestCase
         $createdEvent = static::createSingleEvent()
             ->create([
                 'start' => Carbon::now()->addDays(5),
-                'end' => Carbon::now()->addDays(5)->addHours(2)
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => true
             ]);
 
         // Act
@@ -78,7 +80,48 @@ class SingleEventControllerTest extends TestCase
         /** @var FileUpload $fileUpload */
         $fileUpload = $createdEvent->fileUpload()->first();
         $this->assertStringContainsString($fileUpload->file_path, $event['image']['fileUrl']);
+    }
 
+    /** @test */
+    public function list_allValid_returnsOnlyPublicEvents()
+    {
+        // Arrange
+        /** @var SingleEvent $createdEvent */
+        $createdEvent = static::createSingleEvent()
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => true
+            ]);
+
+        static::createSingleEvent()
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => false
+            ]);
+
+        // Act
+        $response = $this->listRequest();
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var SingleEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(1, $events);
+
+        $event = $events[0];
+        $this->assertEquals($createdEvent->title_de, $event['titleDe']);
+        $this->assertEquals($createdEvent->title_en, $event['titleEn']);
+        $this->assertEquals($createdEvent->description_de, $event['descriptionDe']);
+        $this->assertEquals($createdEvent->description_en, $event['descriptionEn']);
+        $this->assertEquals($createdEvent->start, new Carbon($event['start']));
+        $this->assertEquals($createdEvent->end, new Carbon($event['end']));
+
+        $this->assertEquals('image/png', $event['image']['mimeType']);
+        /** @var FileUpload $fileUpload */
+        $fileUpload = $createdEvent->fileUpload()->first();
+        $this->assertStringContainsString($fileUpload->file_path, $event['image']['fileUrl']);
     }
 
     /** @test */
@@ -116,25 +159,30 @@ class SingleEventControllerTest extends TestCase
         // Events within requested time range
         static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-06T16:30:00.000Z'),
-            'end' => new Carbon('2024-01-06T18:00:00.000Z')
+            'end' => new Carbon('2024-01-06T18:00:00.000Z'),
+            'is_public' => true
         ]);
         static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-04T16:30:00.000Z'),
-            'end' => new Carbon('2024-01-06T18:00:00.000Z')
+            'end' => new Carbon('2024-01-06T18:00:00.000Z'),
+            'is_public' => true
         ]);
         static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-10T16:30:00.000Z'),
-            'end' => new Carbon('2024-01-12T18:00:00.000Z')
+            'end' => new Carbon('2024-01-12T18:00:00.000Z'),
+            'is_public' => true
         ]);
         // Event before requested time range
         static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-05T16:30:00.000Z'),
-            'end' => new Carbon('2024-01-05T18:00:00.000Z')
+            'end' => new Carbon('2024-01-05T18:00:00.000Z'),
+            'is_public' => true
         ]);
         // Event after requested time range
         static::createSingleEvent($eventLocation)->create([
             'start' => new Carbon('2024-01-11T16:30:00.000Z'),
-            'end' => new Carbon('2024-01-11T18:00:00.000Z')
+            'end' => new Carbon('2024-01-11T18:00:00.000Z'),
+            'is_public' => true
         ]);
 
         // Act
@@ -199,6 +247,74 @@ class SingleEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(400);
+    }
+
+    /** @test */
+    public function listAll_notLoggedIn_returnsUnauthorized()
+    {
+        // Act
+        $response = $this->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function listAll_unauthorized_returnsUnauthorized()
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsPublicAndPrivateEvents()
+    {
+        // Arrange
+        self::createSingleEvent()
+            ->count(10)
+            ->create(['is_public' => true]);
+        self::createSingleEvent()
+            ->count(5)
+            ->create(['is_public' => false]);
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var SingleEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(15, $events);
+    }
+
+    /** @test */
+    public function listAll_allValid_doesNotReturnEventsInThePast()
+    {
+        // Arrange
+        self::createSingleEvent()
+            ->count(10)
+            ->create([
+                'start' => new Carbon('2024-01-11T16:30:00.000Z'),
+                'end' => new Carbon('2024-01-11T18:00:00.000Z')
+            ]);
+        self::createSingleEvent()
+            ->count(5)
+            ->create(['is_public' => false]);
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var SingleEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(5, $events);
     }
 
     /** @test */
@@ -625,18 +741,17 @@ class SingleEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-        $response->assertJson(fn(AssertableJson $json) =>
-            $json->where('titleDe', $eventData['titleDe'])
-                ->where('titleEn', $eventData['titleEn'])
-                ->where('descriptionDe', $eventData['descriptionDe'])
-                ->where('descriptionEn', $eventData['descriptionEn'])
-                ->where('start', fn(string $start) => new Carbon($start) == new Carbon($eventData['start']))
-                ->where('end', fn(string $end) => new Carbon($end) == new Carbon($eventData['end']))
-                ->where('eventLocation.name', $this->eventLocation->name)
-                ->where('eventLocation.street', $this->eventLocation->street)
-                ->where('eventLocation.city', $this->eventLocation->city)
-                ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
-                ->where('image.mimeType', 'image/png')
+        $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $eventData['titleDe'])
+            ->where('titleEn', $eventData['titleEn'])
+            ->where('descriptionDe', $eventData['descriptionDe'])
+            ->where('descriptionEn', $eventData['descriptionEn'])
+            ->where('start', fn(string $start) => new Carbon($start) == new Carbon($eventData['start']))
+            ->where('end', fn(string $end) => new Carbon($end) == new Carbon($eventData['end']))
+            ->where('eventLocation.name', $this->eventLocation->name)
+            ->where('eventLocation.street', $this->eventLocation->street)
+            ->where('eventLocation.city', $this->eventLocation->city)
+            ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
+            ->where('image.mimeType', 'image/png')
         );
     }
 
@@ -979,7 +1094,8 @@ class SingleEventControllerTest extends TestCase
         ], ['Accept' => 'application/json']);
     }
 
-    public function deleteRequest(string|null $oldEventGuid = null): TestResponse {
+    public function deleteRequest(string|null $oldEventGuid = null): TestResponse
+    {
         if (is_null($oldEventGuid)) {
             /** @var SingleEvent $oldEvent */
             $oldEvent = static::createSingleEvent()->create();

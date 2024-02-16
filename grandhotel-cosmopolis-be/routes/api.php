@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('/login')->group(function () {
     Route::controller(LoginController::class)->group(function () {
         Route::post('', 'authenticate');
+        Route::post('rememberMe', 'rememberMe');
     });
 });
 
@@ -38,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // UserController
     Route::prefix('/user')->group(function () {
         Route::controller(UserController::class)->group(function () {
-            Route::get('/list', 'listUser');
+            Route::middleware('permission:' . Permissions::VIEW_USERS->value)->get('/list', 'list');
             Route::get('/', 'getUser');
         });
     });
@@ -51,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/update', 'update');
             Route::middleware('permission:' . Permissions::PUBLISH_EVENT->value)->post('/{eventGuid}/publish', 'publish');
             Route::middleware('permission:' . Permissions::UNPUBLISH_EVENT->value)->post('/{eventGuid}/unpublish', 'unpublish');
+            Route::middleware('permission:' . Permissions::VIEW_EVENTS->value)->get('/listAll', 'listAll');
         });
     });
 

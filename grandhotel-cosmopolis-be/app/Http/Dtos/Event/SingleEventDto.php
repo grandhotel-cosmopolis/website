@@ -36,6 +36,9 @@ class SingleEventDto
     #[OA\Property(ref: FileDto::class)]
     public FileDto $image;
 
+    #[OA\Property]
+    public bool $isPublic;
+
     public function __construct(
         string           $titleDe,
         string           $titleEn,
@@ -44,7 +47,8 @@ class SingleEventDto
         EventLocationDto $eventLocation,
         DateTime         $start,
         DateTime         $end,
-        FileDto          $fileDto
+        FileDto          $fileDto,
+        bool             $isPublic
     )
     {
         $this->titleDe = $titleDe;
@@ -55,6 +59,7 @@ class SingleEventDto
         $this->start = $start;
         $this->end = $end;
         $this->image = $fileDto;
+        $this->isPublic = $isPublic;
     }
 
     public static function create(
@@ -79,7 +84,8 @@ class SingleEventDto
             EventLocationDto::create($eventLocation),
             $singleEvent->start,
             $singleEvent->end,
-            FileDto::create($fileUpload)
+            FileDto::create($fileUpload),
+            $singleEvent->is_public
         );
     }
 }

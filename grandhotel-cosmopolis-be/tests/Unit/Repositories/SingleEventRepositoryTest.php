@@ -509,7 +509,8 @@ class SingleEventRepositoryTest extends TestCase
             ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
             ->create([
                 'start' => Carbon::now()->addDays(5),
-                'end' => Carbon::now()->addDays(5)->addHours(2)
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => true
             ]);
 
         // Act
@@ -553,29 +554,34 @@ class SingleEventRepositoryTest extends TestCase
         SingleEvent::factory()->for($eventLocation)->for($fileUpload)->for($user, 'createdBy')
             ->create([
                 'start' => new Carbon('2024-01-06T16:30:00.000Z'),
-                'end' => new Carbon('2024-01-06T18:00:00.000Z')
+                'end' => new Carbon('2024-01-06T18:00:00.000Z'),
+                'is_public' => true
             ]);
         SingleEvent::factory()->for($eventLocation)->for($fileUpload)->for($user, 'createdBy')
             ->create([
                 'start' => new Carbon('2024-01-04T16:30:00.000Z'),
-                'end' => new Carbon('2024-01-06T18:00:00.000Z')
+                'end' => new Carbon('2024-01-06T18:00:00.000Z'),
+                'is_public' => true
             ]);
         SingleEvent::factory()->for($eventLocation)->for($fileUpload)->for($user, 'createdBy')
             ->create([
                 'start' => new Carbon('2024-01-10T16:30:00.000Z'),
-                'end' => new Carbon('2024-01-12T18:00:00.000Z')
+                'end' => new Carbon('2024-01-12T18:00:00.000Z'),
+                'is_public' => true
             ]);
         // Event before requested time range
         SingleEvent::factory()->for($eventLocation)->for($fileUpload)->for($user, 'createdBy')
             ->create([
                 'start' => new Carbon('2024-01-05T16:30:00.000Z'),
-                'end' => new Carbon('2024-01-05T18:00:00.000Z')
+                'end' => new Carbon('2024-01-05T18:00:00.000Z'),
+                'is_public' => true
             ]);
         // Event after requested time range
         SingleEvent::factory()->for($eventLocation)->for($fileUpload)->for($user, 'createdBy')
             ->create([
                 'start' => new Carbon('2024-01-11T16:30:00.000Z'),
-                'end' => new Carbon('2024-01-11T18:00:00.000Z')
+                'end' => new Carbon('2024-01-11T18:00:00.000Z'),
+                'is_public' => true
             ]);
 
         // Act
@@ -583,5 +589,98 @@ class SingleEventRepositoryTest extends TestCase
 
         // Assert
         $this->assertCount($expectedEventsCount, $events);
+    }
+
+    /** @test */
+    public function getSingleEvents_allValid_returnsOnlyPublicEvents() {
+        // Arrange
+        $user = User::factory()->create();
+        $singleEvent = SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => true
+            ]);
+
+        SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => false
+            ]);
+
+        // Act
+        $events = $this->cut->getSingleEvents(Carbon::now(), Carbon::now()->addWeeks(3));
+
+        // Assert
+        /** @var SingleEvent $event */
+        $event = $events[0];
+        $this->assertCount(1, $events);
+        $this->assertEquals($singleEvent->title_de, $event->title_de);
+        $this->assertEquals($singleEvent->title_en, $event->title_en);
+        $this->assertEquals($singleEvent->description_de, $event->description_de);
+        $this->assertEquals($singleEvent->description_en, $event->description_en);
+        $this->assertEquals($singleEvent->start, $event->start);
+        $this->assertEquals($singleEvent->end, $event->end);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsCorrectAmountOfEvents() {
+        // Arrange
+        $user = User::factory()->create();
+        SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+            ]);
+
+        // Act
+        $result = $this->cut->listAll();
+
+        // Assert
+        $this->assertCount(5, $result);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsPublicAndPrivateEvents() {
+        // Arrange
+        $user = User::factory()->create();
+        SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => false
+            ]);
+
+        SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'start' => Carbon::now()->addDays(5),
+                'end' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => true
+            ]);
+
+        // Act
+        $result = $this->cut->listAll();
+
+        // Assert
+        $this->assertCount(10, $result);
     }
 }

@@ -39,4 +39,7 @@ interface ISingleEventRepository
 
     /** @return Collection<int, SingleEvent> */
     public function getSingleEvents(Carbon $start, Carbon $end): Collection;
+
+    /** @return Collection<int, SingleEvent> */
+    public function listAll(): Collection;
 }
