@@ -1,35 +1,83 @@
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { ElementWrapper } from "../../shared/element-wrapper";
 import { useUpcomingEventsQuery } from "./upcoming-events/use-upcoming-events-query";
 import { EventLocationDto } from "../../../infrastructure/generated/openapi";
+import { useIsMobileView } from "../../hooks/screen-sizes/use-is-mobile-view";
 
 export const UpcomingEvents = () => {
   const { data } = useUpcomingEventsQuery();
+  const isMobileView = useIsMobileView();
+  const theme = useTheme();
+
+  const textFormatter = (text: string) => {
+    return text.split("\n").map((str, i) => <p key={i}>{str}</p>);
+  };
 
   return (
     <ElementWrapper>
       <Card sx={{ width: "100%" }}>
         <CardContent>
+          <Box
+            display="flex"
+            justifyContent="center"
+            color={theme.palette.primary.main}
+            mb={2}
+            mt={2}
+          >
+            <Typography variant={isMobileView ? "h6" : "h4"} textAlign="center">
+              Events in den nächsten 3 Wochen
+            </Typography>
+          </Box>
+          <Divider />
           {data?.events?.map((event, index) => (
-            <Box
-              key={index}
-              display="flex"
-              width="100%"
-              flexDirection="row"
-              sx={{ mb: 4 }}
-            >
-              <Box width="100px" sx={{ mr: 2 }}>
-                <DateIndicator start={event.start} end={event.end} />
+            <Box key={index}>
+              <Box
+                key={index}
+                display="flex"
+                width="100%"
+                flexDirection="row"
+                sx={{ mb: 4, mt: 4 }}
+              >
+                <Box width="100px" sx={{ mr: 2 }}>
+                  <DateIndicator start={event.start} end={event.end} />
+                </Box>
+                <Box display="flex" width="100%">
+                  <Box width="100%">
+                    <Box width="100%">
+                      <img
+                        style={{
+                          float: "right",
+                          width: isMobileView ? "100%" : "40%",
+                          marginLeft: 32,
+                          marginBottom: isMobileView ? 16 : 0,
+                        }}
+                        src={event.image?.fileUrl}
+                      />
+                    </Box>
+                    <Stack>
+                      <Typography variant="h5">{event.title_de}</Typography>
+                      <WhenIndicator start={event.start} end={event.end} />
+                      <WhereIndicator eventLocation={event.eventLocation} />
+                    </Stack>
+                    <Typography
+                      component="span"
+                      variant={isMobileView ? "body2" : "body1"}
+                    >
+                      {textFormatter(event.description_de ?? "")}
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
-              <Box flexGrow={1}>
-                <Stack>
-                  <Typography variant="h5">{event.title_de}</Typography>
-                  <WhenIndicator start={event.start} end={event.end} />
-                  <WhereIndicator eventLocation={event.eventLocation} />
-                  <Typography>{event.description_de}</Typography>
-                </Stack>
-              </Box>
-              <Box width="300px">3</Box>
+              {index !== (data.events?.length ?? 0) - 1 && <Divider />}
             </Box>
           ))}
         </CardContent>

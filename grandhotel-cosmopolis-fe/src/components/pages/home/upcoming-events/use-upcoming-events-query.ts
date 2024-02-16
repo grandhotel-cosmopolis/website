@@ -24,7 +24,7 @@ export const useUpcomingEventsQuery = () => {
             eventLocation: e.eventLocation,
             start: e.start ? new Date(e.start) : undefined,
             end: e.end ? new Date(e.end) : undefined,
-            image_url: e.image_url,
+            image: e.image,
           } as SingleEventDto)
       )
       .sort(

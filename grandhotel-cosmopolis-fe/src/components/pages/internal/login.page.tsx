@@ -1,6 +1,5 @@
 import { useState, MouseEvent, ChangeEvent } from "react";
 import {
-  eventApi,
   loginClient,
   retrieveCsrfToken,
   userClient,
@@ -23,26 +22,34 @@ import { ElementWrapper } from "../../shared/element-wrapper";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useNavigate } from "react-router-dom";
+import { useStoreActions } from "../../../store/store";
 
 export const Login = () => {
   const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [hasLoginError, setHasLoginError] = useState(false);
+  const setUser = useStoreActions((store) => store.setUser);
   const navigate = useNavigate();
   const theme = useTheme();
 
   const handleLogin = () => {
-    retrieveCsrfToken().then(() =>
-      loginClient
-        .login(mail, password)
-        .then(() => navigate("/internal/dashboard"))
-        .catch(() => setHasLoginError(true))
-    );
-  };
-
-  const getUser = () => {
-    userClient.getUser().then((r) => console.log(r.data));
+    retrieveCsrfToken()
+      .then(() =>
+        loginClient
+          .login(mail, password)
+          .then(() => {
+            userClient
+              .getUser()
+              .then((r) => {
+                setUser(r.data);
+                navigate("/internal");
+              })
+              .catch(() => setHasLoginError(true));
+          })
+          .catch(() => setHasLoginError(true))
+      )
+      .catch(() => setHasLoginError(true));
   };
 
   return (
@@ -88,10 +95,6 @@ export const Login = () => {
               </Typography>
             )}
             <Button onClick={handleLogin}>Login</Button>
-            <Button onClick={getUser}>GetUser</Button>
-            <Button onClick={() => eventApi.getSingleEvents()}>
-              test date
-            </Button>
           </Stack>
         </CardContent>
       </Card>

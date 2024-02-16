@@ -1,12 +1,17 @@
 type LogoProps = {
   readonly color?: string;
-  readonly size?: "small" | "large";
+  readonly size?: "small" | "large" | "tiny";
 };
+
+/** 50 /70 = x / 50 */
 
 export const Logo = (props: LogoProps) => {
   const getWidth = () => {
     if (props.size === "small") {
       return "70.000000pt";
+    }
+    if (props.size === "tiny") {
+      return "50.000000pt";
     }
     return "200.000000pt";
   };
@@ -14,6 +19,9 @@ export const Logo = (props: LogoProps) => {
   const getHeight = () => {
     if (props.size === "small") {
       return "50.000000pt";
+    }
+    if (props.size === "tiny") {
+      return "35.714285714pt";
     }
     return "144.000000pt";
   };
