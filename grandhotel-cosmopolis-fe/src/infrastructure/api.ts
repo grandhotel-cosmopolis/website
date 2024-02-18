@@ -33,8 +33,35 @@ const axiosInstance = axios.create({
   withXSRFToken: true,
   transformRequest: [...defaultTransformers(), dateTransformer],
 });
+
+const isDate = (data: any): boolean => {
+  return (
+    typeof data != "boolean" &&
+    //@ts-ignore
+    new Date(data) !== "Invalid Date" &&
+    //@ts-ignore
+    !isNaN(new Date(data))
+  );
+};
+
+const transformDates = (data: any): any => {
+  if (isDate(data)) {
+    return new Date(data);
+  }
+  if (Array.isArray(data)) {
+    return data.map((val) => transformDates(val));
+  }
+  if (typeof data == "object" && data != null) {
+    return Object.fromEntries(
+      Object.entries(data).map(([key, val]) => [key, transformDates(val)])
+    );
+  }
+  return data;
+};
+
 axiosInstance.interceptors.response.use(
   (response) => {
+    response.data = transformDates(response.data);
     return response;
   },
   (error) => {

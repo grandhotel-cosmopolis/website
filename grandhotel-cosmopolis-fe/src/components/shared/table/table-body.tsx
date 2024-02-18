@@ -1,5 +1,5 @@
 import { TableBody as MuiTableBody, TableCell, TableRow } from "@mui/material";
-import { TableColumn } from "./table-head";
+import { TableColumn } from "./table";
 
 type TableBodyProps<T> = {
   readonly items: T[];
@@ -8,7 +8,7 @@ type TableBodyProps<T> = {
 
 export function TableBody<T>(props: TableBodyProps<T>) {
   return (
-    <MuiTableBody sx={{ height: "100%" }}>
+    <MuiTableBody sx={{ height: "100%", overflow: "scroll" }}>
       {props.items.map((item, index) => (
         <TableRow
           hover
@@ -18,7 +18,7 @@ export function TableBody<T>(props: TableBodyProps<T>) {
           sx={{ cursor: "pointer" }}
         >
           {props.columns.map((c, i) => (
-            <TableCell>{c.renderCell(item)}</TableCell>
+            <TableCell key={i}>{c.renderCell(item)}</TableCell>
           ))}
         </TableRow>
       ))}

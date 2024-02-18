@@ -9,7 +9,6 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
-  Typography,
 } from "@mui/material";
 import {
   SvgIconComponent,
@@ -21,7 +20,6 @@ import {
 import { Permissions } from "../../../infrastructure/generated/openapi";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Logo } from "../../../assets/general/logo";
-import { useEffect, useRef } from "react";
 
 const drawerWidth = 240;
 
@@ -109,6 +107,7 @@ export const InternalBasePage = () => {
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
+          width: "100%",
         }}
       >
         <Toolbar />

@@ -7,19 +7,13 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
-import { ReactElement } from "react";
+import { TableColumn } from "./table";
 
 type TableHeadProps<T> = {
   readonly columns: TableColumn<T>[];
   readonly orderBy?: string;
   readonly order: SortDirection;
   onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void;
-};
-
-export type TableColumn<T> = {
-  readonly id: string;
-  readonly label: string;
-  readonly renderCell: (_: T) => ReactElement;
 };
 
 export function TableHead<T>(props: TableHeadProps<T>) {
