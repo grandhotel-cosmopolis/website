@@ -17,6 +17,7 @@ export type TableColumn<T> = {
 type TableProps<T> = {
   readonly columns: TableColumn<T>[];
   readonly items: T[];
+  readonly onItemClick: (_: T) => void;
 };
 
 function getComparator<Key extends keyof any>(
@@ -92,7 +93,11 @@ export function Table<T>(props: TableProps<T>) {
             onRequestSort={handleRequestSort}
             columns={props.columns}
           />
-          <TableBody items={sortedRows} columns={props.columns} />
+          <TableBody
+            items={sortedRows}
+            columns={props.columns}
+            onItemClick={props.onItemClick}
+          />
         </MuiTable>
       </TableContainer>
     </Paper>

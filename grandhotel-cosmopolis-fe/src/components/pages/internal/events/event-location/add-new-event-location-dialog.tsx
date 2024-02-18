@@ -40,7 +40,6 @@ export const AddNewEventLocationDialog = (
               }
               label="name"
               type="text"
-              variant="standard"
             />
             <TextField
               margin="dense"
@@ -53,7 +52,6 @@ export const AddNewEventLocationDialog = (
               }
               label="street"
               type="text"
-              variant="standard"
             />
             <TextField
               margin="dense"
@@ -66,7 +64,18 @@ export const AddNewEventLocationDialog = (
               }
               label="city"
               type="text"
-              variant="standard"
+            />
+            <TextField
+              margin="dense"
+              value={props.dialogValue?.additionalInformation}
+              onChange={(event) =>
+                props.setDialogValue({
+                  ...props.dialogValue,
+                  additionalInformation: event.target.value,
+                })
+              }
+              label="additional information"
+              type="text"
             />
           </Stack>
         </DialogContent>

@@ -4,6 +4,7 @@ import { TableColumn } from "./table";
 type TableBodyProps<T> = {
   readonly items: T[];
   readonly columns: TableColumn<T>[];
+  readonly onItemClick: (_: T) => void;
 };
 
 export function TableBody<T>(props: TableBodyProps<T>) {
@@ -12,7 +13,7 @@ export function TableBody<T>(props: TableBodyProps<T>) {
       {props.items.map((item, index) => (
         <TableRow
           hover
-          onClick={(event) => console.log("das ist wichtig")}
+          onClick={() => props.onItemClick(item)}
           tabIndex={-1}
           key={index}
           sx={{ cursor: "pointer" }}

@@ -1,11 +1,11 @@
 import { Fragment, useEffect, useState } from "react";
 import { EventLocationDto } from "../../../../infrastructure/generated/openapi";
 import { eventLocationApi } from "../../../../infrastructure/api";
-import { AddNewEventLocationAutocomplete } from "./event-location/add-new-event-location-autocomplete";
+import { AddEventLocationAutocomplete } from "./event-location/add-event-location-autocomplete";
 import { AddNewEventLocationDialog } from "./event-location/add-new-event-location-dialog";
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 
-export type EventLocationOptionType = {
+type EventLocationOptionType = {
   inputValue?: string;
   name: string;
   street?: string;
@@ -52,7 +52,7 @@ export const EventLocationStep = (props: EventLocationStepProps) => {
     if (!!dialogValue?.name) {
       event.preventDefault();
       eventLocationApi
-        .addEventLocation(
+        .createEventLocation(
           dialogValue.name,
           dialogValue.street ?? undefined,
           dialogValue.city ?? undefined
@@ -94,30 +94,12 @@ export const EventLocationStep = (props: EventLocationStepProps) => {
   };
 
   return (
-    <Fragment>
-      <Stack spacing={2}>
-        <AddNewEventLocationAutocomplete
-          value={value}
-          onChange={onChange}
-          eventLocations={eventLocations}
-        />
-        <Button
-          disabled={!value}
-          variant="outlined"
-          onClick={() => {
-            const eventLocation: EventLocationDto = {
-              name: value?.name,
-              street: value?.street,
-              city: value?.city,
-              guid: value?.guid,
-            };
-            props.setSelectedEventLocation(eventLocation);
-            props.finish();
-          }}
-        >
-          Next
-        </Button>
-      </Stack>
+    <Box>
+      <AddEventLocationAutocomplete
+        value={value}
+        onChange={onChange}
+        eventLocations={eventLocations}
+      />
       <AddNewEventLocationDialog
         open={open}
         onClose={handleClose}
@@ -125,6 +107,6 @@ export const EventLocationStep = (props: EventLocationStepProps) => {
         setDialogValue={setDialogValue}
         dialogValue={dialogValue}
       />
-    </Fragment>
+    </Box>
   );
 };

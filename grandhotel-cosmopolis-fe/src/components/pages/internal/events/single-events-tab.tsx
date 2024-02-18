@@ -1,4 +1,13 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { CreateEventDialog } from "./create-event-dialog";
 import { ReactElement, useEffect, useState } from "react";
 import { SingleEventDto } from "../../../../infrastructure/generated/openapi";
@@ -7,6 +16,10 @@ import { Table, TableColumn } from "../../../shared/table/table";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
+import { CreateEventStep } from "./create-event-step";
+import { SingleEventDialogContent } from "./single-event-dialog-content";
+import EditIcon from "@mui/icons-material/Edit";
+import { SingleEventDetailsDialog } from "./single-event-details-dialog";
 
 const bla: TableColumn<SingleEventDto>[] = [
   {
@@ -44,6 +57,7 @@ const bla: TableColumn<SingleEventDto>[] = [
 export const SingleEventsTab = () => {
   const [createEvent, setCreateEvent] = useState(false);
   const [singleEvents, setSingleEVents] = useState<SingleEventDto[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<SingleEventDto>();
 
   useEffect(() => {
     eventApi
@@ -59,7 +73,16 @@ export const SingleEventsTab = () => {
       overflow={"hidden"}
       sx={{ p: 1 }}
     >
-      <Table<SingleEventDto> columns={bla} items={singleEvents} />
+      <SingleEventDetailsDialog
+        singleEvent={selectedEvent}
+        open={!!selectedEvent}
+        closeDialog={() => setSelectedEvent(undefined)}
+      />
+      <Table<SingleEventDto>
+        columns={bla}
+        items={singleEvents}
+        onItemClick={(item) => setSelectedEvent(item)}
+      />
       <CreateEventDialog
         open={createEvent}
         close={() => setCreateEvent(false)}
@@ -71,7 +94,7 @@ export const SingleEventsTab = () => {
   );
 };
 
-const renderDateCell = (start?: Date, end?: Date): ReactElement => {
+export const renderDateCell = (start?: Date, end?: Date): ReactElement => {
   if (!!start && !end) {
     return <SingleDate date={start} />;
   }
@@ -88,7 +111,7 @@ type SingleDateProps = {
   readonly date: Date;
 };
 
-const SingleDate = (props: SingleDateProps) => {
+export const SingleDate = (props: SingleDateProps) => {
   return <Typography>{props.date.toLocaleDateString("de-DE")}</Typography>;
 };
 
@@ -97,7 +120,7 @@ type DoubleDateProps = {
   readonly end: Date;
 };
 
-const DoubleDate = (props: DoubleDateProps) => {
+export const DoubleDate = (props: DoubleDateProps) => {
   if (props.start.getDate() === props.end.getDate()) {
     return (
       <Typography>

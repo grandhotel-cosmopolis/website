@@ -4,7 +4,7 @@ import {
   TextField,
   createFilterOptions,
 } from "@mui/material";
-import { EventLocationOptionType } from "../event-location-step";
+import { EventLocationOptionType } from "../edit-location-dialog";
 
 const filter = createFilterOptions<EventLocationOptionType>();
 
@@ -17,7 +17,7 @@ type AddNewEventLocationAutocompleteProps = {
   readonly eventLocations: EventLocationOptionType[];
 };
 
-export const AddNewEventLocationAutocomplete = (
+export const AddEventLocationAutocomplete = (
   props: AddNewEventLocationAutocompleteProps
 ) => {
   const getOptionLabel = (option: string | EventLocationOptionType) => {
@@ -34,6 +34,9 @@ export const AddNewEventLocationAutocomplete = (
     let displayText = e.name;
     displayText += !!e.street ? ` - ${e.street}` : "";
     displayText += !!e.city ? ` - ${e.city}` : "";
+    displayText += !!e.additionalInformation
+      ? `  - ${e.additionalInformation}`
+      : "";
     return displayText;
   };
 
@@ -66,7 +69,6 @@ export const AddNewEventLocationAutocomplete = (
       renderOption={(props, option) => (
         <li {...props}>{getEventLocationDisplayText(option)}</li>
       )}
-      sx={{ width: 300 }}
       freeSolo
       renderInput={(params) => (
         <TextField {...params} label="Select Event Location" />

@@ -36,6 +36,7 @@ const axiosInstance = axios.create({
 
 const isDate = (data: any): boolean => {
   return (
+    !!data &&
     typeof data != "boolean" &&
     //@ts-ignore
     new Date(data) !== "Invalid Date" &&
