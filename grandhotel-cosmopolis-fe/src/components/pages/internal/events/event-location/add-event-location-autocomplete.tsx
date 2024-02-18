@@ -21,12 +21,17 @@ export const AddEventLocationAutocomplete = (
   props: AddNewEventLocationAutocompleteProps
 ) => {
   const getOptionLabel = (option: string | EventLocationOptionType) => {
+    console.log("hell");
     if (typeof option === "string") {
+      console.log("was weiß ich");
       return option;
     }
     if (option.inputValue) {
+      console.log("was weiß ich2");
+
       return option.inputValue;
     }
+    console.log("hello");
     return getEventLocationDisplayText(option);
   };
 

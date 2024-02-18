@@ -69,6 +69,7 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
             street: v.street ?? undefined,
             city: v.city ?? undefined,
             guid: v.guid ?? undefined,
+            additionalInformation: v.additionalInformation ?? undefined,
           };
           return eventLocationOption;
         }) ?? []
@@ -95,6 +96,7 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
             name: r.data.name ?? "",
             street: r.data.street ?? undefined,
             city: r.data.city ?? undefined,
+            additionalInformation: r.data.additionalInformation ?? undefined,
             guid: r.data.guid ?? undefined,
           };
           setEventLocations((curr) => [...curr, newEventLocation]);
