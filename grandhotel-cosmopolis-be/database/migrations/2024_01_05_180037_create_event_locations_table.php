@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('street')->nullable();
             $table->string('city')->nullable();
+            $table->string('additional_information')->nullable();
             $table->timestamps();
         });
     }

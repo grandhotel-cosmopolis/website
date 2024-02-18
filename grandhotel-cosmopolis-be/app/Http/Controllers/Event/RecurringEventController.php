@@ -21,7 +21,7 @@ class RecurringEventController extends Controller
     ) {}
 
     /** @noinspection PhpUnused */
-    #[OA\Put(
+    #[OA\Post(
         path: '/api/recurringEvent',
         operationId: 'createRecurringEvent',
         description: 'Create a new recurring event',

@@ -26,7 +26,7 @@ class FileControllerTest extends TestCase
     /** @test */
     public function uploadImage_notLoggedIn_returnsUnauthenticated() {
         // Act
-        $response = $this->put("$this->basePath/upload", [], ['Accept' => 'application/json']);
+        $response = $this->post("$this->basePath/upload", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(401);
@@ -38,7 +38,7 @@ class FileControllerTest extends TestCase
         $user = User::factory()->create();
 
         // Act
-        $response = $this->actingAs($user)->put("$this->basePath/upload", [], ['Accept' => 'application/json']);
+        $response = $this->actingAs($user)->post("$this->basePath/upload", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(403);
@@ -53,7 +53,7 @@ class FileControllerTest extends TestCase
         $user->givePermissionTo(Permissions::CREATE_EVENT);
 
         // Act
-        $response = $this->actingAs($user)->put("$this->basePath/upload", ['file' => $file], ['Accept' => 'application/json']);
+        $response = $this->actingAs($user)->post("$this->basePath/upload", ['file' => $file], ['Accept' => 'application/json']);
         // Assert
         $response->assertStatus(200);
     }
@@ -65,7 +65,7 @@ class FileControllerTest extends TestCase
         $user->givePermissionTo(Permissions::CREATE_EVENT);
 
         // Act
-        $response = $this->actingAs($user)->put("$this->basePath/upload", ['file' => 'test'], ['Accept' => 'application/json']);
+        $response = $this->actingAs($user)->post("$this->basePath/upload", ['file' => 'test'], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);
@@ -78,7 +78,7 @@ class FileControllerTest extends TestCase
         $user->givePermissionTo(Permissions::CREATE_EVENT);
 
         // Act
-        $response = $this->actingAs($user)->put("$this->basePath/upload", [], ['Accept' => 'application/json']);
+        $response = $this->actingAs($user)->post("$this->basePath/upload", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);

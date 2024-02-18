@@ -107,7 +107,7 @@ class SingleEventController extends Controller
     }
 
     /** @noinspection PhpUnused */
-    #[OA\Put(
+    #[OA\Post(
         path: '/api/singleEvent',
         operationId: 'addSingleEvent',
         description: 'Add a new single event',

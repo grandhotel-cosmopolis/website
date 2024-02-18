@@ -25,7 +25,7 @@ class FileController extends Controller
     ) {}
 
     /** @noinspection PhpUnused */
-    #[OA\Put(
+    #[OA\Post(
         path: '/api/file/upload',
         operationId: 'uploadFile',
         description: 'Upload a single file',

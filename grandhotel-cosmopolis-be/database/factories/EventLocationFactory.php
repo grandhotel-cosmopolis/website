@@ -21,7 +21,8 @@ class EventLocationFactory extends Factory
             'guid' => uuid_create(),
             'name' => fake()->name(),
             'street' => fake()->streetName(),
-            'city' => fake()->city()
+            'city' => fake()->city(),
+            'additional_information' => fake()->word()
         ];
     }
 }

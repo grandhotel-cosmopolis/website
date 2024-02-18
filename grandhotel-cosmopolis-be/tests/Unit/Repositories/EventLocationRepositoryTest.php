@@ -25,12 +25,13 @@ class EventLocationRepositoryTest extends TestCase
     }
 
     /** @test */
-    public function create_allValid_eventLocationIsStoredInDb() {
+    public function create_allValid_eventLocationIsStoredInDb()
+    {
         // Arrange
         $eventLocationData = EventLocation::factory()->make();
 
         // Act
-        $this->cut->create($eventLocationData->name, $eventLocationData->street, $eventLocationData->city);
+        $this->cut->create($eventLocationData->name, $eventLocationData->street, $eventLocationData->city, $eventLocationData->additional_information);
 
         // Assert
         /** @var EventLocation $storedEventLocation */
@@ -40,15 +41,17 @@ class EventLocationRepositoryTest extends TestCase
         $this->assertEquals($eventLocationData->name, $storedEventLocation->name);
         $this->assertEquals($eventLocationData->street, $storedEventLocation->street);
         $this->assertEquals($eventLocationData->city, $storedEventLocation->city);
+        $this->assertEquals($eventLocationData->additional_information, $storedEventLocation->additional_information);
     }
 
     /** @test */
-    public function create_allValid_createdEventLocationIsReturned() {
+    public function create_allValid_createdEventLocationIsReturned()
+    {
         // Arrange
         $eventLocationData = EventLocation::factory()->make();
 
         // Act
-        $createdEventLocation = $this->cut->create($eventLocationData->name, $eventLocationData->street, $eventLocationData->city);
+        $createdEventLocation = $this->cut->create($eventLocationData->name, $eventLocationData->street, $eventLocationData->city, $eventLocationData->additional_information);
 
         // Assert
         $this->assertNotNull($createdEventLocation->guid);
@@ -56,26 +59,29 @@ class EventLocationRepositoryTest extends TestCase
         $this->assertEquals($eventLocationData->name, $createdEventLocation->name);
         $this->assertEquals($eventLocationData->street, $createdEventLocation->street);
         $this->assertEquals($eventLocationData->city, $createdEventLocation->city);
+        $this->assertEquals($eventLocationData->additional_information, $createdEventLocation->additional_information);
     }
 
     /** @test */
-    public function update_unknownEventLocation_throwsException() {
+    public function update_unknownEventLocation_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $data = EventLocation::factory()->make();
 
         // Act & Assert
-        $this->cut->update('unknown', $data->name, $data->street, $data->city);
+        $this->cut->update('unknown', $data->name, $data->street, $data->city, $data->additional_information);
     }
 
     /** @test */
-    public function update_allValid_eventLocationIsStoredInDb() {
+    public function update_allValid_eventLocationIsStoredInDb()
+    {
         // Arrange
         $oldEventLocation = EventLocation::factory()->create();
         $eventLocationData = EventLocation::factory()->make();
 
         // Act
-        $this->cut->update($oldEventLocation->guid, $eventLocationData->name, $eventLocationData->street, $eventLocationData->city);
+        $this->cut->update($oldEventLocation->guid, $eventLocationData->name, $eventLocationData->street, $eventLocationData->city, $eventLocationData->additional_information);
 
         // Assert
         /** @var EventLocation $storedEventLocation */
@@ -85,16 +91,18 @@ class EventLocationRepositoryTest extends TestCase
         $this->assertEquals($eventLocationData->name, $storedEventLocation->name);
         $this->assertEquals($eventLocationData->street, $storedEventLocation->street);
         $this->assertEquals($eventLocationData->city, $storedEventLocation->city);
+        $this->assertEquals($eventLocationData->additional_information, $storedEventLocation->additional_information);
     }
 
     /** @test */
-    public function update_allValid_updatedEventLocationIsReturned() {
+    public function update_allValid_updatedEventLocationIsReturned()
+    {
         // Arrange
         $oldEventLocation = EventLocation::factory()->create();
         $eventLocationData = EventLocation::factory()->make();
 
         // Act
-        $updatedEventLocation = $this->cut->update($oldEventLocation->guid, $eventLocationData->name, $eventLocationData->street, $eventLocationData->city);
+        $updatedEventLocation = $this->cut->update($oldEventLocation->guid, $eventLocationData->name, $eventLocationData->street, $eventLocationData->city, $eventLocationData->additional_information);
 
         // Assert
         $this->assertNotNull($updatedEventLocation->guid);
@@ -102,10 +110,12 @@ class EventLocationRepositoryTest extends TestCase
         $this->assertEquals($eventLocationData->name, $updatedEventLocation->name);
         $this->assertEquals($eventLocationData->street, $updatedEventLocation->street);
         $this->assertEquals($eventLocationData->city, $updatedEventLocation->city);
+        $this->assertEquals($eventLocationData->additional_information, $updatedEventLocation->additional_information);
     }
 
-    /** @test  */
-    public function delete_unknownEventLocation_throwsException() {
+    /** @test */
+    public function delete_unknownEventLocation_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
 
@@ -114,7 +124,8 @@ class EventLocationRepositoryTest extends TestCase
     }
 
     /** @test */
-    public function delete_eventLocationIsUsed_throwsException() {
+    public function delete_eventLocationIsUsed_throwsException()
+    {
         // Arrange
         $this->expectException(UnprocessableEntityHttpException::class);
         $eventLocation = EventLocation::factory()->create();
@@ -129,7 +140,8 @@ class EventLocationRepositoryTest extends TestCase
     }
 
     /** @test */
-    public function delete_allValid_eventLocationIsDeleted() {
+    public function delete_allValid_eventLocationIsDeleted()
+    {
         // Arrange
         $eventLocation = EventLocation::factory()->create();
 
@@ -141,7 +153,8 @@ class EventLocationRepositoryTest extends TestCase
     }
 
     /** @test */
-    public function list_allValid_allEventLocationsAreReturned() {
+    public function list_allValid_allEventLocationsAreReturned()
+    {
         // Arrange
         EventLocation::factory()->count(10)->create();
 

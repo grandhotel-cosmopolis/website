@@ -47,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // EventController
     Route::prefix('/singleEvent')->group(function () {
         Route::controller(SingleEventController::class)->group(function () {
-            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('', 'create');
+            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->post('', 'create');
             Route::middleware('permission:' . Permissions::DELETE_EVENT->value)->delete('/{eventGuid}', 'delete');
             Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/update', 'update');
             Route::middleware('permission:' . Permissions::PUBLISH_EVENT->value)->post('/{eventGuid}/publish', 'publish');
@@ -59,7 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // RecurringEventController
     Route::prefix('/recurringEvent')->group(function () {
         Route::controller(RecurringEventController::class)->group(function () {
-            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('/', 'create');
+            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->post('/', 'create');
             Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/update', 'update');
             Route::middleware('permission:' . Permissions::DELETE_EVENT->value)->delete('/{eventGuid}', 'delete');
             Route::middleware('permission:' . Permissions::PUBLISH_EVENT->value)->post('/{eventGuid}/publish', 'publish');
@@ -70,14 +70,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // FileController
     Route::prefix('/file')->group(function () {
         Route::controller(FileController::class)->group(function () {
-            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('/upload', 'uploadImage');
+            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->post('/upload', 'uploadImage');
         });
     });
 
     // EventLocationController
     Route::prefix('/eventLocation')->group(function () {
         Route::controller(EventLocationController::class)->group(function () {
-            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->put('', 'create');
+            Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->post('', 'create');
             Route::middleware('permission:' . Permissions::DELETE_EVENT->value)->delete('/{eventLocationGuid}', 'delete');
             Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventLocationGuid}/update', 'update');
             Route::middleware('permission:' . Permissions::CREATE_EVENT->value)->get('/list', 'list');

@@ -321,7 +321,7 @@ class SingleEventControllerTest extends TestCase
     public function create_notLoggedIn_returnsUnauthenticated()
     {
         // Act
-        $response = $this->put("$this->basePath", [], ['Accept' => 'application/json']);
+        $response = $this->post("$this->basePath", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(401);
@@ -382,7 +382,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->put('/api/singleEvent', ['end' => $end], ['Accept' => 'application/json']);
+            ->post('/api/singleEvent', ['end' => $end], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);
@@ -396,7 +396,7 @@ class SingleEventControllerTest extends TestCase
 
         // Act
         $response = $this->actingAs($this->user)
-            ->put('/api/singleEvent', ['start' => $start], ['Accept' => 'application/json']);
+            ->post('/api/singleEvent', ['start' => $start], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);
@@ -533,8 +533,10 @@ class SingleEventControllerTest extends TestCase
             ->where('eventLocation.name', $this->eventLocation->name)
             ->where('eventLocation.street', $this->eventLocation->street)
             ->where('eventLocation.city', $this->eventLocation->city)
+            ->where('eventLocation.additionalInformation', $this->eventLocation->additional_information)
             ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
             ->where('image.mimeType', 'image/png')
+            ->where('isPublic', false)
         );
     }
 
@@ -750,8 +752,10 @@ class SingleEventControllerTest extends TestCase
             ->where('eventLocation.name', $this->eventLocation->name)
             ->where('eventLocation.street', $this->eventLocation->street)
             ->where('eventLocation.city', $this->eventLocation->city)
+            ->where('eventLocation.additionalInformation', $this->eventLocation->additional_information)
             ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
             ->where('image.mimeType', 'image/png')
+            ->where('isPublic', false)
         );
     }
 
@@ -991,7 +995,7 @@ class SingleEventControllerTest extends TestCase
     ): TestResponse
     {
         $sample = static::getTestEventData();
-        return $this->actingAs($user ?? $this->user)->put("$this->basePath", [
+        return $this->actingAs($user ?? $this->user)->post("$this->basePath", [
             'titleDe' => $titleDe ?? $sample['titleDe'],
             'titleEn' => $titleEn ?? $sample['titleEn'],
             'descriptionDe' => $descriptionDe ?? $sample['descriptionDe'],
@@ -1015,7 +1019,7 @@ class SingleEventControllerTest extends TestCase
     ): TestResponse
     {
         $sample = static::getTestEventData();
-        return $this->actingAs($user ?? $this->user)->put("$this->basePath", [
+        return $this->actingAs($user ?? $this->user)->post("$this->basePath", [
             'titleDe' => $titleDe ? null : $sample['titleDe'],
             'titleEn' => $titleEn ? null : $sample['titleEn'],
             'descriptionDe' => $descriptionDe ? null : $sample['descriptionDe'],

@@ -10,14 +10,16 @@ interface IEventLocationRepository
     public function create(
         string $name,
         ?string $street,
-        ?string $city
+        ?string $city,
+        ?string $additionalInformation
     ): EventLocation;
 
     public function update(
         string $eventLocationGuid,
         string $name,
         ?string $street,
-        ?string $city
+        ?string $city,
+        ?string $additionalInformation
     ): EventLocation;
 
     public function delete(string $eventLocationGuid): void;

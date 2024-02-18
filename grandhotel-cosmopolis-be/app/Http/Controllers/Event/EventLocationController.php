@@ -16,10 +16,12 @@ class EventLocationController extends Controller
 {
     public function __construct(
         protected IEventLocationRepository $eventLocationRepository
-    ) {}
+    )
+    {
+    }
 
     /** @noinspection PhpUnused */
-    #[OA\Put(
+    #[OA\Post(
         path: '/api/eventLocation',
         operationId: 'createEventLocation',
         description: 'Create a new event location',
@@ -30,7 +32,8 @@ class EventLocationController extends Controller
                     properties: [
                         new OA\Property(property: 'name', type: 'string'),
                         new OA\Property(property: 'street', type: 'string'),
-                        new OA\Property(property: 'city', type: 'string')
+                        new OA\Property(property: 'city', type: 'string'),
+                        new OA\Property(property: 'additionalInformation', type: 'string')
                     ]
                 )
             )
@@ -46,14 +49,16 @@ class EventLocationController extends Controller
             new OA\Response(response: 422, description: 'input validation error')
         ]
     )]
-    public function create(Request $request): JsonResponse {
+    public function create(Request $request): JsonResponse
+    {
         $request->validate([
             'name' => ['required', 'string'],
             'street' => 'string',
-            'city' => 'string'
+            'city' => 'string',
+            'additionalInformation' => 'string'
         ]);
 
-        $newEventLocation = $this->eventLocationRepository->create($request['name'], $request['street'], $request['city']);
+        $newEventLocation = $this->eventLocationRepository->create($request['name'], $request['street'], $request['city'], $request['additionalInformation']);
 
         return new JsonResponse(EventLocationDto::create($newEventLocation));
     }
@@ -88,14 +93,16 @@ class EventLocationController extends Controller
             new OA\Response(response: 422, description: 'input validation error')
         ]
     )]
-    public function update(Request $request, string $eventLocationGuid): Response | JsonResponse {
+    public function update(Request $request, string $eventLocationGuid): Response|JsonResponse
+    {
         $request->validate([
             'name' => ['required', 'string'],
             'street' => 'string',
-            'city' => 'string'
+            'city' => 'string',
+            'additionalInformation' => 'string'
         ]);
 
-        $updatedEventLocation = $this->eventLocationRepository->update($eventLocationGuid, $request['name'], $request['street'], $request['city']);
+        $updatedEventLocation = $this->eventLocationRepository->update($eventLocationGuid, $request['name'], $request['street'], $request['city'], $request['additionalInformation']);
 
         return new JsonResponse(EventLocationDto::create($updatedEventLocation));
     }
@@ -114,7 +121,8 @@ class EventLocationController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function delete(string $eventId): Response | JsonResponse {
+    public function delete(string $eventId): Response|JsonResponse
+    {
         $this->eventLocationRepository->delete($eventId);
         return new Response('deleted');
     }
@@ -133,7 +141,8 @@ class EventLocationController extends Controller
             new OA\Response(response: 401, description: 'unauthenticated')
         ]
     )]
-    public function list(): JsonResponse {
+    public function list(): JsonResponse
+    {
         $eventLocations = $this->eventLocationRepository->list();
         $eventLocationDtos = $eventLocations->map(function (EventLocation $eventLocation) {
             return EventLocationDto::create($eventLocation);

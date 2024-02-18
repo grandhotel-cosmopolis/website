@@ -10,19 +10,20 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class EventLocationRepository implements IEventLocationRepository
 {
-    public function create(string $name, ?string $street, ?string $city): EventLocation
+    public function create(string $name, ?string $street, ?string $city, ?string $additionalInformation): EventLocation
     {
         $eventLocation = new EventLocation([
             'guid' => uuid_create(),
             'name' => $name,
             'street' => $street,
-            'city' => $city
+            'city' => $city,
+            'additional_information' => $additionalInformation
         ]);
         $eventLocation->save();
         return $eventLocation;
     }
 
-    public function update(string $eventLocationGuid, string $name, ?string $street, ?string $city): EventLocation
+    public function update(string $eventLocationGuid, string $name, ?string $street, ?string $city, ?string $additionalInformation): EventLocation
     {
         /** @var EventLocation $location */
         $location = EventLocation::query()
@@ -35,6 +36,7 @@ class EventLocationRepository implements IEventLocationRepository
         $location->name = $name;
         $location->street = $street;
         $location->city = $city;
+        $location->additional_information = $additionalInformation;
         $location->save();
         return $location;
     }

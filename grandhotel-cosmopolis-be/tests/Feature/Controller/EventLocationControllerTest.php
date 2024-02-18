@@ -23,7 +23,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function list_notLoggedIn_returnsUnauthenticated () {
+    public function list_notLoggedIn_returnsUnauthenticated()
+    {
         // Act
         $response = $this->get("$this->basePath/list", ['Accept' => 'application/json']);
 
@@ -32,7 +33,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function list_notAuthorized_returnsUnauthorized () {
+    public function list_notAuthorized_returnsUnauthorized()
+    {
         // Arrange
         EventLocation::factory()->count(10)->create();
         $user = User::factory()->create();
@@ -45,7 +47,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function list_authenticated_returnsAllEventLocations () {
+    public function list_authenticated_returnsAllEventLocations()
+    {
         // Arrange
         EventLocation::factory()->count(10)->create();
         $countEventLocations = EventLocation::query()->count();
@@ -61,22 +64,24 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function addEventLocation_unauthenticated_returnsUnauthenticated() {
+    public function create_unauthenticated_returnsUnauthenticated()
+    {
         // Act
-        $response = $this->put("$this->basePath", [], ['Accept' => 'application/json']);
+        $response = $this->post("$this->basePath", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(401);
     }
 
     /** @test */
-    public function addEventLocation_noName_returnsValidationError() {
+    public function create_noName_returnsValidationError()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::CREATE_EVENT->value);
 
         // Act
-        $response = $this->actingAs($user)->put("$this->basePath", [], ['Accept' => 'application/json']);
+        $response = $this->actingAs($user)->post("$this->basePath", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(422);
@@ -84,19 +89,21 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function addEventLocation_valid_eventLocationIsStoredInDb() {
+    public function create_valid_eventLocationIsStoredInDb()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::CREATE_EVENT->value);
         $eventLocation = EventLocation::factory()->make();
 
         // Act
-        $response = $this->actingAs($user)->put(
+        $response = $this->actingAs($user)->post(
             "$this->basePath",
             [
                 'name' => $eventLocation->name,
                 'street' => $eventLocation->street,
-                'city' => $eventLocation->city
+                'city' => $eventLocation->city,
+                'additionalInformation' => $eventLocation->additional_information
             ],
             ['Accept' => 'application/json']
         );
@@ -109,6 +116,7 @@ class EventLocationControllerTest extends TestCase
             ->where('name', $eventLocation->name)
             ->where('street', $eventLocation->street)
             ->where('city', $eventLocation->city)
+            ->where('additional_information', $eventLocation->additional_information)
             ->get();
 
         $this->assertCount(1, $savedEventLocation);
@@ -116,14 +124,15 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function addEventLocation_onlyNameGiven_eventLocationIsStoredInDb() {
+    public function create_onlyNameGiven_eventLocationIsStoredInDb()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::CREATE_EVENT->value);
         $eventLocationName = "TEST Event Location" . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->put(
+        $response = $this->actingAs($user)->post(
             "$this->basePath",
             [
                 'name' => $eventLocationName
@@ -142,40 +151,45 @@ class EventLocationControllerTest extends TestCase
         $this->assertCount(1, $savedEventLocation);
         $this->assertNull($savedEventLocation[0]['street']);
         $this->assertNull($savedEventLocation[0]['city']);
+        $this->assertNull($savedEventLocation[0]['additional_information']);
     }
 
     /** @test */
-    public function addEventLocation_allValid_newEventLocationIsReturned() {
+    public function create_allValid_newEventLocationIsReturned()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::CREATE_EVENT->value);
         $eventLocationName = "TEST Event Location " . uuid_create();
         $eventLocationStreet = "Test street " . uuid_create();
         $eventLocationCity = "Test City " . uuid_create();
+        $eventLocationAdditionalInformation = "Test infos " . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->put(
+        $response = $this->actingAs($user)->post(
             "$this->basePath",
             [
                 'name' => $eventLocationName,
                 'street' => $eventLocationStreet,
-                'city' => $eventLocationCity
+                'city' => $eventLocationCity,
+                'additionalInformation' => $eventLocationAdditionalInformation
             ],
             ['Accept' => 'application/json']
         );
 
         // Assert
         $response->assertStatus(200);
-        $response->assertJson(fn (AssertableJson $json) =>
-            $json->where('name', $eventLocationName)
-                ->where('street', $eventLocationStreet)
-                ->where('city', $eventLocationCity)
-                ->etc()
+        $response->assertJson(fn(AssertableJson $json) => $json->where('name', $eventLocationName)
+            ->where('street', $eventLocationStreet)
+            ->where('city', $eventLocationCity)
+            ->where('additionalInformation', $eventLocationAdditionalInformation)
+            ->etc()
         );
     }
 
     /** @test */
-    public function addEventLocation_notAuthorized_returnsUnauthorized() {
+    public function create_notAuthorized_returnsUnauthorized()
+    {
         // Arrange
         $user = User::factory()->create();
         $eventLocationName = "TEST Event Location " . uuid_create();
@@ -183,7 +197,7 @@ class EventLocationControllerTest extends TestCase
         $eventLocationCity = "Test City " . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->put(
+        $response = $this->actingAs($user)->post(
             "$this->basePath",
             [
                 'name' => $eventLocationName,
@@ -200,7 +214,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function updateEventLocation_unauthenticated_returnsUnauthenticated() {
+    public function update_unauthenticated_returnsUnauthenticated()
+    {
         // Arrange
         $eventLocation = EventLocation::factory()->create();
 
@@ -212,7 +227,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function updateEventLocation_noName_returnsValidationError() {
+    public function update_noName_returnsValidationError()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::EDIT_EVENT->value);
@@ -227,7 +243,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function updateEventLocation_valid_eventLocationIsStoredInDb() {
+    public function update_valid_eventLocationIsStoredInDb()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::EDIT_EVENT->value);
@@ -240,7 +257,8 @@ class EventLocationControllerTest extends TestCase
             [
                 'name' => $eventLocation->name,
                 'street' => $eventLocation->street,
-                'city' => $eventLocation->city
+                'city' => $eventLocation->city,
+                'additionalInformation' => $eventLocation->additional_information
             ],
             ['Accept' => 'application/json']
         );
@@ -258,7 +276,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function updateEventLocation_onlyNameGiven_eventLocationIsStoredInDb() {
+    public function update_onlyNameGiven_eventLocationIsStoredInDb()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::EDIT_EVENT->value);
@@ -285,40 +304,45 @@ class EventLocationControllerTest extends TestCase
         $this->assertCount(1, $savedEventLocation);
         $this->assertNull($savedEventLocation[0]['street']);
         $this->assertNull($savedEventLocation[0]['city']);
+        $this->assertNull($savedEventLocation[0]['additional_information']);
     }
 
     /** @test */
-    public function updateEventLocation_allValid_updatedEventLocationIsReturned() {
+    public function update_allValid_updatedEventLocationIsReturned()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::CREATE_EVENT->value);
         $eventLocationName = "TEST Event Location " . uuid_create();
         $eventLocationStreet = "Test street " . uuid_create();
         $eventLocationCity = "Test City " . uuid_create();
+        $eventLocationExtraInfos = "Test Infos " . uuid_create();
 
         // Act
-        $response = $this->actingAs($user)->put(
+        $response = $this->actingAs($user)->post(
             "$this->basePath",
             [
                 'name' => $eventLocationName,
                 'street' => $eventLocationStreet,
-                'city' => $eventLocationCity
+                'city' => $eventLocationCity,
+                'additionalInformation' => $eventLocationExtraInfos
             ],
             ['Accept' => 'application/json']
         );
 
         // Assert
         $response->assertStatus(200);
-        $response->assertJson(fn (AssertableJson $json) =>
-        $json->where('name', $eventLocationName)
+        $response->assertJson(fn(AssertableJson $json) => $json->where('name', $eventLocationName)
             ->where('street', $eventLocationStreet)
             ->where('city', $eventLocationCity)
+            ->where('additionalInformation', $eventLocationExtraInfos)
             ->etc()
         );
     }
 
     /** @test */
-    public function updateEventLocation_notAuthorized_returnsUnauthorized() {
+    public function update_notAuthorized_returnsUnauthorized()
+    {
         // Arrange
         $user = User::factory()->create();
         $oldEventLocation = EventLocation::factory()->create();
@@ -344,7 +368,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function updateEventLocation_notExistingEvent_returnsNotfound() {
+    public function update_notExistingEvent_returnsNotfound()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::EDIT_EVENT->value);
@@ -370,7 +395,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function delete_notAuthenticated_returnsUnauthenticated() {
+    public function delete_notAuthenticated_returnsUnauthenticated()
+    {
         // Arrange
         $eventLocation = EventLocation::factory()->create();
 
@@ -382,7 +408,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function delete_notAuthorized_returnsUnauthorized() {
+    public function delete_notAuthorized_returnsUnauthorized()
+    {
         // Arrange
         $eventLocation = EventLocation::factory()->create();
         $user = User::factory()->create();
@@ -395,7 +422,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function delete_notExistingEvent_returnsNotFound() {
+    public function delete_notExistingEvent_returnsNotFound()
+    {
         // Arrange
         $user = User::factory()->create();
         $user->givePermissionTo(Permissions::DELETE_EVENT);
@@ -408,7 +436,8 @@ class EventLocationControllerTest extends TestCase
     }
 
     /** @test */
-    public function delete_valid_eventLocationIsDeleted() {
+    public function delete_valid_eventLocationIsDeleted()
+    {
         // Arrange
         $eventLocation = EventLocation::factory()->create();
         $user = User::factory()->create();

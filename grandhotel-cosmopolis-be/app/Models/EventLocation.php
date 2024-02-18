@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property $name
  * @property $street
  * @property $city
+ * @property $additional_information
  */
 class EventLocation extends Model
 {
@@ -23,7 +24,8 @@ class EventLocation extends Model
         'guid',
         'name',
         'street',
-        'city'
+        'city',
+        'additional_information'
     ];
 
     public function singleEvents(): HasMany

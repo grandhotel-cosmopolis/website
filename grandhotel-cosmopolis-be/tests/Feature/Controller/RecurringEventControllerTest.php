@@ -50,7 +50,7 @@ class RecurringEventControllerTest extends TestCase
     public function create_notLoggedIn_returnsUnauthenticated()
     {
         // Act
-        $response = $this->put("$this->basePath", [], ['Accept' => 'application/json']);
+        $response = $this->post("$this->basePath", [], ['Accept' => 'application/json']);
 
         // Assert
         $response->assertStatus(401);
@@ -1328,7 +1328,7 @@ class RecurringEventControllerTest extends TestCase
     ): TestResponse
     {
         $sample = static::getTestEventData();
-        return $this->actingAs($user ?? $this->user)->put("$this->basePath", [
+        return $this->actingAs($user ?? $this->user)->post("$this->basePath", [
             'titleEn' => $titleEn ?? $sample['titleEn'],
             'titleDe' => $titleDe ?? $sample['titleDe'],
             'descriptionDe' => $descriptionDe ?? $sample['descriptionDe'],
@@ -1357,7 +1357,7 @@ class RecurringEventControllerTest extends TestCase
     ): TestResponse
     {
         $sample = static::getTestEventData();
-        return $this->actingAs($user ?? $this->user)->put("$this->basePath", [
+        return $this->actingAs($user ?? $this->user)->post("$this->basePath", [
             'titleEn' => $missingTitleEn ? null : $sample['titleEn'],
             'titleDe' => $missingTitleDe ? null : $sample['titleDe'],
             'descriptionDe' => $missingDescriptionDe ? null : $sample['descriptionDe'],
