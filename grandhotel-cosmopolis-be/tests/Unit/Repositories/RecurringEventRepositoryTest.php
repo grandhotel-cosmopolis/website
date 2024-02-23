@@ -7,6 +7,7 @@ use App\Models\FileUpload;
 use App\Models\RecurringEvent;
 use App\Models\User;
 use App\Repositories\RecurringEventRepository;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\TestCase;
@@ -535,5 +536,85 @@ class RecurringEventRepositoryTest extends TestCase
         $dbEvent = RecurringEvent::query()->where('guid', $event->guid)->first();
         $this->assertFalse($returnedEvent->is_public);
         $this->assertFalse($dbEvent->is_public);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsCorrectAmountOfEvents() {
+        // Arrange
+        $user = User::factory()->create();
+        RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'end_recurrence' => Carbon::now()->addDays(5)->addHours(2),
+            ]);
+
+        // Act
+        $result = $this->cut->listAll();
+
+        // Assert
+        $this->assertCount(5, $result);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsPublicAndPrivateEvents() {
+        // Arrange
+        $user = User::factory()->create();
+        RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'end_recurrence' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => false
+            ]);
+
+        RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'end_recurrence' => Carbon::now()->addDays(5)->addHours(2),
+                'is_public' => true
+            ]);
+
+        // Act
+        $result = $this->cut->listAll();
+
+        // Assert
+        $this->assertCount(10, $result);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsOnlyEventsWhichNotAlreadyEnded() {
+        // Arrange
+        $user = User::factory()->create();
+        RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'end_recurrence' => Carbon::now()->addDays(5)->addHours(2)
+            ]);
+
+        RecurringEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->count(5)
+            ->create([
+                'end_recurrence' => Carbon::now()->subDays(5),
+            ]);
+
+        // Act
+        $result = $this->cut->listAll();
+
+        // Assert
+        $this->assertCount(5, $result);
     }
 }

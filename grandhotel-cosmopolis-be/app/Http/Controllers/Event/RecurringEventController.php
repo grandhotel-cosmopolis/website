@@ -3,7 +3,12 @@
 namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
+use App\Http\Dtos\Event\ListRecurringEventDto;
 use App\Http\Dtos\Event\RecurringEventDto;
+use App\Models\EventLocation;
+use App\Models\FileUpload;
+use App\Models\RecurringEvent;
+use App\Repositories\Interfaces\IRecurringEventRepository;
 use App\Services\Interfaces\IRecurringEventService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -17,8 +22,37 @@ class RecurringEventController extends Controller
 {
 
     public function __construct(
-        protected IRecurringEventService $recurringEventService
+        protected IRecurringEventService $recurringEventService,
+        protected IRecurringEventRepository $eventRepository
     ) {}
+
+    /** @noinspection PhpUnused */
+    #[OA\Get(
+        path: '/api/recurringEvent/listAll',
+        operationId: 'getAllRecurringEvents',
+        description: 'list all recurring events',
+        tags: ['Event'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'created recurring event successfully',
+                content: new OA\JsonContent(ref: ListRecurringEventDto::class)
+            )
+        ]
+    )]
+    public function listAll(): JsonResponse
+    {
+        $events = $this->eventRepository->listAll();
+
+        $eventDtos = $events->map(function (RecurringEvent $event) {
+            /** @var EventLocation $eventLocation */
+            $eventLocation = $event->eventLocation()->first();
+            /** @var FileUpload $fileUpload */
+            $fileUpload = $event->fileUpload()->first();
+            return RecurringEventDto::create($event, $eventLocation, $fileUpload);
+        });
+        return new JsonResponse(new ListRecurringEventDto($eventDtos->toArray()));
+    }
 
     /** @noinspection PhpUnused */
     #[OA\Post(

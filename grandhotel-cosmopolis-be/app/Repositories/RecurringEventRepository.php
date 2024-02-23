@@ -9,6 +9,7 @@ use App\Models\RecurringEvent;
 use App\Models\User;
 use App\Repositories\Interfaces\IRecurringEventRepository;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -151,5 +152,13 @@ class RecurringEventRepository implements IRecurringEventRepository
         $event->is_public = false;
         $event->save();
         return $event;
+    }
+
+    public function listAll(): Collection
+    {
+        return RecurringEvent::query()
+            ->where('end_recurrence', '>', Carbon::now())
+            ->orWhereNull('end_recurrence')
+            ->get();
     }
 }

@@ -5,6 +5,7 @@ namespace App\Repositories\Interfaces;
 use App\Http\Controllers\Event\Recurrence;
 use App\Models\RecurringEvent;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 interface IRecurringEventRepository
 {
@@ -42,4 +43,7 @@ interface IRecurringEventRepository
     public function publish(string $guid): RecurringEvent;
 
     public function unpublish(string $guid): RecurringEvent;
+
+    /** @return Collection<int, RecurringEvent> */
+    public function listAll(): Collection;
 }

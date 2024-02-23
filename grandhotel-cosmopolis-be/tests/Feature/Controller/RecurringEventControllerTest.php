@@ -3,6 +3,7 @@
 namespace Tests\Feature\Controller;
 
 use App\Http\Controllers\Event\Recurrence;
+use App\Http\Dtos\Event\RecurringEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\Permissions;
@@ -40,7 +41,8 @@ class RecurringEventControllerTest extends TestCase
             Permissions::EDIT_EVENT,
             Permissions::DELETE_EVENT,
             Permissions::PUBLISH_EVENT,
-            Permissions::UNPUBLISH_EVENT
+            Permissions::UNPUBLISH_EVENT,
+            Permissions::VIEW_EVENTS
         ]);
         $this->fileUpload = FileUpload::factory()->for($this->user, 'uploadedBy')->create();
         $this->eventLocation = EventLocation::factory()->create();
@@ -1280,6 +1282,73 @@ class RecurringEventControllerTest extends TestCase
             $singleEvent = SingleEvent::query()->where('guid', $singleEventGuid)->first();
             $this->assertFalse($singleEvent->is_public);
         }
+    }
+
+    /** @test */
+    public function listAll_notLoggedIn_returnsUnauthorized()
+    {
+        // Act
+        $response = $this->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function listAll_unauthorized_returnsUnauthorized()
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function listAll_allValid_returnsPublicAndPrivateEvents()
+    {
+        // Arrange
+        self::createRecurringEvent()
+            ->count(10)
+            ->create(['is_public' => true]);
+        self::createRecurringEvent()
+            ->count(5)
+            ->create(['is_public' => false]);
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var RecurringEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(15, $events);
+    }
+
+    /** @test */
+    public function listAll_allValid_doesNotReturnEventsInThePast()
+    {
+        // Arrange
+        self::createRecurringEvent()
+            ->count(10)
+            ->create([
+                'end_recurrence' => new Carbon('2024-01-11T18:00:00.000Z')
+            ]);
+        self::createRecurringEvent()
+            ->count(5)
+            ->create(['is_public' => false]);
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var RecurringEvent[] $events */
+        $events = $response->json('events');
+        $this->assertCount(5, $events);
     }
 
     private static function createRecurringEvent(
