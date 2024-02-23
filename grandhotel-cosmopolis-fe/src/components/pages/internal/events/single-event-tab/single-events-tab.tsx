@@ -17,7 +17,7 @@ export const SingleEventsTab = () => {
       height="100%"
       display="flex"
       flexDirection="column"
-      overflow={"hidden"}
+      overflow="hidden"
       sx={{ p: 1 }}
     >
       <SingleEventDetailsDialog
@@ -31,13 +31,6 @@ export const SingleEventsTab = () => {
         items={data ?? []}
         onItemClick={(item) => setSelectedEvent(item)}
       />
-      {/* <CreateEventDialog
-        open={createEvent}
-        close={() => setCreateEvent(false)}
-      /> */}
-      {/* <Button variant="contained" onClick={() => setCre)ateEvent(true}>
-        Create new Event
-      </Button> */}
     </Box>
   );
 };

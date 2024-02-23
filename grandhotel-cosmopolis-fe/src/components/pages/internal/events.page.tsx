@@ -1,7 +1,7 @@
 import { Box, Stack, Tab, Tabs } from "@mui/material";
 import { useState } from "react";
 import { SingleEventsTab } from "./events/single-event-tab/single-events-tab";
-import { RecurringEventsTab } from "./events/recurring-events-tab";
+import { RecurringEventsTab } from "./events/recurring-event-tab/recurring-events-tab";
 import { SingleEventDetailsDialog } from "./events/single-event-details-dialog/single-event-details-dialog";
 import { CreateButton } from "../../shared/buttons/create-button";
 
