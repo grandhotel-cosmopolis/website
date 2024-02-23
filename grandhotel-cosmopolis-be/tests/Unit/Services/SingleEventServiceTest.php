@@ -53,6 +53,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $evenLocation->guid,
             'invalid'
         );
@@ -80,6 +81,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             'invalid',
             $fileUpload->guid
         );
@@ -106,6 +108,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->end,
             $singleEvent->end->subMinutes(30),
+            false,
             $evenLocation->guid,
             $fileUpload->guid
         );
@@ -134,6 +137,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $evenLocation->guid,
             $fileUpload->guid
         );
@@ -167,6 +171,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $evenLocation->guid,
             'invalid'
         );
@@ -200,6 +205,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $evenLocation->guid,
             'invalid'
         );
@@ -232,6 +238,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->end,
             $singleEvent->end->subMinutes(30),
+            false,
             $evenLocation->guid,
             $fileUpload->guid
         );
@@ -267,6 +274,7 @@ class SingleEventServiceTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $evenLocation->guid,
             $fileUpload->guid
         );

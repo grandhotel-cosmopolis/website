@@ -226,6 +226,7 @@ class RecurringEventService implements IRecurringEventService
                 $recurringEvent->description_en,
                 $currentStart,
                 $currentEnd,
+                false,
                 $eventLocation->guid,
                 $fileUpload->guid
             );

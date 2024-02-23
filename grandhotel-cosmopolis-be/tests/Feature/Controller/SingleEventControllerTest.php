@@ -524,7 +524,9 @@ class SingleEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-        $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $eventData['titleDe'])
+        $response->assertJson(fn(AssertableJson $json) => $json
+            ->where('guid', fn(mixed $guid) => is_string($guid))
+            ->where('titleDe', $eventData['titleDe'])
             ->where('titleEn', $eventData['titleEn'])
             ->where('descriptionDe', $eventData['descriptionDe'])
             ->where('descriptionEn', $eventData['descriptionEn'])
@@ -744,6 +746,7 @@ class SingleEventControllerTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $eventData['titleDe'])
+            ->where('guid', fn(mixed $guid) => is_string($guid))
             ->where('titleEn', $eventData['titleEn'])
             ->where('descriptionDe', $eventData['descriptionDe'])
             ->where('descriptionEn', $eventData['descriptionEn'])

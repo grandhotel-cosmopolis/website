@@ -39,6 +39,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $eventLocation->guid,
             'not existing'
         );
@@ -59,6 +60,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             'not existing',
             $fileUpload->guid
         );
@@ -81,6 +83,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $eventLocation->guid,
             $fileUpload->guid
         );
@@ -120,6 +123,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $eventLocation->guid,
             $fileUpload->guid
         );
@@ -139,6 +143,48 @@ class SingleEventRepositoryTest extends TestCase
         $this->assertEquals($singleEvent->start, $createdEvent->start);
         $this->assertEquals($singleEvent->end, $createdEvent->end);
         $this->assertFalse($createdEvent->is_public);
+        $this->assertFalse($createdEvent->is_recurring);
+        $this->assertEquals($eventLocation->guid, $createdEvent->eventLocation()->first()->guid);
+        $this->assertEquals($fileUpload->guid, $createdEvent->fileUpload()->first()->guid);
+    }
+
+    /** @test */
+    public function createSingleEvent_allValidPublicEvent_newPublicEventIsCreated() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $singleEvent = SingleEvent::factory()->make();
+        $this->be($user);
+
+        // Act
+        $this->cut->createSingleEvent(
+            $singleEvent->title_de,
+            $singleEvent->title_en,
+            $singleEvent->description_de,
+            $singleEvent->description_en,
+            $singleEvent->start,
+            $singleEvent->end,
+            true,
+            $eventLocation->guid,
+            $fileUpload->guid
+        );
+
+        // Assert
+        $events = SingleEvent::query()
+            ->where('title_de', $singleEvent->title_de)
+            ->where('title_en', $singleEvent->title_en)
+            ->get();
+        $this->assertCount(1, $events);
+        $createdEvent = $events[0];
+        $this->assertNotEquals($singleEvent->guid, $createdEvent->guid);
+        $this->assertEquals($singleEvent->title_de, $createdEvent->title_de);
+        $this->assertEquals($singleEvent->title_en, $createdEvent->title_en);
+        $this->assertEquals($singleEvent->description_de, $createdEvent->description_de);
+        $this->assertEquals($singleEvent->description_en, $createdEvent->description_en);
+        $this->assertEquals($singleEvent->start, $createdEvent->start);
+        $this->assertEquals($singleEvent->end, $createdEvent->end);
+        $this->assertTrue($createdEvent->is_public);
         $this->assertFalse($createdEvent->is_recurring);
         $this->assertEquals($eventLocation->guid, $createdEvent->eventLocation()->first()->guid);
         $this->assertEquals($fileUpload->guid, $createdEvent->fileUpload()->first()->guid);
@@ -165,6 +211,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             'not existing',
             $fileUpload->guid,
 
@@ -192,6 +239,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $eventLocation->guid,
             'not existing'
         );
@@ -219,6 +267,7 @@ class SingleEventRepositoryTest extends TestCase
             $singleEvent->description_en,
             $singleEvent->start,
             $singleEvent->end,
+            false,
             $eventLocation->guid,
             $fileUpload->guid
         );
@@ -247,6 +296,7 @@ class SingleEventRepositoryTest extends TestCase
             $newSingleEventData->description_en,
             $newSingleEventData->start,
             $newSingleEventData->end,
+            false,
             $newEventLocation->guid,
             $newFileUpload->guid
         );
@@ -293,6 +343,7 @@ class SingleEventRepositoryTest extends TestCase
             $newSingleEventData->description_en,
             $newSingleEventData->start,
             $newSingleEventData->end,
+            false,
             $newEventLocation->guid,
             $newFileUpload->guid
         );
@@ -313,6 +364,55 @@ class SingleEventRepositoryTest extends TestCase
         $this->assertEquals($newSingleEventData->start, $updatedEvent->start);
         $this->assertEquals($newSingleEventData->end, $updatedEvent->end);
         $this->assertFalse($updatedEvent->is_public);
+        $this->assertFalse($updatedEvent->is_recurring);
+        $this->assertEquals($newEventLocation->guid, $updatedEvent->eventLocation()->first()->guid);
+        $this->assertEquals($newFileUpload->guid, $updatedEvent->fileUpload()->first()->guid);
+    }
+
+    /** @test */
+    public function updateSingleEvent_allValidPublicEvent_updatedEventIsStoredInDb() {
+        // Arrange
+        $user = User::factory()->create();
+        $newFileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $newEventLocation = EventLocation::factory()->create();
+        $singleEvent = SingleEvent::factory()
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for($user, 'uploadedBy')->create())
+            ->for($user, 'createdBy')
+            ->create();
+
+        $newSingleEventData = SingleEvent::factory()->make();
+
+        // Act
+        $this->cut->updateSingleEvent(
+            $singleEvent->guid,
+            $newSingleEventData->title_de,
+            $newSingleEventData->title_en,
+            $newSingleEventData->description_de,
+            $newSingleEventData->description_en,
+            $newSingleEventData->start,
+            $newSingleEventData->end,
+            true,
+            $newEventLocation->guid,
+            $newFileUpload->guid
+        );
+
+        // Assert
+        $events = SingleEvent::query()
+            ->where('title_de', $newSingleEventData->title_de)
+            ->where('title_en', $newSingleEventData->title_en)
+            ->get();
+        $this->assertCount(1, $events);
+        $updatedEvent = $events[0];
+        $this->assertNotEquals($newSingleEventData->guid, $updatedEvent->guid);
+        $this->assertEquals($singleEvent->guid, $updatedEvent->guid);
+        $this->assertEquals($newSingleEventData->title_de, $updatedEvent->title_de);
+        $this->assertEquals($newSingleEventData->title_en, $updatedEvent->title_en);
+        $this->assertEquals($newSingleEventData->description_de, $updatedEvent->description_de);
+        $this->assertEquals($newSingleEventData->description_en, $updatedEvent->description_en);
+        $this->assertEquals($newSingleEventData->start, $updatedEvent->start);
+        $this->assertEquals($newSingleEventData->end, $updatedEvent->end);
+        $this->assertTrue($updatedEvent->is_public);
         $this->assertFalse($updatedEvent->is_recurring);
         $this->assertEquals($newEventLocation->guid, $updatedEvent->eventLocation()->first()->guid);
         $this->assertEquals($newFileUpload->guid, $updatedEvent->fileUpload()->first()->guid);
