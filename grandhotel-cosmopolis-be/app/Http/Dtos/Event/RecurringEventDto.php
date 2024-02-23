@@ -28,7 +28,7 @@ class RecurringEventDto
     public string $descriptionEn;
 
     #[OA\Property]
-    public string $isPublic;
+    public bool $isPublic;
 
     #[OA\Property(ref: EventLocationDto::class)]
     public EventLocationDto $eventLocation;
