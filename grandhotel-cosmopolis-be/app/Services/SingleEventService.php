@@ -17,8 +17,10 @@ class SingleEventService implements ISingleEventService
 {
     public function __construct(
         protected ISingleEventRepository $eventRepository,
-        protected ITimeService $timeService
-    ) {}
+        protected ITimeService           $timeService
+    )
+    {
+    }
 
     /**
      * @throws InvalidTimeRangeException
@@ -30,12 +32,13 @@ class SingleEventService implements ISingleEventService
         string $descriptionEn,
         Carbon $start,
         Carbon $end,
+        ?bool  $isPublic,
         string $eventLocationGuid,
         string $fileUploadGuid
-    ) : SingleEvent {
+    ): SingleEvent
+    {
         if (FileUpload::query()->where('guid', $fileUploadGuid)->count() != 1
-            || EventLocation::query()->where('guid', $eventLocationGuid)->count() != 1)
-        {
+            || EventLocation::query()->where('guid', $eventLocationGuid)->count() != 1) {
             throw new NotFoundHttpException();
         }
 
@@ -50,6 +53,7 @@ class SingleEventService implements ISingleEventService
             $descriptionEn,
             $start,
             $end,
+            $isPublic,
             $eventLocationGuid,
             $fileUploadGuid
         );
@@ -66,12 +70,13 @@ class SingleEventService implements ISingleEventService
         string $descriptionEn,
         Carbon $start,
         Carbon $end,
+        ?bool  $isPublic,
         string $eventLocationGuid,
         string $fileUploadGuid
-    ): SingleEvent {
+    ): SingleEvent
+    {
         if (FileUpload::query()->where('guid', $fileUploadGuid)->count() != 1
-            || EventLocation::query()->where('guid', $eventLocationGuid)->count() != 1)
-        {
+            || EventLocation::query()->where('guid', $eventLocationGuid)->count() != 1) {
             throw new NotFoundHttpException();
         }
 
@@ -87,6 +92,7 @@ class SingleEventService implements ISingleEventService
             $descriptionEn,
             $start,
             $end,
+            $isPublic,
             $eventLocationGuid,
             $fileUploadGuid
         );

@@ -15,6 +15,7 @@ interface ISingleEventRepository
         string $descriptionEn,
         Carbon $start,
         Carbon $end,
+        ?bool  $isPublic,
         string $eventLocationGuid,
         string $fileUploadGuid
     ): SingleEvent;
@@ -27,6 +28,7 @@ interface ISingleEventRepository
         string $descriptionEn,
         Carbon $start,
         Carbon $end,
+        ?bool  $isPublic,
         string $eventLocationGuid,
         string $fileUploadGuid
     );

@@ -2,7 +2,6 @@ import {
   Box,
   Card,
   CardContent,
-  CardHeader,
   Divider,
   Stack,
   Typography,
@@ -64,7 +63,7 @@ export const UpcomingEvents = () => {
                       />
                     </Box>
                     <Stack>
-                      <Typography variant="h5">{event.title_de}</Typography>
+                      <Typography variant="h5">{event.titleDe}</Typography>
                       <WhenIndicator start={event.start} end={event.end} />
                       <WhereIndicator eventLocation={event.eventLocation} />
                     </Stack>
@@ -72,7 +71,7 @@ export const UpcomingEvents = () => {
                       component="span"
                       variant={isMobileView ? "body2" : "body1"}
                     >
-                      {textFormatter(event.description_de ?? "")}
+                      {textFormatter(event.descriptionDe ?? "")}
                     </Typography>
                   </Box>
                 </Box>

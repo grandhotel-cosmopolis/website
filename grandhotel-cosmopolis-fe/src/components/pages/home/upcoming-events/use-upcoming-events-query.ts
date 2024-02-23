@@ -17,10 +17,10 @@ export const useUpcomingEventsQuery = () => {
       ?.map(
         (e) =>
           ({
-            title_de: e.title_de,
-            title_en: e.title_en,
-            description_de: e.description_de,
-            description_en: e.description_en,
+            title_de: e.titleDe,
+            title_en: e.titleEn,
+            description_de: e.descriptionDe,
+            description_en: e.descriptionEn,
             eventLocation: e.eventLocation,
             start: e.start ? new Date(e.start) : undefined,
             end: e.end ? new Date(e.end) : undefined,

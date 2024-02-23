@@ -122,6 +122,7 @@ class SingleEventController extends Controller
                         new OA\Property(property: 'descriptionEn', type: 'string'),
                         new OA\Property(property: 'start', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'end', type: 'string', format: 'date-time'),
+                        new OA\Property(property: 'isPublic', type: 'boolean'),
                         new OA\Property(property: 'eventLocationGuid', type: 'string'),
                         new OA\Property(property: 'fileUploadGuid', type: 'string')
                     ]
@@ -149,6 +150,7 @@ class SingleEventController extends Controller
             $request['descriptionEn'],
             Carbon::parse($request['start']),
             Carbon::parse($request['end']),
+            $request['isPublic'],
             $request['eventLocationGuid'],
             $request['fileUploadGuid']
         );
@@ -159,7 +161,7 @@ class SingleEventController extends Controller
     /** @noinspection PhpUnused */
     #[OA\Post(
         path: '/api/singleEvent/{eventGuid}/update',
-        operationId: 'editSingleEVent',
+        operationId: 'updateSingleEvent',
         description: 'Edit an existing single event',
         requestBody: new OA\RequestBody(
             content: new OA\MediaType(
@@ -172,6 +174,7 @@ class SingleEventController extends Controller
                         new OA\Property(property: 'descriptionEn', type: 'string'),
                         new OA\Property(property: 'start', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'end', type: 'string', format: 'date-time'),
+                        new OA\Property(property: 'isPublic', type: 'boolean'),
                         new OA\Property(property: 'eventLocationGuid', type: 'string'),
                         new OA\Property(property: 'fileUploadGuid', type: 'string')
                     ]
@@ -204,6 +207,7 @@ class SingleEventController extends Controller
             $request['descriptionEn'],
             Carbon::parse($request['start']),
             Carbon::parse($request['end']),
+            $request['isPublic'],
             $request['eventLocationGuid'],
             $request['fileUploadGuid']
         );

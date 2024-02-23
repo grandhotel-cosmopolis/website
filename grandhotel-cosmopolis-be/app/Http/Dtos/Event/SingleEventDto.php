@@ -13,6 +13,9 @@ use OpenApi\Attributes as OA;
 class SingleEventDto
 {
     #[OA\Property]
+    public string $guid;
+
+    #[OA\Property]
     public string $titleDe;
 
     #[OA\Property]
@@ -40,6 +43,7 @@ class SingleEventDto
     public bool $isPublic;
 
     public function __construct(
+        string           $guid,
         string           $titleDe,
         string           $titleEn,
         string           $descriptionDe,
@@ -51,6 +55,7 @@ class SingleEventDto
         bool             $isPublic
     )
     {
+        $this->guid = $guid;
         $this->titleDe = $titleDe;
         $this->titleEn = $titleEn;
         $this->descriptionDe = $descriptionDe;
@@ -77,6 +82,7 @@ class SingleEventDto
             $fileUpload = $singleEvent->fileUpload()->first();
         }
         return new SingleEventDto(
+            $singleEvent->guid,
             $singleEvent->title_de,
             $singleEvent->title_en,
             $singleEvent->description_de,

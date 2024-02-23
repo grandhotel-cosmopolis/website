@@ -4,7 +4,7 @@ import {
   TextField,
   createFilterOptions,
 } from "@mui/material";
-import { EventLocationOptionType } from "../edit-location-dialog";
+import { EventLocationOptionType } from "../single-event-details-dialog/single-event-dialog-edit-content/edit-location-dialog";
 
 const filter = createFilterOptions<EventLocationOptionType>();
 
@@ -21,17 +21,12 @@ export const AddEventLocationAutocomplete = (
   props: AddNewEventLocationAutocompleteProps
 ) => {
   const getOptionLabel = (option: string | EventLocationOptionType) => {
-    console.log("hell");
     if (typeof option === "string") {
-      console.log("was weiß ich");
       return option;
     }
     if (option.inputValue) {
-      console.log("was weiß ich2");
-
       return option.inputValue;
     }
-    console.log("hello");
     return getEventLocationDisplayText(option);
   };
 
@@ -50,8 +45,10 @@ export const AddEventLocationAutocomplete = (
     params: FilterOptionsState<EventLocationOptionType>
   ) => {
     const filtered = filter(options, params);
-
-    if (params.inputValue !== "") {
+    if (
+      params.inputValue !== "" &&
+      filtered.findIndex((v) => v.name === params.inputValue) === -1
+    ) {
       filtered.push({
         inputValue: params.inputValue,
         name: `Add "${params.inputValue}"`,

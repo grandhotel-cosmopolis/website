@@ -21,6 +21,7 @@ class SingleEventRepository implements ISingleEventRepository
         string $descriptionEn,
         Carbon $start,
         Carbon $end,
+        ?bool  $isPublic,
         string $eventLocationGuid,
         string $fileUploadGuid
     ): SingleEvent
@@ -47,7 +48,7 @@ class SingleEventRepository implements ISingleEventRepository
             'start' => $start,
             'end' => $end,
             'is_recurring' => false,
-            'is_public' => false
+            'is_public' => $isPublic ?? false
         ]);
         $event->eventLocation()->associate($eventLocation);
         $event->fileUpload()->associate($fileUpload);
@@ -64,9 +65,11 @@ class SingleEventRepository implements ISingleEventRepository
         string $descriptionEn,
         Carbon $start,
         Carbon $end,
+        ?bool $isPublic,
         string $eventLocationGuid,
         string $fileUploadGuid
-    ): SingleEvent {
+    ): SingleEvent
+    {
         /** @var SingleEvent $event */
         $event = SingleEvent::query()
             ->where('guid', $eventGuid)
@@ -83,7 +86,7 @@ class SingleEventRepository implements ISingleEventRepository
             ->where('guid', $fileUploadGuid)
             ->first();
 
-        if(is_null($event) || is_null($eventLocation) || is_null($fileUpload)) {
+        if (is_null($event) || is_null($eventLocation) || is_null($fileUpload)) {
             throw new NotFoundHttpException();
         }
 
@@ -93,6 +96,7 @@ class SingleEventRepository implements ISingleEventRepository
         $event->description_en = $descriptionEn;
         $event->start = $start;
         $event->end = $end;
+        $event->is_public = $isPublic ?? $event->is_public;
 
         $event->eventLocation()->associate($eventLocation);
 

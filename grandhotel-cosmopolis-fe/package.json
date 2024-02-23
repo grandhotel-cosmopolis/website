@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "copy-build-to-php-backend": "cp -r dist/* ../grandhotel-cosmopolis-be/public && mv ../grandhotel-cosmopolis-be/public/index.html ../grandhotel-cosmopolis-be/public/react.html",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview --host=127.0.0.1"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",

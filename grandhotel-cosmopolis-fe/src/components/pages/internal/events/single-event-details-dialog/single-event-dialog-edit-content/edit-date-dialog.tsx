@@ -48,7 +48,7 @@ export const EditDateDialog = (props: EditDateDialogProps) => {
     if (!!newValue) {
       setEnd(newValue);
       if (!!date) {
-        props.setStart(
+        props.setEnd(
           new Date(
             date.getFullYear(),
             date.getMonth(),

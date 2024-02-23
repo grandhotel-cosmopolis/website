@@ -6,25 +6,24 @@ import {
   Stack,
   Typography,
   Switch,
-  TextField,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material";
-import { EventLocationDto } from "../../../../infrastructure/generated/openapi";
+import { EventLocationDto } from "../../../../../../infrastructure/generated/openapi";
 import { useEffect, useState } from "react";
-import { eventLocationApi } from "../../../../infrastructure/api";
-import { AddEventLocationAutocomplete } from "./event-location/add-event-location-autocomplete";
-import { AddNewEventLocationDialog } from "./event-location/add-new-event-location-dialog";
-import { fixEventLocations } from "./event-location/fix-event-locations";
+import { eventLocationApi } from "../../../../../../infrastructure/api";
+import { AddEventLocationAutocomplete } from "../../event-location/add-event-location-autocomplete";
+import { AddNewEventLocationDialog } from "../../event-location/add-new-event-location-dialog";
+import { fixEventLocations } from "../../event-location/fix-event-locations";
 
 type EditLocationDialogProps = {
   readonly open: boolean;
   readonly close: () => void;
   readonly location?: EventLocationDto;
-  readonly setLocation: (_: EventLocationDto) => void;
+  readonly setLocation: (_?: EventLocationDto) => void;
 };
 
 export type EventLocationOptionType = {
@@ -38,10 +37,22 @@ export type EventLocationOptionType = {
 
 export const EditLocationDialog = (props: EditLocationDialogProps) => {
   const [inGrandhotel, setInGrandhotel] = useState(
-    props?.location?.name === "Grandhotel Augsburg"
+    props?.location?.name === "Grandhotel Cosmopolis"
   );
   const [selectedEventLocationOption, setSelectedEventLocationOption] =
-    useState<EventLocationOptionType | null>(null);
+    useState<EventLocationOptionType | null>(
+      props.location?.name
+        ? {
+            name: props.location?.name,
+            street: props.location?.street ?? undefined,
+            city: props.location?.city ?? undefined,
+            guid: props.location?.guid ?? undefined,
+            additionalInformation:
+              props.location?.additionalInformation ?? undefined,
+          }
+        : null
+    );
+
   const [dialogValue, setDialogValue] =
     useState<Omit<EventLocationDto, "guid">>();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -50,13 +61,21 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
     EventLocationOptionType[]
   >([]);
 
-  const [room, setRoom] = useState<string>();
+  const [room, setRoom] = useState<string>(
+    props?.location?.name === "Grandhotel Cosmopolis"
+      ? props.location.additionalInformation ?? ""
+      : ""
+  );
 
   const handleChangeRoom = (event: SelectChangeEvent) => {
-    const selectedEventLocation = fixEventLocations.find(
-      (l) => l.additionalInformation === event.target.value
+    const selectedEventLocation = fixEventLocations.find((l) =>
+      event.target.value === ""
+        ? !l.additionalInformation
+        : l.additionalInformation === event.target.value
     );
-    console.log(selectedEventLocation);
+    if (!!selectedEventLocation) {
+      props.setLocation(selectedEventLocation);
+    }
     setRoom(event.target.value as string);
   };
 
@@ -89,7 +108,8 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
         .createEventLocation(
           dialogValue.name,
           dialogValue.street ?? undefined,
-          dialogValue.city ?? undefined
+          dialogValue.city ?? undefined,
+          dialogValue.additionalInformation ?? undefined
         )
         .then((r) => {
           const newEventLocation: EventLocationOptionType = {
@@ -101,6 +121,7 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
           };
           setEventLocations((curr) => [...curr, newEventLocation]);
           setSelectedEventLocationOption(newEventLocation);
+          props.setLocation(r.data);
           handleCloseCreateDialog();
         });
     }
@@ -124,6 +145,13 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
         name: newValue.inputValue,
       });
     } else {
+      props.setLocation({
+        name: newValue?.name,
+        guid: newValue?.guid,
+        street: newValue?.street,
+        city: newValue?.city,
+        additionalInformation: newValue?.additionalInformation,
+      });
       setSelectedEventLocationOption(newValue);
     }
   };
@@ -136,7 +164,16 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
             <Typography>Event findet im Grandhotel statt:</Typography>
             <Switch
               checked={inGrandhotel}
-              onChange={(e) => setInGrandhotel(e.target.checked)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  props.setLocation(fixEventLocations[4]);
+                } else {
+                  props.setLocation(undefined);
+                }
+                setSelectedEventLocationOption(null);
+                setRoom("");
+                setInGrandhotel(e.target.checked);
+              }}
             />
           </Stack>
           {inGrandhotel ? (
@@ -144,10 +181,7 @@ export const EditLocationDialog = (props: EditLocationDialogProps) => {
               <InputLabel>Room</InputLabel>
               <Select value={room} label="Room" onChange={handleChangeRoom}>
                 {fixEventLocations.map((l, i) => (
-                  <MenuItem
-                    key={i}
-                    value={l.additionalInformation ?? undefined}
-                  >
+                  <MenuItem key={i} value={l.additionalInformation ?? ""}>
                     {l.additionalInformation ?? "<no-room>"}
                   </MenuItem>
                 ))}
