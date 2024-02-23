@@ -13,6 +13,9 @@ use OpenApi\Attributes as OA;
 class RecurringEventDto
 {
     #[OA\Property]
+    public string $guid;
+
+    #[OA\Property]
     public string $titleDe;
 
     #[OA\Property]
@@ -49,6 +52,7 @@ class RecurringEventDto
     public int $recurrenceMetadata;
 
     public function __construct(
+        string $guid,
         string $titleDe,
         string $titleEn,
         string $descriptionDe,
@@ -61,6 +65,7 @@ class RecurringEventDto
         DateTime | null $endRecurrence,
         FileDto $fileDto,
     ) {
+        $this->guid = $guid;
         $this->titleDe = $titleDe;
         $this->titleEn = $titleEn;
         $this->descriptionDe = $descriptionDe;
@@ -78,6 +83,7 @@ class RecurringEventDto
         $eventLocation = $eventLocation ?? $recurringEvent->eventLocation()->first();
         $fileUpload = $fileUpload ?? $recurringEvent->fileUpload()->first();
         return new RecurringEventDto(
+            $recurringEvent->guid,
             $recurringEvent->title_de,
             $recurringEvent->title_en,
             $recurringEvent->description_de,
