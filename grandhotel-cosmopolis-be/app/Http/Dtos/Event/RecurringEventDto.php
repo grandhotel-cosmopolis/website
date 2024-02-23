@@ -13,16 +13,19 @@ use OpenApi\Attributes as OA;
 class RecurringEventDto
 {
     #[OA\Property]
-    public string $title_de;
+    public string $titleDe;
 
     #[OA\Property]
-    public string $title_en;
+    public string $titleEn;
 
     #[OA\Property]
-    public string $description_de;
+    public string $descriptionDe;
 
     #[OA\Property]
-    public string $description_en;
+    public string $descriptionEn;
+
+    #[OA\Property]
+    public string $isPublic;
 
     #[OA\Property(ref: EventLocationDto::class)]
     public EventLocationDto $eventLocation;
@@ -46,10 +49,10 @@ class RecurringEventDto
     public int $recurrenceMetadata;
 
     public function __construct(
-        string $title_de,
-        string $title_en,
-        string $description_de,
-        string $description_en,
+        string $titleDe,
+        string $titleEn,
+        string $descriptionDe,
+        string $descriptionEn,
         Recurrence $recurrence,
         int $recurrenceMetadata,
         EventLocationDto $eventLocation,
@@ -58,10 +61,10 @@ class RecurringEventDto
         DateTime | null $endRecurrence,
         FileDto $fileDto,
     ) {
-        $this->title_de = $title_de;
-        $this->title_en = $title_en;
-        $this->description_de = $description_de;
-        $this->description_en = $description_en;
+        $this->titleDe = $titleDe;
+        $this->titleEn = $titleEn;
+        $this->descriptionDe = $descriptionDe;
+        $this->descriptionEn = $descriptionEn;
         $this->recurrence = $recurrence;
         $this->recurrenceMetadata = $recurrenceMetadata;
         $this->eventLocation = $eventLocation;

@@ -313,10 +313,10 @@ class RecurringEventControllerTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
-        $response->assertJson(fn(AssertableJson $json) => $json->where('title_de', $titleDe)
-            ->where('title_en', $sample['titleEn'])
-            ->where('description_de', $sample['descriptionDe'])
-            ->where('description_en', $sample['descriptionEn'])
+        $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $titleDe)
+            ->where('titleEn', $sample['titleEn'])
+            ->where('descriptionDe', $sample['descriptionDe'])
+            ->where('descriptionEn', $sample['descriptionEn'])
             ->where("eventLocation.name", $this->eventLocation->name)
             ->where('eventLocation.street', $this->eventLocation->street)
             ->where('eventLocation.city', $this->eventLocation->city)
@@ -785,10 +785,10 @@ class RecurringEventControllerTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
-        $response->assertJson(fn(AssertableJson $json) => $json->where('title_de', $titleDe)
-            ->where('title_en', $sample['titleEn'])
-            ->where('description_de', $sample['descriptionDe'])
-            ->where('description_en', $sample['descriptionEn'])
+        $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $titleDe)
+            ->where('titleEn', $sample['titleEn'])
+            ->where('descriptionDe', $sample['descriptionDe'])
+            ->where('descriptionEn', $sample['descriptionEn'])
             ->where("eventLocation.name", $this->eventLocation->name)
             ->where('eventLocation.street', $this->eventLocation->street)
             ->where('eventLocation.city', $this->eventLocation->city)
