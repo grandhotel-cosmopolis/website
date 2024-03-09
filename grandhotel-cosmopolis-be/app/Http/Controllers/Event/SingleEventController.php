@@ -284,6 +284,69 @@ class SingleEventController extends Controller
         return new JsonResponse(SingleEventDto::create($event));
     }
 
+    /** @noinspection PhpUnused */
+    #[OA\Post(
+        path: '/api/singleEvent/{eventGuid}/exception',
+        operationId: 'createOrUpdateException',
+        description: 'Create or update an exception for a single event',
+        requestBody: new OA\RequestBody(
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(property: 'titleDe', type: 'string'),
+                        new OA\Property(property: 'titleEn', type: 'string'),
+                        new OA\Property(property: 'descriptionDe', type: 'string'),
+                        new OA\Property(property: 'descriptionEn', type: 'string'),
+                        new OA\Property(property: 'start', type: 'string', format: 'date-time'),
+                        new OA\Property(property: 'end', type: 'string', format: 'date-time'),
+                        new OA\Property(property: 'eventLocationGuid', type: 'string'),
+                        new OA\Property(property: 'fileUploadGuid', type: 'string')
+                    ]
+                )
+            )
+        ),
+        tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'added event exception successfully',
+                content: new OA\JsonContent(ref: SingleEventDto::class)),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+            new OA\Response(response: 422, description: 'validation error'),
+            new OA\Response(response: 400, description: 'invalid event')
+        ]
+    )]
+    public function createOrUpdateException(Request $request, string $eventGuid): JsonResponse
+    {
+        $request->validate([
+            'titleDe' => ['string'],
+            'titleEn' => ['string'],
+            'descriptionDe' => ['string'],
+            'descriptionEn' => ['string'],
+            'start' => ['date'],
+            'end' => ['date'],
+            'eventLocationGuid' => ['string'],
+            'fileUploadGuid' => ['string']
+        ]);
+
+        $event = $this->eventService->createOrUpdateEventException(
+            $eventGuid,
+            $request['titleDe'],
+            $request['titleEn'],
+            $request['descriptionDe'],
+            $request['descriptionEn'],
+            $request['start'],
+            $request['end'],
+            $request['eventLocationGuid'],
+            $request['fileUploadGuid']
+        );
+        return new JsonResponse(SingleEventDto::create($event));
+    }
+
     private static function validateSingleEventInput(Request $request): void
     {
         $request->validate([

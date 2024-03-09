@@ -6,6 +6,7 @@ use App\Exceptions\InvalidTimeRangeException;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\SingleEvent;
+use App\Models\SingleEventException;
 use App\Repositories\Interfaces\ISingleEventRepository;
 use App\Services\Interfaces\ISingleEventService;
 use App\Services\Interfaces\ITimeService;
@@ -119,5 +120,68 @@ class SingleEventService implements ISingleEventService
     public function list(Carbon $start, Carbon $end): Collection
     {
         return $this->eventRepository->getSingleEvents($start, $end);
+    }
+
+    /**
+     * @throws InvalidTimeRangeException
+     */
+    public function createOrUpdateEventException(
+        string  $eventGuid,
+        ?string $titleDe,
+        ?string $titleEn,
+        ?string $descriptionDe,
+        ?string $descriptionEn,
+        ?Carbon $start,
+        ?Carbon $end,
+        ?string $eventLocationGuid,
+        ?string $fileUploadGuid
+    ): SingleEvent
+    {
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = SingleEvent::query()->where('guid', $eventGuid)->first();
+        if (is_null($singleEvent)) {
+            throw new NotFoundHttpException();
+        }
+
+        if(!$this->timeService->validateTimeRange($start ?? $singleEvent->start, $end ?? $singleEvent->end)){
+            throw new InvalidTimeRangeException();
+        }
+
+        /** @var SingleEventException $existingException */
+        $exception = $singleEvent->exception()->first();
+
+        if (is_null($exception)) {
+            $exception = new SingleEventException;
+            $exception->singleEvent()->associate($singleEvent);
+        }
+
+        $exception->title_de = $titleDe;
+        $exception->title_en = $titleEn;
+        $exception->description_de = $descriptionDe;
+        $exception->description_en = $descriptionEn;
+        $exception->start = $start;
+        $exception->end = $end;
+
+        if (!is_null($eventLocationGuid)) {
+            /** @var EventLocation $eventLocation */
+            $eventLocation = EventLocation::query()->where('guid', $eventLocationGuid)->first();
+
+            if(is_null($eventLocation)) {
+                throw new NotFoundHttpException();
+            }
+            $exception->eventLocation()->associate($eventLocation);
+        }
+        if (!is_null($fileUploadGuid)) {
+            /** @var FileUpload $fileUpload */
+            $fileUpload = FileUpload::query()->where('guid', $fileUploadGuid)->first();
+
+            if (is_null($fileUpload)) {
+                throw new NotFoundHttpException();
+            }
+            $exception->fileUpload()->associate($fileUpload);
+        }
+        $exception->save();
+
+        return $singleEvent;
     }
 }

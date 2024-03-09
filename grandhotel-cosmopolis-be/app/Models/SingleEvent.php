@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @mixin Builder
@@ -57,5 +58,9 @@ class SingleEvent extends Model
 
     public function recurringEvent(): BelongsTo {
         return $this->belongsTo(RecurringEvent::class, 'recurring_event_id');
+    }
+
+    public function exception(): HasOne {
+        return $this->hasOne(SingleEventException::class, 'single_event_id');
     }
 }

@@ -7,6 +7,7 @@ use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\Permissions;
 use App\Models\SingleEvent;
+use App\Models\SingleEventException;
 use App\Models\User;
 use Carbon\Carbon;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -939,6 +940,140 @@ class SingleEventControllerTest extends TestCase
         /** @var SingleEvent $updatedEvent */
         $updatedEvent = SingleEvent::query()->where('guid', $oldEvent->guid)->first();
         $this->assertFalse($updatedEvent->is_public);
+    }
+
+
+    /** @test */
+    public function createOrUpdateException_notAuthenticated_returnsUnauthenticated()
+    {
+        // Arrange
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createSingleEvent()->create();
+
+        // Act
+        $response = $this->post("$this->basePath/$oldEvent->guid/exception", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function createOrUpdateException_notAuthorized_returnsUnauthorized()
+    {
+        // Arrange
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createSingleEvent()->create();
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post("$this->basePath/$oldEvent->guid/exception", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function createOrUpdateException_unknownEvent_returnsNotFound()
+    {
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/unknown/exception", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function createOrUpdateException_invalidTimeRange_returnsValidationError()
+    {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = static::createSingleEvent()->create();
+        $start = Carbon::now();
+        $end = Carbon::now()->subHour();
+
+        // Act
+        $response = $this
+            ->actingAs($this->user)
+            ->post(
+                "$this->basePath/$event->guid/exception",
+                [
+                    'start' => $start,
+                    'end' => $end
+                ],
+                ['Accept' => 'application/json']
+            );
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertContent('invalid time range');
+    }
+
+    /** @test */
+    public function createOrUpdateException_invalidTimeRangeOnlyStartSet_returnsValidationError()
+    {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = static::createSingleEvent()->create();
+        $start = $event->end->clone()->addHour();
+
+        // Act
+        $response = $this
+            ->actingAs($this->user)
+            ->post(
+                "$this->basePath/$event->guid/exception",
+                [
+                    'start' => $start,
+                ],
+                ['Accept' => 'application/json']
+            );
+
+        // Assert
+        $response->assertStatus(400);
+        $response->assertContent('invalid time range');
+    }
+
+    /** @test */
+    public function createOrUpdateException_allValid_eventExceptionIsStored()
+    {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = static::createSingleEvent()->create();
+        /** @var EventLocation $newEventLocation */
+        $newEventLocation = EventLocation::factory()->create();
+
+        // Act
+        $response = $this
+            ->actingAs($this->user)
+            ->post(
+                "$this->basePath/$event->guid/exception",
+                [
+                    'titleDe' => 'exception title de',
+                    'descriptionDe' => 'exception description de',
+                    'eventLocationGuid' => $newEventLocation->guid
+
+                ], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var SingleEvent $dbEvent */
+        $dbEvent = SingleEvent::query()->where('guid', $event->guid)->first();
+
+        /** @var SingleEventException $exception */
+        $exception = $dbEvent->exception()->first();
+
+        $this->assertNotNull($exception);
+        $this->assertEquals('exception title de', $exception->title_de);
+        $this->assertNull($exception->title_en);
+        $this->assertEquals('exception description de', $exception->description_de);
+        $this->assertNull($exception->description_en);
+        $this->assertNull($exception->start);
+        $this->assertNull($exception->end);
+        $this->assertNull($exception->fileUpload()->first());
+
+        /** @var EventLocation $newStoredLocation */
+        $newStoredLocation = $exception->eventLocation()->first();
+
+        $this->assertEquals($newEventLocation->guid, $newStoredLocation->guid);
     }
 
     private static function getTestEventData(): array
