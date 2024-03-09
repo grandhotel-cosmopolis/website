@@ -19,7 +19,8 @@ interface IRecurringEventService
         Recurrence $recurrence,
         string     $recurrenceMetadata,
         string     $eventLocationGuid,
-        string     $fileUploadGuid
+        string     $fileUploadGuid,
+        ?bool      $isPublic
     ): RecurringEvent;
 
     public function update(
@@ -34,7 +35,8 @@ interface IRecurringEventService
         Recurrence $recurrence,
         int        $recurrenceMetadata,
         string     $eventLocationGuid,
-        string     $fileUploadGuid
+        string     $fileUploadGuid,
+        ?bool      $isPublic
     ): RecurringEvent;
 
     public function delete(string $eventGuid): void;

@@ -38,7 +38,8 @@ class RecurringEventService implements IRecurringEventService
         Recurrence $recurrence,
         string     $recurrenceMetadata,
         string     $eventLocationGuid,
-        string     $fileUploadGuid
+        string     $fileUploadGuid,
+        ?bool      $isPublic
     ): RecurringEvent
     {
         if (!$this->timeService->validateTimeRange($startFirstOccurrence, $endFirstOccurrence)
@@ -57,7 +58,8 @@ class RecurringEventService implements IRecurringEventService
             $recurrence,
             $recurrenceMetadata,
             $eventLocationGuid,
-            $fileUploadGuid
+            $fileUploadGuid,
+            $isPublic
         );
 
         /** @var EventLocation $eventLocation */
@@ -72,7 +74,8 @@ class RecurringEventService implements IRecurringEventService
             $endRecurrence,
             $createdEvent,
             $eventLocation,
-            $fileUpload
+            $fileUpload,
+            $isPublic
         );
 
         return $createdEvent;
@@ -93,7 +96,8 @@ class RecurringEventService implements IRecurringEventService
         Recurrence $recurrence,
         int        $recurrenceMetadata,
         string     $eventLocationGuid,
-        string     $fileUploadGuid
+        string     $fileUploadGuid,
+        ?bool      $isPublic
     ): RecurringEvent
     {
         if (FileUpload::query()->where('guid', $fileUploadGuid)->count() != 1
@@ -118,10 +122,11 @@ class RecurringEventService implements IRecurringEventService
             $recurrence,
             $recurrenceMetadata,
             $eventLocationGuid,
-            $fileUploadGuid
+            $fileUploadGuid,
+            $isPublic
         );
 
-        $this->updateSingleEvents($updatedEvent);
+        $this->updateSingleEvents($updatedEvent, $isPublic);
 
         return $updatedEvent;
     }
@@ -137,7 +142,7 @@ class RecurringEventService implements IRecurringEventService
         $singleEvents = $recurringEvent->singleEvents()->get();
 
         /** @var SingleEvent $singleEvent */
-        foreach($singleEvents as $singleEvent) {
+        foreach ($singleEvents as $singleEvent) {
             $this->singleEventRepository->deleteSingleEvent($singleEvent->guid);
         }
 
@@ -155,7 +160,7 @@ class RecurringEventService implements IRecurringEventService
         $singleEvents = $recurringEvent->singleEvents()->get();
 
         /** @var SingleEvent $singleEvent */
-        foreach($singleEvents as $singleEvent) {
+        foreach ($singleEvents as $singleEvent) {
             $this->singleEventRepository->publishSingleEvent($singleEvent->guid);
         }
 
@@ -173,7 +178,7 @@ class RecurringEventService implements IRecurringEventService
         $singleEvents = $recurringEvent->singleEvents()->get();
 
         /** @var SingleEvent $singleEvent */
-        foreach($singleEvents as $singleEvent) {
+        foreach ($singleEvents as $singleEvent) {
             $this->singleEventRepository->unpublishSingleEvent($singleEvent->guid);
         }
 
@@ -181,7 +186,8 @@ class RecurringEventService implements IRecurringEventService
     }
 
     private function updateSingleEvents(
-        RecurringEvent $recurringEvent
+        RecurringEvent $recurringEvent,
+        ?bool          $isPublic
     ): void
     {
         /** @var EventLocation $eventLocation */
@@ -198,7 +204,8 @@ class RecurringEventService implements IRecurringEventService
             $recurringEvent->end_recurrence,
             $recurringEvent,
             $eventLocation,
-            $fileUpload
+            $fileUpload,
+            $isPublic
         );
     }
 
@@ -209,6 +216,7 @@ class RecurringEventService implements IRecurringEventService
         RecurringEvent $recurringEvent,
         EventLocation  $eventLocation,
         FileUpload     $fileUpload,
+        ?bool          $isPublic
     ): void
     {
         if (is_null($endRecurrence) || $endRecurrence > Carbon::now()->endOfYear()) {
@@ -226,7 +234,7 @@ class RecurringEventService implements IRecurringEventService
                 $recurringEvent->description_en,
                 $currentStart,
                 $currentEnd,
-                false,
+                $isPublic ?? false,
                 $eventLocation->guid,
                 $fileUpload->guid
             );

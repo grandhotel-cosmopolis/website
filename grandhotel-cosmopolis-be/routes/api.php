@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::middleware('permission:' . Permissions::PUBLISH_EVENT->value)->post('/{eventGuid}/publish', 'publish');
             Route::middleware('permission:' . Permissions::UNPUBLISH_EVENT->value)->post('/{eventGuid}/unpublish', 'unpublish');
             Route::middleware('permission:' . Permissions::VIEW_EVENTS->value)->get('/listAll', 'listAll');
+            Route::middleware('permission:' . Permissions::VIEW_EVENTS->value)->get('/{eventGuid}/listSingleEvents', 'listAllSingleEventsByRecurringEventId');
         });
     });
 

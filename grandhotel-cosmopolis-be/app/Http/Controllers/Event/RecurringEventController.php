@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Event;
 
 use App\Http\Controllers\Controller;
 use App\Http\Dtos\Event\ListRecurringEventDto;
+use App\Http\Dtos\Event\ListSingleEventDto;
 use App\Http\Dtos\Event\RecurringEventDto;
+use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\RecurringEvent;
+use App\Models\SingleEvent;
 use App\Repositories\Interfaces\IRecurringEventRepository;
+use App\Repositories\Interfaces\ISingleEventRepository;
 use App\Services\Interfaces\IRecurringEventService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -22,9 +26,12 @@ class RecurringEventController extends Controller
 {
 
     public function __construct(
-        protected IRecurringEventService $recurringEventService,
-        protected IRecurringEventRepository $eventRepository
-    ) {}
+        protected IRecurringEventService    $recurringEventService,
+        protected IRecurringEventRepository $eventRepository,
+        protected ISingleEventRepository    $singleEventRepository
+    )
+    {
+    }
 
     /** @noinspection PhpUnused */
     #[OA\Get(
@@ -55,6 +62,32 @@ class RecurringEventController extends Controller
     }
 
     /** @noinspection PhpUnused */
+    #[OA\Get(
+        path: '/api/recurringEvent/{eventGuid}/listSingleEvents',
+        operationId: 'getSingleEventsByRecurringEventGuid',
+        description: 'list all single events for a given recurring event guid',
+        tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'list of all single events of the given recurring event',
+                content: new OA\JsonContent(ref: ListSingleEventDto::class)
+            )
+        ]
+    )]
+    public function listAllSingleEventsByRecurringEventId(string $eventGuid): JsonResponse
+    {
+        $events = $this->singleEventRepository->listAllByRecurringEventGuid($eventGuid);
+        $eventDtos = $events->map(function (SingleEvent $event) {
+            return SingleEventDto::create($event);
+        });
+        return new JsonResponse(new ListSingleEventDto($eventDtos->toArray()));
+    }
+
+    /** @noinspection PhpUnused */
     #[OA\Post(
         path: '/api/recurringEvent',
         operationId: 'createRecurringEvent',
@@ -74,7 +107,8 @@ class RecurringEventController extends Controller
                         new OA\Property(property: 'endFirstOccurrence', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'endRecurrence', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'recurrence', ref: Recurrence::class),
-                        new OA\Property(property: 'recurrenceMetadata', type: 'integer')
+                        new OA\Property(property: 'recurrenceMetadata', type: 'integer'),
+                        new OA\Property(property: 'isPublic', type: 'boolean'),
                     ]
                 )
             )
@@ -90,7 +124,8 @@ class RecurringEventController extends Controller
             new OA\Response(response: 422, description: 'validation errors')
         ]
     )]
-    public function create(Request $request): Response | JsonResponse {
+    public function create(Request $request): Response|JsonResponse
+    {
         static::validateRecurringEventInput($request);
 
         $newEvent = $this->recurringEventService->create(
@@ -104,7 +139,8 @@ class RecurringEventController extends Controller
             Recurrence::from($request['recurrence']),
             $request['recurrenceMetadata'],
             $request['eventLocationGuid'],
-            $request['fileUploadGuid']
+            $request['fileUploadGuid'],
+            $request['isPublic']
         );
 
         return new JsonResponse(RecurringEventDto::create($newEvent));
@@ -130,7 +166,8 @@ class RecurringEventController extends Controller
                         new OA\Property(property: 'endFirstOccurrence', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'endRecurrence', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'recurrence', ref: Recurrence::class),
-                        new OA\Property(property: 'recurrenceMetadata', type: 'integer')
+                        new OA\Property(property: 'recurrenceMetadata', type: 'integer'),
+                        new OA\Property(property: 'isPublic', type: 'boolean')
                     ]
                 )
             )
@@ -149,7 +186,8 @@ class RecurringEventController extends Controller
             new OA\Response(response: 422, description: 'validation errors')
         ]
     )]
-    public function update(Request $request, string $eventGuid): Response | JsonResponse {
+    public function update(Request $request, string $eventGuid): Response|JsonResponse
+    {
         static::validateRecurringEventInput($request);
 
         $newEvent = $this->recurringEventService->update(
@@ -164,7 +202,8 @@ class RecurringEventController extends Controller
             Recurrence::from($request['recurrence']),
             $request['recurrenceMetadata'],
             $request['eventLocationGuid'],
-            $request['fileUploadGuid']
+            $request['fileUploadGuid'],
+            $request['isPublic']
         );
 
         return new JsonResponse(RecurringEventDto::create($newEvent));
@@ -184,7 +223,8 @@ class RecurringEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function delete(string $eventGuid): Response {
+    public function delete(string $eventGuid): Response
+    {
         $this->recurringEventService->delete($eventGuid);
         return new Response('deleted');
     }
@@ -230,12 +270,14 @@ class RecurringEventController extends Controller
             new OA\Response(response: 404, description: 'not found')
         ]
     )]
-    public function unpublish(string $eventGuid): JsonResponse {
+    public function unpublish(string $eventGuid): JsonResponse
+    {
         $event = $this->recurringEventService->unpublish($eventGuid);
         return new JsonResponse(RecurringEventDto::create($event));
     }
 
-    private static function validateRecurringEventInput(Request $request): void {
+    private static function validateRecurringEventInput(Request $request): void
+    {
         $request->validate([
             'titleDe' => ['required', 'string'],
             'titleEn' => ['required', 'string'],

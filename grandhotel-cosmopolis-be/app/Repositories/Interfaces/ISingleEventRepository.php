@@ -44,4 +44,7 @@ interface ISingleEventRepository
 
     /** @return Collection<int, SingleEvent> */
     public function listAll(): Collection;
+
+    /** @return Collection<int, SingleEvent */
+    public function listAllByRecurringEventGuid(string $recurringEventGuid): Collection;
 }

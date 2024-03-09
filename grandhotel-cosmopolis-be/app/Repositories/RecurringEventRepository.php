@@ -26,7 +26,8 @@ class RecurringEventRepository implements IRecurringEventRepository
         Recurrence $recurrence,
         int        $recurrenceMetadata,
         string     $eventLocationGuid,
-        string     $fileUploadGuid
+        string     $fileUploadGuid,
+        ?bool      $isPublic
     ): RecurringEvent
     {
         $newEvent = new RecurringEvent([
@@ -39,7 +40,8 @@ class RecurringEventRepository implements IRecurringEventRepository
             'end_first_occurrence' => $endFirstOccurrence,
             'end_recurrence' => $endRecurrence,
             'recurrence' => $recurrence,
-            'recurrence_metadata' => $recurrenceMetadata
+            'recurrence_metadata' => $recurrenceMetadata,
+            'is_public' => $isPublic ?? false
         ]);
 
         /** @var EventLocation $eventLocation */
@@ -79,7 +81,8 @@ class RecurringEventRepository implements IRecurringEventRepository
         Recurrence $recurrence,
         int        $recurrenceMetadata,
         string     $eventLocationGuid,
-        string     $fileUploadGuid
+        string     $fileUploadGuid,
+        ?bool      $isPublic
     ): RecurringEvent
     {
         /** @var RecurringEvent $event */
@@ -111,6 +114,7 @@ class RecurringEventRepository implements IRecurringEventRepository
         $event->end_recurrence = $endRecurrence;
         $event->recurrence = $recurrence;
         $event->recurrence_metadata = $recurrenceMetadata;
+        $event->is_public = $isPublic ?? $event->is_public;
 
         $event->eventLocation()->associate($eventLocation);
         $event->fileUpload()->associate($fileUpload);

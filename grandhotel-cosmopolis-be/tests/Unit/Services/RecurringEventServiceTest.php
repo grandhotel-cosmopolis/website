@@ -55,7 +55,8 @@ class RecurringEventServiceTest extends TestCase
             Recurrence::EVERY_X_DAYS,
             1,
             'eventLocationGuid',
-            'fileUploadGuid'
+            'fileUploadGuid',
+            false
         );
     }
 
@@ -77,7 +78,8 @@ class RecurringEventServiceTest extends TestCase
             Recurrence::EVERY_X_DAYS,
             1,
             'eventLocationGuid',
-            'fileUploadGuid'
+            'fileUploadGuid',
+            false
         );
     }
 
@@ -115,7 +117,8 @@ class RecurringEventServiceTest extends TestCase
             Recurrence::EVERY_X_DAYS,
             1,
             'eventLocationGuid',
-            'fileUploadGuid'
+            'fileUploadGuid',
+            false
         );
     }
 
@@ -153,7 +156,8 @@ class RecurringEventServiceTest extends TestCase
             Recurrence::EVERY_X_DAYS,
             1,
             'eventLocationGuid',
-            'fileUploadGuid'
+            'fileUploadGuid',
+            false
         );
     }
 
@@ -190,7 +194,8 @@ class RecurringEventServiceTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $evenLocation->guid,
-            'invalid'
+            'invalid',
+            false
         );
     }
 
@@ -227,7 +232,8 @@ class RecurringEventServiceTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $evenLocation->guid,
-            'invalid'
+            'invalid',
+            false
         );
     }
 
@@ -263,7 +269,8 @@ class RecurringEventServiceTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $evenLocation->guid,
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
     }
 
@@ -302,7 +309,8 @@ class RecurringEventServiceTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $evenLocation->guid,
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
     }
 

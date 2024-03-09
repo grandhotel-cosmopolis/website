@@ -4,6 +4,7 @@ namespace Tests\Unit\Repositories;
 
 use App\Models\EventLocation;
 use App\Models\FileUpload;
+use App\Models\RecurringEvent;
 use App\Models\SingleEvent;
 use App\Models\User;
 use App\Repositories\SingleEventRepository;
@@ -18,10 +19,22 @@ class SingleEventRepositoryTest extends TestCase
 
     private SingleEventRepository $cut;
 
+    private User $user;
+    private FileUpload $fileUpload;
+    private EventLocation $eventLocation;
+
     public function __construct(string $name)
     {
         parent::__construct($name);
         $this->cut = new SingleEventRepository();
+      }
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->user = User::factory()->create();
+        $this->eventLocation = EventLocation::factory()->create();
+        $this->fileUpload = FileUpload::factory()->for($this->user, 'uploadedBy')->create();
     }
 
     /** @test */
@@ -782,5 +795,56 @@ class SingleEventRepositoryTest extends TestCase
 
         // Assert
         $this->assertCount(10, $result);
+    }
+
+    /** @test */
+    public function listAllByRecurringEventGuid_noRecurringEvent_throwsException() {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act & Assert
+        $this->cut->listAllByRecurringEventGuid('test');
+    }
+
+    /** @test */
+    public function listAllByRecurringEventGuid_noSingleEvents_returnsNoEvents() {
+        // Arrange
+        /** @var RecurringEvent $event */
+        $event = RecurringEvent::factory()
+            ->for($this->user, 'createdBy')
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->create();
+
+        // Act
+        $result = $this->cut->listAllByRecurringEventGuid($event->guid);
+
+        // Assert
+        $this->assertCount(0, $result);
+    }
+
+    /** @test */
+    public function listAllByRecurringEventGuid_allValid_correctNumberOfEvents() {
+        // Arrange
+        /** @var RecurringEvent $event */
+        $event = RecurringEvent::factory()
+            ->for($this->user, 'createdBy')
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->create();
+
+        SingleEvent::factory()
+            ->for($this->user, 'createdBy')
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($event, 'recurringEvent')
+            ->count(5)
+            ->create();
+
+        // Act
+        $result = $this->cut->listAllByRecurringEventGuid($event->guid);
+
+        // Assert
+        $this->assertCount(5, $result);
     }
 }

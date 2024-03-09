@@ -4,6 +4,7 @@ namespace Tests\Feature\Controller;
 
 use App\Http\Controllers\Event\Recurrence;
 use App\Http\Dtos\Event\RecurringEventDto;
+use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\Permissions;
@@ -1088,7 +1089,7 @@ class RecurringEventControllerTest extends TestCase
         // Arrange
         /** @var RecurringEvent $oldEvent */
         $oldEvent = static::createRecurringEvent()->create();
-        $singleEvents =  SingleEvent::factory()
+        $singleEvents = SingleEvent::factory()
             ->for($this->eventLocation)
             ->for($this->fileUpload)
             ->for($this->user, 'createdBy')
@@ -1117,7 +1118,8 @@ class RecurringEventControllerTest extends TestCase
         }
     }
 
-    public function deleteRequest(string|null $oldEventGuid = null): TestResponse {
+    public function deleteRequest(string|null $oldEventGuid = null): TestResponse
+    {
         if (is_null($oldEventGuid)) {
             /** @var SingleEvent $oldEvent */
             $oldEvent = static::createRecurringEvent()->create();
@@ -1351,6 +1353,107 @@ class RecurringEventControllerTest extends TestCase
         $this->assertCount(5, $events);
     }
 
+    /** @test */
+    public function listAllSingleEventsByRecurringEventId_notLoggedIn_returnsUnauthorized()
+    {
+        // Act
+        $response = $this->get("$this->basePath/eventId/listSingleEvents", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function listAllSingleEventsByRecurringEventId_unauthorized_returnsUnauthorized()
+    {
+        // Arrange
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->get("$this->basePath/eventId/listSingleEvents", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function listAllSingleEventsByRecurringEventId_allValid_returnsPublicAndPrivateEvents()
+    {
+        // Arrange
+        /** @var RecurringEvent $event */
+        $event = self::createRecurringEvent()
+            ->create(['is_public' => true]);
+        SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->for($event, 'recurringEvent')
+            ->count(10)
+            ->create(['is_public' => true]);
+
+        SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->for($event, 'recurringEvent')
+            ->count(5)
+            ->create(['is_public' => false]);
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/$event->guid/listSingleEvents", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var SingleEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(15, $events);
+    }
+
+    /** @test */
+    public function listAllSingleEventsByRecurringEventId_allValid_doesNotReturnEventsInThePast()
+    {
+        // Arrange
+        /** @var RecurringEvent $event */
+        $event = self::createRecurringEvent()
+            ->create();
+        SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->for($event, 'recurringEvent')
+            ->count(10)
+            ->create([
+                'end' => new Carbon('2024-01-11T18:00:00.000Z')
+            ]);
+
+        SingleEvent::factory()
+            ->for($this->eventLocation)
+            ->for($this->fileUpload)
+            ->for($this->user, 'createdBy')
+            ->for($event, 'recurringEvent')
+            ->count(5)
+            ->create();
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/$event->guid/listSingleEvents", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        /** @var SingleEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(5, $events);
+    }
+
+    /** @test */
+    public function listSingleEvents_unknownEvent_returnsNotFound()
+    {
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/unknown/listSingleEvents", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
     private static function createRecurringEvent(
         ?EventLocation $eventLocation = null,
         ?User          $user = null,
@@ -1394,6 +1497,7 @@ class RecurringEventControllerTest extends TestCase
         ?string                $eventLocationGuid = null,
         ?string                $fileUploadGuid = null,
         ?string                $endRecurrence = null,
+        ?bool                  $isPublic = null,
     ): TestResponse
     {
         $sample = static::getTestEventData();
@@ -1408,7 +1512,8 @@ class RecurringEventControllerTest extends TestCase
             'endFirstOccurrence' => $endFirstOccurrence ?? $sample['endFirstOccurrence'],
             'recurrence' => $recurrence ?? $sample['recurrence'],
             'recurrenceMetadata' => $recurrenceMetadata ?? $sample['recurrenceMetadata'],
-            'endRecurrence' => $endRecurrence ?? $sample['endRecurrence']
+            'endRecurrence' => $endRecurrence ?? $sample['endRecurrence'],
+            'isPublic' => $isPublic ?? false
         ], ['Accept' => 'application/json']);
     }
 

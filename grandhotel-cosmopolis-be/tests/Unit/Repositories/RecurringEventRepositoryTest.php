@@ -44,7 +44,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             'not existing',
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
     }
 
@@ -67,7 +68,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $eventLocation->guid,
-            'not existing'
+            'not existing',
+            false
         );
     }
 
@@ -92,7 +94,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $eventLocation->guid,
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
 
         // Assert
@@ -135,7 +138,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $eventLocation->guid,
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
         // Assert
         $events = RecurringEvent::query()
@@ -164,6 +168,43 @@ class RecurringEventRepositoryTest extends TestCase
     }
 
     /** @test */
+    public function create_publicEvent_newEventIsPublic() {
+        // Arrange
+        $user = User::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $eventLocation = EventLocation::factory()->create();
+        $recurringEvent = RecurringEvent::factory()->make();
+        $this->be($user);
+
+        // Act
+        $newEvent = $this->cut->create(
+            $recurringEvent->title_de,
+            $recurringEvent->title_en,
+            $recurringEvent->description_de,
+            $recurringEvent->description_en,
+            $recurringEvent->start_first_occurrence,
+            $recurringEvent->end_first_occurrence,
+            $recurringEvent->end_recurrence,
+            $recurringEvent->recurrence,
+            $recurringEvent->recurrence_metadata,
+            $eventLocation->guid,
+            $fileUpload->guid,
+            true
+        );
+
+        // Assert
+        $events = RecurringEvent::query()
+            ->where('title_de', $recurringEvent->title_de)
+            ->where('title_en', $recurringEvent->title_en)
+            ->get();
+        $this->assertCount(1, $events);
+        /** @var RecurringEvent $createdEvent */
+        $createdEvent = $events[0];
+        $this->assertTrue($createdEvent->is_public);
+        $this->assertTrue($newEvent->is_public);
+    }
+
+    /** @test */
     public function update_notExistingEventLocation_throwsException() {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
@@ -188,7 +229,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             'not existing',
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
     }
 
@@ -216,7 +258,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $recurringEvent->guid,
-            'not existing'
+            'not existing',
+            false
         );
     }
 
@@ -246,7 +289,8 @@ class RecurringEventRepositoryTest extends TestCase
             $recurringEvent->recurrence,
             $recurringEvent->recurrence_metadata,
             $eventLocation->guid,
-            $fileUpload->guid
+            $fileUpload->guid,
+            false
         );
     }
 
@@ -277,7 +321,8 @@ class RecurringEventRepositoryTest extends TestCase
             $newSingleEventData->recurrence,
             $newSingleEventData->recurrence_metadata,
             $newEventLocation->guid,
-            $newFileUpload->guid
+            $newFileUpload->guid,
+            false
         );
 
         // Assert
@@ -292,6 +337,7 @@ class RecurringEventRepositoryTest extends TestCase
         $this->assertEquals($newSingleEventData->end_recurrence, $updatedEvent->end_recurrence);
         $this->assertEquals($newSingleEventData->recurrence, $updatedEvent->recurrence);
         $this->assertEquals($newSingleEventData->recurrence_metadata, $updatedEvent->recurrence_metadata);
+        $this->assertFalse($updatedEvent->is_public);
         /** @var EventLocation $location */
         $location = $updatedEvent->eventLocation()->first();
         $this->assertEquals($newEventLocation->guid, $location->guid);
@@ -327,7 +373,8 @@ class RecurringEventRepositoryTest extends TestCase
             $newSingleEventData->recurrence,
             $newSingleEventData->recurrence_metadata,
             $newEventLocation->guid,
-            $newFileUpload->guid
+            $newFileUpload->guid,
+            false
         );
 
         // Assert
@@ -349,6 +396,7 @@ class RecurringEventRepositoryTest extends TestCase
         $this->assertEquals($newSingleEventData->end_recurrence, $updatedEvent->end_recurrence);
         $this->assertEquals($newSingleEventData->recurrence, $updatedEvent->recurrence);
         $this->assertEquals($newSingleEventData->recurrence_metadata, $updatedEvent->recurrence_metadata);
+        $this->assertFalse($updatedEvent->is_public);
         /** @var EventLocation $location */
         $location = $updatedEvent->eventLocation()->first();
         $this->assertEquals($newEventLocation->guid, $location->guid);

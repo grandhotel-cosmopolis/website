@@ -64,6 +64,7 @@ class RecurringEventDto
         DateTime $endFirstOccurrence,
         DateTime | null $endRecurrence,
         FileDto $fileDto,
+        bool $isPublic
     ) {
         $this->guid = $guid;
         $this->titleDe = $titleDe;
@@ -77,6 +78,7 @@ class RecurringEventDto
         $this->endFirstOccurrence = $endFirstOccurrence;
         $this->endRecurrence = $endRecurrence;
         $this->image = $fileDto;
+        $this->isPublic = $isPublic;
     }
 
     public static function create(RecurringEvent $recurringEvent, ?EventLocation $eventLocation = null, ?FileUpload $fileUpload = null): RecurringEventDto {
@@ -94,7 +96,8 @@ class RecurringEventDto
             $recurringEvent->start_first_occurrence,
             $recurringEvent->end_first_occurrence,
             $recurringEvent->end_recurrence,
-            FileDto::create($fileUpload)
+            FileDto::create($fileUpload),
+            $recurringEvent->is_public
         );
     }
 }

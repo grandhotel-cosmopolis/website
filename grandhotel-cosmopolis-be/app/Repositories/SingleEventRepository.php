@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\EventLocation;
 use App\Models\FileUpload;
+use App\Models\RecurringEvent;
 use App\Models\SingleEvent;
 use App\Repositories\Interfaces\ISingleEventRepository;
 use Carbon\Carbon;
@@ -170,6 +171,21 @@ class SingleEventRepository implements ISingleEventRepository
     public function listAll(): Collection
     {
         return SingleEvent::query()
+            ->where('end', '>', Carbon::now())
+            ->whereNull('recurring_event_id')
+            ->get();
+    }
+
+    public function listAllByRecurringEventGuid(string $recurringEventGuid): Collection
+    {
+        /** @var RecurringEvent $recurringEvent */
+        $recurringEvent = RecurringEvent::query()
+            ->where('guid', $recurringEventGuid)
+            ->first();
+        if (is_null($recurringEvent)) {
+            throw new NotFoundHttpException();
+        }
+        return $recurringEvent->singleEvents()
             ->where('end', '>', Carbon::now())
             ->get();
     }
