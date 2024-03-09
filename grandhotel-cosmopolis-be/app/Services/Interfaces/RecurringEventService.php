@@ -196,7 +196,10 @@ class RecurringEventService implements IRecurringEventService
         /** @var FileUpload $fileUpload */
         $fileUpload = $recurringEvent->fileUpload()->first();
 
-        $recurringEvent->singleEvents()->delete();
+        /** @var SingleEvent $singleEvent */
+        foreach ($recurringEvent->singleEvents()->get() as $singleEvent) {
+            $this->singleEventRepository->deleteSingleEvent($singleEvent->guid);
+        }
 
         $this->generateSingleEvents(
             $recurringEvent->start_first_occurrence,

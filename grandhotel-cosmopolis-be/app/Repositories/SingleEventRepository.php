@@ -108,12 +108,15 @@ class SingleEventRepository implements ISingleEventRepository
 
     public function deleteSingleEvent(string $eventGuid): void
     {
-        $deleted = SingleEvent::query()
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = SingleEvent::query()
             ->where('guid', $eventGuid)
-            ->delete();
-        if ($deleted != 1) {
+            ->first();
+        if(is_null($singleEvent)) {
             throw new NotFoundHttpException();
         }
+        $singleEvent->exception()->delete();
+        $singleEvent->delete();
     }
 
     public function publishSingleEvent(string $eventGuid): SingleEvent

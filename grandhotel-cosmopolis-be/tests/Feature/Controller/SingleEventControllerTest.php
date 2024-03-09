@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Controller;
 
+use App\Http\Dtos\Event\ExceptionDto;
 use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Collection;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -319,6 +321,46 @@ class SingleEventControllerTest extends TestCase
     }
 
     /** @test */
+    public function listAll_eventWithException_exceptionIsReturned() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = self::createSingleEvent()->create();
+        /** @var EventLocation $newEventLocation */
+        $newEventLocation = EventLocation::factory()->create();
+
+        $exception = new SingleEventException([
+            'title_de' => 'title de exception',
+            'title_en' => 'title en exception',
+            'end' => $event->end->clone()->addHour()
+        ]);
+        $exception->singleEvent()->associate($event);
+        $exception->eventLocation()->associate($newEventLocation);
+        $exception->save();
+
+        // Act
+        $response = $this->actingAs($this->user)->get("$this->basePath/listAll", ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+
+        /** @var SingleEventDto[] $events */
+        $events = $response->json('events');
+        $this->assertCount(1, $events);
+        $returnedEvent = $events[0];
+        $this->assertNotNull($returnedEvent['exception']);
+        $this->assertEquals('title de exception', $returnedEvent['exception']['titleDe']);
+        $this->assertEquals('title en exception', $returnedEvent['exception']['titleEn']);
+        $this->assertNull($returnedEvent['exception']['descriptionDe']);
+        $this->assertNull($returnedEvent['exception']['descriptionEn']);
+        $this->assertNull($returnedEvent['exception']['start']);
+        $this->assertEquals($event->end->clone()->addHour(), Carbon::create($returnedEvent['exception']['end']));
+
+        $this->assertNotNull($returnedEvent['exception']['eventLocation']);
+        $this->assertEquals($newEventLocation->guid, $returnedEvent['exception']['eventLocation']['guid']);
+        $this->assertNull($returnedEvent['exception']['image']);
+    }
+
+    /** @test */
     public function create_notLoggedIn_returnsUnauthenticated()
     {
         // Act
@@ -540,6 +582,7 @@ class SingleEventControllerTest extends TestCase
             ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
             ->where('image.mimeType', 'image/png')
             ->where('isPublic', false)
+            ->where('exception', null)
         );
     }
 
@@ -760,6 +803,44 @@ class SingleEventControllerTest extends TestCase
             ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
             ->where('image.mimeType', 'image/png')
             ->where('isPublic', false)
+            ->where('exception', null)
+        );
+    }
+
+    /** @test */
+    public function update_validEventWithException_updatedEventHasSameException()
+    {
+        // Arrange
+        $eventData = static::getTestEventData();
+
+        $exceptionTitleDe = 'exception ' . uuid_create();
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->title_de = $exceptionTitleDe;
+        $exception->singleEvent()->associate($oldEvent);
+        $exception->save();
+
+        // Act
+        $response = $this->updateRequest($oldEvent->guid);
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $eventData['titleDe'])
+            ->where('guid', fn(mixed $guid) => is_string($guid))
+            ->where('titleEn', $eventData['titleEn'])
+            ->where('descriptionDe', $eventData['descriptionDe'])
+            ->where('descriptionEn', $eventData['descriptionEn'])
+            ->where('start', fn(string $start) => new Carbon($start) == new Carbon($eventData['start']))
+            ->where('end', fn(string $end) => new Carbon($end) == new Carbon($eventData['end']))
+            ->where('eventLocation.name', $this->eventLocation->name)
+            ->where('eventLocation.street', $this->eventLocation->street)
+            ->where('eventLocation.city', $this->eventLocation->city)
+            ->where('eventLocation.additionalInformation', $this->eventLocation->additional_information)
+            ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
+            ->where('image.mimeType', 'image/png')
+            ->where('isPublic', false)
+            ->where('exception', fn(Collection $collection) => $collection['titleDe'] == $exceptionTitleDe)
         );
     }
 
@@ -828,6 +909,27 @@ class SingleEventControllerTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $this->assertEquals(0, SingleEvent::query()->where('guid', $oldEvent->guid)->count());
+    }
+
+    /** @test */
+    public function delete_allValidWithException_exceptionIsDeleted()
+    {
+        // Arrange
+        $exceptionTitleDe = 'exception ' . uuid_create();
+        /** @var SingleEvent $oldEvent */
+        $oldEvent = static::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->title_de = $exceptionTitleDe;
+        $exception->singleEvent()->associate($oldEvent);
+        $exception->save();
+
+        // Act
+        $response = $this->deleteRequest($oldEvent->guid);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertEquals(0, SingleEvent::query()->where('guid', $oldEvent->guid)->count());
+        $this->assertEquals(0, SingleEventException::query()->where('title_de', $exceptionTitleDe)->count());
     }
 
     /** @test */

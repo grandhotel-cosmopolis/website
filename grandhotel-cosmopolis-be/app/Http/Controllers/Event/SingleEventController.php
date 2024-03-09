@@ -97,11 +97,7 @@ class SingleEventController extends Controller
         $events = $this->eventRepository->listAll();
 
         $eventDtos = $events->map(function (SingleEvent $event) {
-            /** @var EventLocation $eventLocation */
-            $eventLocation = $event->eventLocation()->first();
-            /** @var FileUpload $fileUpload */
-            $fileUpload = $event->fileUpload()->first();
-            return SingleEventDto::create($event, $eventLocation, $fileUpload);
+            return SingleEventDto::create($event);
         });
         return new JsonResponse(new ListSingleEventDto($eventDtos->toArray()));
     }

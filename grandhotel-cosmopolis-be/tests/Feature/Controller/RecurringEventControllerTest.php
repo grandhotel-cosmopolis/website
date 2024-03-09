@@ -10,6 +10,7 @@ use App\Models\FileUpload;
 use App\Models\Permissions;
 use App\Models\RecurringEvent;
 use App\Models\SingleEvent;
+use App\Models\SingleEventException;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -768,6 +769,42 @@ class RecurringEventControllerTest extends TestCase
             $this->assertEquals($this->eventLocation->guid, $singleEvent->eventLocation()->get()->first()->guid);
             $this->assertEquals($this->fileUpload->guid, $singleEvent->fileUpload()->get()->first()->guid);
         }
+    }
+
+    /** @test */
+    public function update_oldEventHadSingleEventWithException_exceptionIsDeleted()
+    {
+        // Arrange
+        /** @var SingleEvent $event */
+        $title = uuid_create();
+        $event = SingleEVent::factory()
+            ->for(User::factory()->create(), 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for(FileUpload::factory()->for(User::factory()->create(), 'uploadedBy'))
+            ->create();
+
+        $exception = new SingleEventException([
+            'title_de' => $title,
+            'title_en' => 'title en exception',
+            'end' => $event->end->clone()->addHour()
+        ]);
+        $exception->singleEvent()->associate($event);
+        $exception->save();
+        /** @var RecurringEvent $oldRecurringEvent */
+        $oldRecurringEvent = $this::createRecurringEvent()->create();
+        $event->recurringEvent()->associate($oldRecurringEvent);
+        $event->save();
+
+        $sample = static::getTestEventData();
+
+        $titleDe = $sample['titleDe'] . uuid_create();
+
+        // Act
+        $response = $this->updateRequest(oldEventGuid: $oldRecurringEvent->guid, titleDe: $titleDe);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertCount(0, SingleEventException::query()->where('title_de', $title)->get());
 
     }
 
@@ -1631,6 +1668,7 @@ class RecurringEventControllerTest extends TestCase
         $months = [];
 
         foreach ($singleEVents as $singleEvent) {
+            $this->assertCount(0, $singleEvent->exception()->get());
             $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->hour, Carbon::parse($singleEvent->start)->hour);
             $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->minute, Carbon::parse($singleEvent->start)->minute);
             $this->assertEquals(Carbon::parse($recurringEvent->start_first_occurrence)->second, Carbon::parse($singleEvent->start)->second);
