@@ -135,6 +135,7 @@ class SingleEventService implements ISingleEventService
         ?Carbon $end,
         ?string $eventLocationGuid,
         ?string $fileUploadGuid,
+        ?bool   $cancelled
     ): SingleEvent
     {
         /** @var SingleEvent $singleEvent */
@@ -143,7 +144,7 @@ class SingleEventService implements ISingleEventService
             throw new NotFoundHttpException();
         }
 
-        if(!$this->timeService->validateTimeRange($start ?? $singleEvent->start, $end ?? $singleEvent->end)){
+        if (!$this->timeService->validateTimeRange($start ?? $singleEvent->start, $end ?? $singleEvent->end)) {
             throw new InvalidTimeRangeException();
         }
 
@@ -161,12 +162,13 @@ class SingleEventService implements ISingleEventService
         $exception->description_en = $descriptionEn;
         $exception->start = $start;
         $exception->end = $end;
+        $exception->cancelled = $cancelled ?? false;
 
         if (!is_null($eventLocationGuid)) {
             /** @var EventLocation $eventLocation */
             $eventLocation = EventLocation::query()->where('guid', $eventLocationGuid)->first();
 
-            if(is_null($eventLocation)) {
+            if (is_null($eventLocation)) {
                 throw new NotFoundHttpException();
             }
             $exception->eventLocation()->associate($eventLocation);
@@ -195,7 +197,8 @@ class SingleEventService implements ISingleEventService
         return $this::setCancelledValue($eventGuid, false);
     }
 
-    private static function setCancelledValue(string $guid, bool $cancelled): SingleEvent {
+    private static function setCancelledValue(string $guid, bool $cancelled): SingleEvent
+    {
         /** @var SingleEvent $singleEvent */
         $singleEvent = SingleEvent::query()->where('guid', $guid)->first();
         if (is_null($singleEvent)) {

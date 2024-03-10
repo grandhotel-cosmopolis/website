@@ -45,7 +45,7 @@ interface ISingleEventService
     public function list(Carbon $start, Carbon $end): Collection;
 
     public function createOrUpdateEventException(
-        string $eventGuid,
+        string  $eventGuid,
         ?string $titleDe,
         ?string $titleEn,
         ?string $descriptionDe,
@@ -53,7 +53,8 @@ interface ISingleEventService
         ?Carbon $start,
         ?Carbon $end,
         ?string $eventLocationGuid,
-        ?string $fileUploadGuid
+        ?string $fileUploadGuid,
+        ?bool   $cancelled
     ): SingleEvent;
 
     public function cancelEvent(string $eventGuid): SingleEvent;

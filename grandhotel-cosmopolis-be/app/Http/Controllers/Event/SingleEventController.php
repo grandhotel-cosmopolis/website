@@ -302,7 +302,8 @@ class SingleEventController extends Controller
                         new OA\Property(property: 'start', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'end', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'eventLocationGuid', type: 'string'),
-                        new OA\Property(property: 'fileUploadGuid', type: 'string')
+                        new OA\Property(property: 'fileUploadGuid', type: 'string'),
+                        new OA\Property(property: 'cancelled', type: 'boolean')
                     ]
                 )
             )
@@ -334,6 +335,8 @@ class SingleEventController extends Controller
             'fileUploadGuid' => ['string']
         ]);
 
+        $cancelled = $request['cancelled'] == true;
+
         $event = $this->eventService->createOrUpdateEventException(
             $eventGuid,
             $request['titleDe'],
@@ -343,7 +346,8 @@ class SingleEventController extends Controller
             $request['start'],
             $request['end'],
             $request['eventLocationGuid'],
-            $request['fileUploadGuid']
+            $request['fileUploadGuid'],
+            $cancelled
         );
         return new JsonResponse(SingleEventDto::create($event));
     }
