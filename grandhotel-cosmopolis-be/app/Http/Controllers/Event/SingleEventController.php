@@ -139,6 +139,9 @@ class SingleEventController extends Controller
     public function create(Request $request): Response|JsonResponse
     {
         static::validateSingleEventInput($request);
+
+        $isPublic = $request['isPublic'] == 'true';
+
         $singleEvent = $this->eventService->create(
             $request['titleDe'],
             $request['titleEn'],
@@ -146,7 +149,7 @@ class SingleEventController extends Controller
             $request['descriptionEn'],
             Carbon::parse($request['start']),
             Carbon::parse($request['end']),
-            $request['isPublic'],
+            $isPublic,
             $request['eventLocationGuid'],
             $request['fileUploadGuid']
         );
@@ -195,6 +198,8 @@ class SingleEventController extends Controller
     {
         static::validateSingleEventInput($request);
 
+        $isPublic = $request['isPublic'] == 'true';
+
         $updatedEvent = $this->eventService->update(
             $eventGuid,
             $request['titleDe'],
@@ -203,7 +208,7 @@ class SingleEventController extends Controller
             $request['descriptionEn'],
             Carbon::parse($request['start']),
             Carbon::parse($request['end']),
-            $request['isPublic'],
+            $isPublic,
             $request['eventLocationGuid'],
             $request['fileUploadGuid']
         );

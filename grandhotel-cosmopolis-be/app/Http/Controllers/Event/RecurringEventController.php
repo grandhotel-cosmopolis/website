@@ -128,6 +128,8 @@ class RecurringEventController extends Controller
     {
         static::validateRecurringEventInput($request);
 
+        $isPublic = $request['isPublic'] == 'true';
+
         $newEvent = $this->recurringEventService->create(
             $request['titleDe'],
             $request['titleEn'],
@@ -140,7 +142,7 @@ class RecurringEventController extends Controller
             $request['recurrenceMetadata'],
             $request['eventLocationGuid'],
             $request['fileUploadGuid'],
-            $request['isPublic']
+            $isPublic
         );
 
         return new JsonResponse(RecurringEventDto::create($newEvent));
@@ -190,6 +192,8 @@ class RecurringEventController extends Controller
     {
         static::validateRecurringEventInput($request);
 
+        $isPublic = $request['isPublic'] == 'true';
+
         $newEvent = $this->recurringEventService->update(
             $eventGuid,
             $request['titleDe'],
@@ -203,7 +207,7 @@ class RecurringEventController extends Controller
             $request['recurrenceMetadata'],
             $request['eventLocationGuid'],
             $request['fileUploadGuid'],
-            $request['isPublic']
+            $isPublic
         );
 
         return new JsonResponse(RecurringEventDto::create($newEvent));
