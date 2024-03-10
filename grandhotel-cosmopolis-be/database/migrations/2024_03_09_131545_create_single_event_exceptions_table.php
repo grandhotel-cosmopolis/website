@@ -19,6 +19,7 @@ return new class extends Migration
             $table->longText('description_en')->nullable();
             $table->timestamp('start')->nullable();
             $table->timestamp('end')->nullable();
+            $table->boolean('cancelled')->nullable();
             $table->unsignedBigInteger('single_event_id')->index();
             $table->unsignedBigInteger('event_location_id')->nullable()->index();
             $table->unsignedBigInteger('file_upload_id')->nullable()->index();

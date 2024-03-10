@@ -36,6 +36,9 @@ class ExceptionDto
     #[OA\Property(ref: FileDto::class)]
     public ?FileDto $image;
 
+    #[OA\Property]
+    public ?bool $cancelled;
+
     public function __construct(
         ?string           $titleDe,
         ?string           $titleEn,
@@ -44,8 +47,10 @@ class ExceptionDto
         ?DateTime         $start,
         ?DateTime         $end,
         ?EventLocationDto $eventLocation,
-        ?FileDto          $image
-    ) {
+        ?FileDto          $image,
+        ?bool             $cancelled
+    )
+    {
         $this->titleDe = $titleDe;
         $this->titleEn = $titleEn;
         $this->descriptionDe = $descriptionDe;
@@ -54,17 +59,19 @@ class ExceptionDto
         $this->end = $end;
         $this->eventLocation = $eventLocation;
         $this->image = $image;
+        $this->cancelled = $cancelled;
     }
 
     public static function create(
         SingleEventException $singleEventException,
-        ?EventLocation $eventLocation = null,
-        ?FileUpload $fileUpload = null
-    ): ExceptionDto {
-        if(is_null($eventLocation)) {
+        ?EventLocation       $eventLocation = null,
+        ?FileUpload          $fileUpload = null
+    ): ExceptionDto
+    {
+        if (is_null($eventLocation)) {
             $eventLocation = $singleEventException->eventLocation()->first();
         }
-        if(is_null($fileUpload)) {
+        if (is_null($fileUpload)) {
             $fileUpload = $singleEventException->fileUpload()->first();
         }
         return new ExceptionDto(
@@ -75,7 +82,8 @@ class ExceptionDto
             $singleEventException->start,
             $singleEventException->end,
             $eventLocation ? EventLocationDto::create($eventLocation) : null,
-            $fileUpload ? FileDto::create($fileUpload) : null
+            $fileUpload ? FileDto::create($fileUpload) : null,
+            $singleEventException->cancelled
         );
     }
 

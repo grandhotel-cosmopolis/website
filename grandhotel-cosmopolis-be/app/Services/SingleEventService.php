@@ -134,7 +134,7 @@ class SingleEventService implements ISingleEventService
         ?Carbon $start,
         ?Carbon $end,
         ?string $eventLocationGuid,
-        ?string $fileUploadGuid
+        ?string $fileUploadGuid,
     ): SingleEvent
     {
         /** @var SingleEvent $singleEvent */
@@ -180,6 +180,42 @@ class SingleEventService implements ISingleEventService
             }
             $exception->fileUpload()->associate($fileUpload);
         }
+        $exception->save();
+
+        return $singleEvent;
+    }
+
+    public function cancelEvent(string $eventGuid): SingleEvent
+    {
+        return $this::setCancelledValue($eventGuid, true);
+    }
+
+    public function uncancelEvent(string $eventGuid): SingleEvent
+    {
+        return $this::setCancelledValue($eventGuid, false);
+    }
+
+    private static function setCancelledValue(string $guid, bool $cancelled): SingleEvent {
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = SingleEvent::query()->where('guid', $guid)->first();
+        if (is_null($singleEvent)) {
+            throw new NotFoundHttpException();
+        }
+
+        /** @var SingleEventException $existingException */
+        $exception = $singleEvent->exception()->first();
+
+        if (is_null($exception) && !$cancelled) {
+            // Do not create an exception if there isn't an exception already and uncancel is called
+            return $singleEvent;
+        }
+
+        if (is_null($exception)) {
+            $exception = new SingleEventException;
+            $exception->singleEvent()->associate($singleEvent);
+        }
+
+        $exception->cancelled = $cancelled;
         $exception->save();
 
         return $singleEvent;

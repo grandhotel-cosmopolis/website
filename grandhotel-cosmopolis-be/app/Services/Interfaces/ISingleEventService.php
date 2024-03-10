@@ -55,4 +55,8 @@ interface ISingleEventService
         ?string $eventLocationGuid,
         ?string $fileUploadGuid
     ): SingleEvent;
+
+    public function cancelEvent(string $eventGuid): SingleEvent;
+
+    public function uncancelEvent(string $eventGuid): SingleEvent;
 }

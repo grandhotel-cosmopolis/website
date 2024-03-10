@@ -348,6 +348,50 @@ class SingleEventController extends Controller
         return new JsonResponse(SingleEventDto::create($event));
     }
 
+    /** @noinspection PhpUnused */
+    #[OA\Post(
+        path: '/api/singleEvent/{eventGuid}/cancel',
+        operationId: 'cancel',
+        description: 'cancel a specified event',
+        tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'cancelled event successfully',
+                content: new OA\JsonContent(ref: SingleEventDto::class)),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+        ]
+    )]
+    public function cancel(string $eventGuid): JsonResponse {
+        $event = $this->eventService->cancelEvent($eventGuid);
+        return new JsonResponse(SingleEventDto::create($event));
+    }
+
+    /** @noinspection PhpUnused */
+    #[OA\Post(
+        path: '/api/singleEvent/{eventGuid}/uncancel',
+        operationId: 'uncancel',
+        description: 'reactivate a previously cancelled event',
+        tags: ['Event'],
+        parameters: [
+            new OA\Parameter(name: 'eventGuid', in: 'path', required: true, schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'uncanceled event successfully',
+                content: new OA\JsonContent(ref: SingleEventDto::class)),
+            new OA\Response(response: 401, description: 'unauthenticated'),
+        ]
+    )]
+    public function uncancel(string $eventGuid): JsonResponse {
+        $event = $this->eventService->uncancelEvent($eventGuid);
+        return new JsonResponse(SingleEventDto::create($event));
+    }
+
     private static function validateSingleEventInput(Request $request): void
     {
         $request->validate([

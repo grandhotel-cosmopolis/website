@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Controller;
 
-use App\Http\Dtos\Event\ExceptionDto;
 use App\Http\Dtos\Event\SingleEventDto;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
@@ -1176,6 +1175,202 @@ class SingleEventControllerTest extends TestCase
         $newStoredLocation = $exception->eventLocation()->first();
 
         $this->assertEquals($newEventLocation->guid, $newStoredLocation->guid);
+    }
+
+    /** @test */
+    public function cancel_notAuthenticated_returnsUnauthenticated() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+
+        // Act
+        $response = $this->post("$this->basePath/$event->guid/cancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function cancel_notAuthorized_returnsUnauthorized() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post("$this->basePath/$event->guid/cancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function cancel_unknownEvent_returnsNotFound() {
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/unknown/cancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function cancel_standardEvent_eventIsCancelled() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$event->guid/cancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        $event->refresh();
+        /** @var SingleEventException $exception */
+        $exception = $event->exception()->first();
+        $this->assertNotNull($exception);
+        $this->assertTrue($exception->cancelled);
+        $this->assertNull($exception->title_de);
+        $this->assertNull($exception->title_en);
+        $this->assertNull($exception->description_de);
+        $this->assertNull($exception->description_en);
+        $this->assertNull($exception->start);
+        $this->assertNull($exception->end);
+        $this->assertNull($exception->eventLocation()->first());
+        $this->assertNull($exception->fileUpload()->first());
+    }
+
+    /** @test */
+    public function cancel_standardEvent_cancelledEventIsReturned() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$event->guid/cancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertTrue($response->json('exception.cancelled'));
+    }
+
+    /** @test */
+    public function cancel_withExistingException_exceptionIsExtended() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->title_de = "exception title";
+        $exception->singleEvent()->associate($event);
+        $exception->save();
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$event->guid/cancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        $event->refresh();
+        /** @var SingleEventException $exception */
+        $exception = $event->exception()->first();
+        $this->assertNotNull($exception);
+        $this->assertTrue($exception->cancelled);
+        $this->assertEquals('exception title', $exception->title_de);
+        $this->assertNull($exception->title_en);
+        $this->assertNull($exception->description_de);
+        $this->assertNull($exception->description_en);
+        $this->assertNull($exception->start);
+        $this->assertNull($exception->end);
+        $this->assertNull($exception->eventLocation()->first());
+        $this->assertNull($exception->fileUpload()->first());
+    }
+
+    /** @test */
+    public function uncancel_notAuthenticated_returnsUnauthenticated() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+
+        // Act
+        $response = $this->post("$this->basePath/$event->guid/uncancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function uncancel_notAuthorized_returnsUnauthorized() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post("$this->basePath/$event->guid/uncancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function uncancel_unknownEvent_returnsNotFound() {
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/unknown/uncancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(404);
+    }
+
+    /** @test */
+    public function uncancel_notPreviouslyCancelledEvent_noExceptionIsCreated() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$event->guid/uncancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        $event->refresh();
+        $this->assertNull($event->exception()->first());
+    }
+
+    /** @test */
+    public function uncancel_previouslyCancelledEvent_eventIsUncancelled() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->cancelled = true;
+        $exception->singleEvent()->associate($event);
+        $exception->save();
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$event->guid/uncancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        $exception->refresh();
+        $this->assertFalse($exception->cancelled);
+    }
+
+    /** @test */
+    public function uncancel_previouslyCancelledEvent_activeEventIsReturned() {
+        // Arrange
+        /** @var SingleEvent $event */
+        $event = $this::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->cancelled = true;
+        $exception->singleEvent()->associate($event);
+        $exception->save();
+
+        // Act
+        $response = $this->actingAs($this->user)->post("$this->basePath/$event->guid/uncancel", [], ['Accept' => 'application/json']);
+
+        // Assert
+        $response->assertStatus(200);
+        $this->assertFalse($response->json('exception.cancelled'));
     }
 
     private static function getTestEventData(): array

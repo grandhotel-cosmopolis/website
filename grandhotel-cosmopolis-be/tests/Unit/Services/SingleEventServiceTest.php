@@ -34,7 +34,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function create_invalidFileUpload_throwsException() {
+    public function create_invalidFileUpload_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -62,7 +63,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function create_invalidEventLocation_throwsException() {
+    public function create_invalidEventLocation_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -90,7 +92,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function create_invalidTimeRange_throwsException() {
+    public function create_invalidTimeRange_throwsException()
+    {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         $user = User::factory()->create();
@@ -117,7 +120,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function create_allValid_repositoryIsCalled() {
+    public function create_allValid_repositoryIsCalled()
+    {
         // Arrange
         $user = User::factory()->create();
         $evenLocation = EventLocation::factory()->create();
@@ -146,41 +150,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_invalidFileUpload_throwsException() {
-        // Arrange
-        $this->expectException(NotFoundHttpException::class);
-        $user = User::factory()->create();
-        $evenLocation = EventLocation::factory()->create();
-        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
-        $existingEvent = SingleEvent::factory()
-                ->for($user, 'createdBy')
-                ->for(EventLocation::factory()->create())
-                ->for($fileUpload)
-                ->create();
-        $singleEvent = SingleEvent::factory()
-            ->for($user, 'createdBy')
-            ->for($evenLocation)
-            ->for($fileUpload)
-            ->make();
-
-        // Act & Assert
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $this->cut->update(
-            $existingEvent->guid,
-            $singleEvent->title_de,
-            $singleEvent->title_en,
-            $singleEvent->description_de,
-            $singleEvent->description_en,
-            $singleEvent->start,
-            $singleEvent->end,
-            false,
-            $evenLocation->guid,
-            'invalid'
-        );
-    }
-
-    /** @test */
-    public function update_invalidEventLocation_throwsException() {
+    public function update_invalidFileUpload_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
         $user = User::factory()->create();
@@ -214,7 +185,43 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_invalidTimeRange_throwsException() {
+    public function update_invalidEventLocation_throwsException()
+    {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+        $user = User::factory()->create();
+        $evenLocation = EventLocation::factory()->create();
+        $fileUpload = FileUpload::factory()->for($user, 'uploadedBy')->create();
+        $existingEvent = SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for(EventLocation::factory()->create())
+            ->for($fileUpload)
+            ->create();
+        $singleEvent = SingleEvent::factory()
+            ->for($user, 'createdBy')
+            ->for($evenLocation)
+            ->for($fileUpload)
+            ->make();
+
+        // Act & Assert
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $this->cut->update(
+            $existingEvent->guid,
+            $singleEvent->title_de,
+            $singleEvent->title_en,
+            $singleEvent->description_de,
+            $singleEvent->description_en,
+            $singleEvent->start,
+            $singleEvent->end,
+            false,
+            $evenLocation->guid,
+            'invalid'
+        );
+    }
+
+    /** @test */
+    public function update_invalidTimeRange_throwsException()
+    {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         $user = User::factory()->create();
@@ -247,7 +254,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function update_allValid_repositoryIsCalled() {
+    public function update_allValid_repositoryIsCalled()
+    {
         // Arrange
         $user = User::factory()->create();
         $evenLocation = EventLocation::factory()->create();
@@ -283,7 +291,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function delete_allValid_repositoryIsCalled() {
+    public function delete_allValid_repositoryIsCalled()
+    {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('deleteSingleEvent')
@@ -294,7 +303,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function publish_allValid_repositoryIsCalled() {
+    public function publish_allValid_repositoryIsCalled()
+    {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('publishSingleEvent')
@@ -305,7 +315,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function unpublish_allValid_repositoryIsCalled() {
+    public function unpublish_allValid_repositoryIsCalled()
+    {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('unpublishSingleEvent')
@@ -316,7 +327,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function list_allValid_repositoryIsCalled() {
+    public function list_allValid_repositoryIsCalled()
+    {
         // Arrange
         $this->singleEventRepositoryMock->expects($this->once())
             ->method('getSingleEvents');
@@ -326,7 +338,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_unknownSingleEvent_throwsException() {
+    public function createOrUpdateEventException_unknownSingleEvent_throwsException()
+    {
         // Arrange
         $this->expectException(NotFoundHttpException::class);
 
@@ -336,7 +349,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_invalidTimeRangeStartAndEndSet_throwsException() {
+    public function createOrUpdateEventException_invalidTimeRangeStartAndEndSet_throwsException()
+    {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         /** @var SingleEvent $singleEvent */
@@ -360,7 +374,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_invalidTimeRangeStartIsSet_throwsException() {
+    public function createOrUpdateEventException_invalidTimeRangeStartIsSet_throwsException()
+    {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         /** @var SingleEvent $singleEvent */
@@ -383,7 +398,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_invalidTimeRangeEndIsSet_throwsException() {
+    public function createOrUpdateEventException_invalidTimeRangeEndIsSet_throwsException()
+    {
         // Arrange
         $this->expectException(InvalidTimeRangeException::class);
         /** @var SingleEvent $singleEvent */
@@ -406,7 +422,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_onlyTitle_exceptionIsStored() {
+    public function createOrUpdateEventException_onlyTitle_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -435,7 +452,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_onlyDescription_exceptionIsStored() {
+    public function createOrUpdateEventException_onlyDescription_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -468,7 +486,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_timeStartAndEnd_exceptionIsStored() {
+    public function createOrUpdateEventException_timeStartAndEnd_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -501,7 +520,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_timeOnlyStartIsSet_exceptionIsStored() {
+    public function createOrUpdateEventException_timeOnlyStartIsSet_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -537,7 +557,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_timeOnlyEndIsSet_exceptionIsStored() {
+    public function createOrUpdateEventException_timeOnlyEndIsSet_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -573,7 +594,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_onlyEventLocation_exceptionIsStored() {
+    public function createOrUpdateEventException_onlyEventLocation_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -614,7 +636,8 @@ class SingleEventServiceTest extends TestCase
     }
 
     /** @test */
-    public function createOrUpdateEventException_onlyFileUpload_exceptionIsStored() {
+    public function createOrUpdateEventException_onlyFileUpload_exceptionIsStored()
+    {
         // Arrange
         /** @var SingleEvent $singleEvent */
         $singleEvent = $this->createSingleEvent()->create();
@@ -654,10 +677,186 @@ class SingleEventServiceTest extends TestCase
         $this->assertNull($singleEventException->end);
     }
 
+    /** @test */
+    public function cancelEvent_unknownEvent_exceptionIsThrown()
+    {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act
+        $this->cut->cancelEvent("unknown");
+    }
+
+    /** @test */
+    public function cancelEvent_exceptionAlreadyExists_exceptionIsExtended()
+    {
+        // Arrange
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = $this::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->title_de = "exception title";
+        $exception->singleEvent()->associate($singleEvent);
+        $exception->save();
+
+        // Act
+        $this->cut->cancelEvent($singleEvent->guid);
+
+        // Assert
+        $singleEvent->refresh();
+        /** @var SingleEventException $storedException */
+        $storedException = $singleEvent->exception()->first();
+        $this->assertEquals($storedException->title_de, 'exception title');
+        $this->assertNull($storedException->description_en);
+        $this->assertNull($storedException->description_de);
+        $this->assertNull($storedException->start);
+        $this->assertNull($storedException->end);
+        $this->assertNull($storedException->title_en);
+        $this->assertNull($storedException->eventLocation()->first());
+        $this->assertNull($storedException->fileUpload()->first());
+        $this->assertTrue($storedException->cancelled);
+    }
+
+    /** @test */
+    public function cancelEvent_standardEvent_exceptionIsCreated()
+    {
+        // Arrange
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = $this::createSingleEvent()->create();
+
+        // Act
+        $this->cut->cancelEvent($singleEvent->guid);
+
+        // Assert
+        $singleEvent->refresh();
+        /** @var SingleEventException $storedException */
+        $storedException = $singleEvent->exception()->first();
+        $this->assertNotNull($storedException);
+        $this->assertTrue($storedException->cancelled);
+        $this->assertNull($storedException->title_de);
+        $this->assertNull($storedException->description_en);
+        $this->assertNull($storedException->description_de);
+        $this->assertNull($storedException->start);
+        $this->assertNull($storedException->end);
+        $this->assertNull($storedException->title_en);
+        $this->assertNull($storedException->eventLocation()->first());
+        $this->assertNull($storedException->fileUpload()->first());
+    }
+
+    /** @test */
+    public function cancelEvent_standardEvent_callIsIdempotent()
+    {
+        // Arrange
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = $this::createSingleEvent()->create();
+
+        // Act
+        $this->cut->cancelEvent($singleEvent->guid);
+        $this->cut->cancelEvent($singleEvent->guid);
+
+        // Assert
+        $singleEvent->refresh();
+        /** @var SingleEventException $storedException */
+        $storedException = $singleEvent->exception()->first();
+        $this->assertNotNull($storedException);
+        $this->assertTrue($storedException->cancelled);
+        $this->assertNull($storedException->title_de);
+        $this->assertNull($storedException->description_en);
+        $this->assertNull($storedException->description_de);
+        $this->assertNull($storedException->start);
+        $this->assertNull($storedException->end);
+        $this->assertNull($storedException->title_en);
+        $this->assertNull($storedException->eventLocation()->first());
+        $this->assertNull($storedException->fileUpload()->first());
+    }
+
+    /** @test */
+    public function uncancelEvent_unknownEvent_exceptionIsThrown()
+    {
+        // Arrange
+        $this->expectException(NotFoundHttpException::class);
+
+        // Act
+        $this->cut->uncancelEvent("unknown");
+    }
+
+    /** @test */
+    public function uncancelEvent_exceptionAlreadyExists_exceptionIsExtended()
+    {
+        // Arrange
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = $this::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->title_de = "exception title";
+        $exception->singleEvent()->associate($singleEvent);
+        $exception->save();
+
+        // Act
+        $this->cut->uncancelEvent($singleEvent->guid);
+
+        // Assert
+        $singleEvent->refresh();
+        /** @var SingleEventException $storedException */
+        $storedException = $singleEvent->exception()->first();
+        $this->assertEquals($storedException->title_de, 'exception title');
+        $this->assertNull($storedException->description_en);
+        $this->assertNull($storedException->description_de);
+        $this->assertNull($storedException->start);
+        $this->assertNull($storedException->end);
+        $this->assertNull($storedException->title_en);
+        $this->assertNull($storedException->eventLocation()->first());
+        $this->assertNull($storedException->fileUpload()->first());
+        $this->assertFalse($storedException->cancelled);
+    }
+
+    /** @test */
+    public function uncancelEvent_eventWasPreviouslyCancelled_eventIsUncancelled()
+    {
+        // Arrange
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = $this::createSingleEvent()->create();
+        $exception = new SingleEventException;
+        $exception->title_de = "exception title";
+        $exception->cancelled = true;
+        $exception->singleEvent()->associate($singleEvent);
+        $exception->save();
+
+        // Act
+        $this->cut->uncancelEvent($singleEvent->guid);
+
+        // Assert
+        $singleEvent->refresh();
+        /** @var SingleEventException $storedException */
+        $storedException = $singleEvent->exception()->first();
+        $this->assertEquals($storedException->title_de, 'exception title');
+        $this->assertNull($storedException->description_en);
+        $this->assertNull($storedException->description_de);
+        $this->assertNull($storedException->start);
+        $this->assertNull($storedException->end);
+        $this->assertNull($storedException->title_en);
+        $this->assertNull($storedException->eventLocation()->first());
+        $this->assertNull($storedException->fileUpload()->first());
+        $this->assertFalse($storedException->cancelled);
+    }
+
+    /** @test */
+    public function uncancelEvent_noExceptionExists_noExceptionIsCreated()
+    {
+        // Arrange
+        /** @var SingleEvent $singleEvent */
+        $singleEvent = $this::createSingleEvent()->create();
+
+        // Act
+        $this->cut->uncancelEvent($singleEvent->guid);
+
+        // Assert
+        $singleEvent->refresh();
+        $this->assertNull($singleEvent->exception()->first());
+    }
+
     private static function createSingleEvent(
-        ?EventLocation $eventLocation = null,
-        ?User          $user = null,
-        ?FileUpload    $fileUpload = null
+        ?EventLocation        $eventLocation = null,
+        ?User                 $user = null,
+        ?FileUpload           $fileUpload = null,
     ): Factory
     {
         $eventLocation = !is_null($eventLocation) ? $eventLocation : EventLocation::factory()->create();

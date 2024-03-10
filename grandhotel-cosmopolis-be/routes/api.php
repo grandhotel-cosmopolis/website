@@ -54,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::middleware('permission:' . Permissions::UNPUBLISH_EVENT->value)->post('/{eventGuid}/unpublish', 'unpublish');
             Route::middleware('permission:' . Permissions::VIEW_EVENTS->value)->get('/listAll', 'listAll');
             Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/exception', 'createOrUpdateException');
+            Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/cancel', 'cancel');
+            Route::middleware('permission:' . Permissions::EDIT_EVENT->value)->post('/{eventGuid}/uncancel', 'uncancel');
         });
     });
 

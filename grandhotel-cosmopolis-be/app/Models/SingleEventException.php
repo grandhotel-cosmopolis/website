@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $description_en
  * @property Carbon|null $start
  * @property Carbon|null $end
+ * @property bool|null $cancelled
  */
 class SingleEventException extends Model
 {
@@ -25,11 +26,13 @@ class SingleEventException extends Model
         'description_en',
         'start',
         'end',
+        'cancelled'
     ];
 
     protected $casts = [
         'start' => 'datetime',
         'end' => 'datetime',
+        'cancelled' => 'boolean'
     ];
 
     public function eventLocation(): BelongsTo {
