@@ -46,14 +46,9 @@ interface ISingleEventService
 
     public function createOrUpdateEventException(
         string  $eventGuid,
-        ?string $titleDe,
-        ?string $titleEn,
-        ?string $descriptionDe,
-        ?string $descriptionEn,
         ?Carbon $start,
         ?Carbon $end,
         ?string $eventLocationGuid,
-        ?string $fileUploadGuid,
         ?bool   $cancelled
     ): SingleEvent;
 

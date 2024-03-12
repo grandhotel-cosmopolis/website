@@ -9,10 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @mixin Builder
- * @property string|null $title_de
- * @property string|null $title_en
- * @property string|null $description_de
- * @property string|null $description_en
  * @property Carbon|null $start
  * @property Carbon|null $end
  * @property bool|null $cancelled
@@ -20,10 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SingleEventException extends Model
 {
     protected $fillable = [
-        'title_de',
-        'title_en',
-        'description_de',
-        'description_en',
         'start',
         'end',
         'cancelled'
@@ -37,10 +29,6 @@ class SingleEventException extends Model
 
     public function eventLocation(): BelongsTo {
         return $this->belongsTo(EventLocation::class, 'event_location_id');
-    }
-
-    public function fileUpload(): BelongsTo {
-        return $this->belongsTo(FileUpload::class, 'file_upload_id');
     }
 
     public function singleEvent(): BelongsTo {

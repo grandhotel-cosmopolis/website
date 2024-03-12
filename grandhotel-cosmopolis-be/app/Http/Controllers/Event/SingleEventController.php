@@ -339,14 +339,9 @@ class SingleEventController extends Controller
 
         $event = $this->eventService->createOrUpdateEventException(
             $eventGuid,
-            $request['titleDe'],
-            $request['titleEn'],
-            $request['descriptionDe'],
-            $request['descriptionEn'],
             $request['start'],
             $request['end'],
             $request['eventLocationGuid'],
-            $request['fileUploadGuid'],
             $cancelled
         );
         return new JsonResponse(SingleEventDto::create($event));

@@ -328,8 +328,6 @@ class SingleEventControllerTest extends TestCase
         $newEventLocation = EventLocation::factory()->create();
 
         $exception = new SingleEventException([
-            'title_de' => 'title de exception',
-            'title_en' => 'title en exception',
             'end' => $event->end->clone()->addHour()
         ]);
         $exception->singleEvent()->associate($event);
@@ -347,16 +345,11 @@ class SingleEventControllerTest extends TestCase
         $this->assertCount(1, $events);
         $returnedEvent = $events[0];
         $this->assertNotNull($returnedEvent['exception']);
-        $this->assertEquals('title de exception', $returnedEvent['exception']['titleDe']);
-        $this->assertEquals('title en exception', $returnedEvent['exception']['titleEn']);
-        $this->assertNull($returnedEvent['exception']['descriptionDe']);
-        $this->assertNull($returnedEvent['exception']['descriptionEn']);
         $this->assertNull($returnedEvent['exception']['start']);
         $this->assertEquals($event->end->clone()->addHour(), Carbon::create($returnedEvent['exception']['end']));
 
         $this->assertNotNull($returnedEvent['exception']['eventLocation']);
         $this->assertEquals($newEventLocation->guid, $returnedEvent['exception']['eventLocation']['guid']);
-        $this->assertNull($returnedEvent['exception']['image']);
     }
 
     /** @test */
@@ -812,11 +805,11 @@ class SingleEventControllerTest extends TestCase
         // Arrange
         $eventData = static::getTestEventData();
 
-        $exceptionTitleDe = 'exception ' . uuid_create();
         /** @var SingleEvent $oldEvent */
         $oldEvent = static::createSingleEvent()->create();
+        $exceptionEnd = $oldEvent->end->clone()->addHour();
         $exception = new SingleEventException;
-        $exception->title_de = $exceptionTitleDe;
+        $exception->end =$exceptionEnd;
         $exception->singleEvent()->associate($oldEvent);
         $exception->save();
 
@@ -839,7 +832,7 @@ class SingleEventControllerTest extends TestCase
             ->where('image.fileUrl', 'http://localhost:8000/storage/' . $this->fileUpload->file_path)
             ->where('image.mimeType', 'image/png')
             ->where('isPublic', false)
-            ->where('exception', fn(Collection $collection) => $collection['titleDe'] == $exceptionTitleDe)
+            ->etc()
         );
     }
 
@@ -914,11 +907,11 @@ class SingleEventControllerTest extends TestCase
     public function delete_allValidWithException_exceptionIsDeleted()
     {
         // Arrange
-        $exceptionTitleDe = 'exception ' . uuid_create();
         /** @var SingleEvent $oldEvent */
         $oldEvent = static::createSingleEvent()->create();
+        $exceptionEnd = $oldEvent->end->clone()->addHour();
         $exception = new SingleEventException;
-        $exception->title_de = $exceptionTitleDe;
+        $exception->end = $exceptionEnd;
         $exception->singleEvent()->associate($oldEvent);
         $exception->save();
 
@@ -928,7 +921,7 @@ class SingleEventControllerTest extends TestCase
         // Assert
         $response->assertStatus(200);
         $this->assertEquals(0, SingleEvent::query()->where('guid', $oldEvent->guid)->count());
-        $this->assertEquals(0, SingleEventException::query()->where('title_de', $exceptionTitleDe)->count());
+        $this->assertEquals(0, SingleEventException::query()->where('end', $exceptionEnd)->count());
     }
 
     /** @test */
@@ -1148,10 +1141,7 @@ class SingleEventControllerTest extends TestCase
             ->post(
                 "$this->basePath/$event->guid/exception",
                 [
-                    'titleDe' => 'exception title de',
-                    'descriptionDe' => 'exception description de',
                     'eventLocationGuid' => $newEventLocation->guid
-
                 ], ['Accept' => 'application/json']);
 
         // Assert
@@ -1163,13 +1153,8 @@ class SingleEventControllerTest extends TestCase
         $exception = $dbEvent->exception()->first();
 
         $this->assertNotNull($exception);
-        $this->assertEquals('exception title de', $exception->title_de);
-        $this->assertNull($exception->title_en);
-        $this->assertEquals('exception description de', $exception->description_de);
-        $this->assertNull($exception->description_en);
         $this->assertNull($exception->start);
         $this->assertNull($exception->end);
-        $this->assertNull($exception->fileUpload()->first());
 
         /** @var EventLocation $newStoredLocation */
         $newStoredLocation = $exception->eventLocation()->first();
@@ -1230,14 +1215,9 @@ class SingleEventControllerTest extends TestCase
         $exception = $event->exception()->first();
         $this->assertNotNull($exception);
         $this->assertTrue($exception->cancelled);
-        $this->assertNull($exception->title_de);
-        $this->assertNull($exception->title_en);
-        $this->assertNull($exception->description_de);
-        $this->assertNull($exception->description_en);
         $this->assertNull($exception->start);
         $this->assertNull($exception->end);
         $this->assertNull($exception->eventLocation()->first());
-        $this->assertNull($exception->fileUpload()->first());
     }
 
     /** @test */
@@ -1259,8 +1239,10 @@ class SingleEventControllerTest extends TestCase
         // Arrange
         /** @var SingleEvent $event */
         $event = $this::createSingleEvent()->create();
+        $exceptionEnd = $event->end->clone()->addHour();
         $exception = new SingleEventException;
-        $exception->title_de = "exception title";
+        $exception->end = $exceptionEnd;
+
         $exception->singleEvent()->associate($event);
         $exception->save();
 
@@ -1274,14 +1256,9 @@ class SingleEventControllerTest extends TestCase
         $exception = $event->exception()->first();
         $this->assertNotNull($exception);
         $this->assertTrue($exception->cancelled);
-        $this->assertEquals('exception title', $exception->title_de);
-        $this->assertNull($exception->title_en);
-        $this->assertNull($exception->description_de);
-        $this->assertNull($exception->description_en);
+        $this->assertEquals($exceptionEnd, $exception->end);
         $this->assertNull($exception->start);
-        $this->assertNull($exception->end);
         $this->assertNull($exception->eventLocation()->first());
-        $this->assertNull($exception->fileUpload()->first());
     }
 
     /** @test */

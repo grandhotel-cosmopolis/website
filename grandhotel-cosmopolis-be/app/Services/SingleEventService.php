@@ -127,14 +127,9 @@ class SingleEventService implements ISingleEventService
      */
     public function createOrUpdateEventException(
         string  $eventGuid,
-        ?string $titleDe,
-        ?string $titleEn,
-        ?string $descriptionDe,
-        ?string $descriptionEn,
         ?Carbon $start,
         ?Carbon $end,
         ?string $eventLocationGuid,
-        ?string $fileUploadGuid,
         ?bool   $cancelled
     ): SingleEvent
     {
@@ -156,10 +151,6 @@ class SingleEventService implements ISingleEventService
             $exception->singleEvent()->associate($singleEvent);
         }
 
-        $exception->title_de = $titleDe;
-        $exception->title_en = $titleEn;
-        $exception->description_de = $descriptionDe;
-        $exception->description_en = $descriptionEn;
         $exception->start = $start;
         $exception->end = $end;
         $exception->cancelled = $cancelled ?? false;
@@ -173,15 +164,7 @@ class SingleEventService implements ISingleEventService
             }
             $exception->eventLocation()->associate($eventLocation);
         }
-        if (!is_null($fileUploadGuid)) {
-            /** @var FileUpload $fileUpload */
-            $fileUpload = FileUpload::query()->where('guid', $fileUploadGuid)->first();
 
-            if (is_null($fileUpload)) {
-                throw new NotFoundHttpException();
-            }
-            $exception->fileUpload()->associate($fileUpload);
-        }
         $exception->save();
 
         return $singleEvent;
