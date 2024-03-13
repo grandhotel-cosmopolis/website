@@ -203,7 +203,7 @@ class RecurringEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.startFirstOccurrence'));
+        $this->assertCount(2, $response->json('errors.startFirstOccurrence'));
     }
 
     /** @test */
@@ -232,7 +232,7 @@ class RecurringEventControllerTest extends TestCase
     public function create_invalidDataStartAfterEnd_returnsValidationError()
     {
         // Act
-        $response = $this->createRequest(startFirstOccurrence: '2024-01-06T16:30:00.0Z', endFirstOccurrence: '2024-01-06T14:00:00.0Z');
+        $response = $this->createRequest(startFirstOccurrence: Carbon::now()->addHour()->toString(), endFirstOccurrence: Carbon::now()->subHour()->toString());
 
         // Assert
         $response->assertStatus(400);
@@ -244,14 +244,27 @@ class RecurringEventControllerTest extends TestCase
     {
         // Act
         $response = $this->createRequest(
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
-            endRecurrence: '2024-01-05T18:00:00.0Z'
+            startFirstOccurrence: Carbon::now()->addWeeks()->toString(),
+            endFirstOccurrence: Carbon::now()->addWeeks()->addHour()->toString(),
+            endRecurrence: Carbon::now()->addHour()->toString()
         );
 
         // Assert
         $response->assertStatus(400);
         $response->assertContent('invalid time range');
+    }
+
+    /** @test */
+    public function create_invalidRecurrenceMetadataForRecurrence_returnsValidationError()
+    {
+        // Act
+        $response = $this->createRequest(
+            recurrence: Recurrence::EVERY_X_DAYS->value,
+            recurrenceMetadata: 0
+        );
+
+        // Assert
+        $response->assertStatus(422);
     }
 
     /** @test */
@@ -268,7 +281,7 @@ class RecurringEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()
@@ -310,11 +323,11 @@ class RecurringEventControllerTest extends TestCase
         $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->createRequest(titleDe: $titleDe, startFirstOccurrence: '2024-01-06T16:30:00.0Z', endFirstOccurrence: '2024-01-06T18:00:00.0Z');
+        $response = $this->createRequest(titleDe: $titleDe);
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
         $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $titleDe)
             ->where('titleEn', $sample['titleEn'])
             ->where('descriptionDe', $sample['descriptionDe'])
@@ -341,15 +354,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->createRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_MONTH_AT_DAY_X->value,
             recurrenceMetadata: 10
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->get()->first();
@@ -373,15 +384,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->createRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_MONTH_AT_DAY_X->value,
             recurrenceMetadata: 31
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -405,15 +414,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->createRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_LAST_DAY_IN_MONTH->value,
             recurrenceMetadata: 0
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->get()->first();
@@ -437,15 +444,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->createRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_FIRST_DAY_IN_MONTH->value,
             recurrenceMetadata: 3
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -469,15 +474,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->createRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_SECOND_DAY_IN_MONTH->value,
             recurrenceMetadata: 5
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -501,15 +504,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->createRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_THIRD_DAY_IN_MONTH->value,
             recurrenceMetadata: 6
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -675,7 +676,7 @@ class RecurringEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(422);
-        $this->assertCount(1, $response->json('errors.startFirstOccurrence'));
+        $this->assertCount(2, $response->json('errors.startFirstOccurrence'));
     }
 
     /** @test */
@@ -704,7 +705,7 @@ class RecurringEventControllerTest extends TestCase
     public function update_invalidDataStartAfterEnd_returnsValidationError()
     {
         // Act
-        $response = $this->updateRequest(startFirstOccurrence: '2024-01-06T16:30:00.0Z', endFirstOccurrence: '2024-01-06T14:00:00.0Z');
+        $response = $this->updateRequest(startFirstOccurrence: Carbon::now()->addHour(), endFirstOccurrence: Carbon::now());
 
         // Assert
         $response->assertStatus(400);
@@ -716,9 +717,9 @@ class RecurringEventControllerTest extends TestCase
     {
         // Act
         $response = $this->updateRequest(
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
-            endRecurrence: '2024-01-05T18:00:00.0Z'
+            startFirstOccurrence: Carbon::now()->addDay()->toString(),
+            endFirstOccurrence: Carbon::now()->addDay()->addHour()->toString(),
+            endRecurrence: Carbon::now()->addHour()->toString()
         );
 
         // Assert
@@ -740,7 +741,7 @@ class RecurringEventControllerTest extends TestCase
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()
@@ -818,11 +819,11 @@ class RecurringEventControllerTest extends TestCase
         $titleDe = $sample['titleDe'] . uuid_create();
 
         // Act
-        $response = $this->updateRequest(titleDe: $titleDe, startFirstOccurrence: '2024-01-06T16:30:00.0Z', endFirstOccurrence: '2024-01-06T18:00:00.0Z');
+        $response = $this->updateRequest(titleDe: $titleDe);
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
         $response->assertJson(fn(AssertableJson $json) => $json->where('titleDe', $titleDe)
             ->where('titleEn', $sample['titleEn'])
             ->where('descriptionDe', $sample['descriptionDe'])
@@ -849,15 +850,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->updateRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_MONTH_AT_DAY_X->value,
             recurrenceMetadata: 10
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->get()->first();
@@ -881,15 +880,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->updateRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_MONTH_AT_DAY_X->value,
             recurrenceMetadata: 31
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -913,15 +910,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->updateRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_LAST_DAY_IN_MONTH->value,
             recurrenceMetadata: 0
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->get()->first();
@@ -945,15 +940,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->updateRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_FIRST_DAY_IN_MONTH->value,
             recurrenceMetadata: 3
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -977,15 +970,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->updateRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_SECOND_DAY_IN_MONTH->value,
             recurrenceMetadata: 5
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -1009,15 +1000,13 @@ class RecurringEventControllerTest extends TestCase
         // Act
         $response = $this->updateRequest(
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_THIRD_DAY_IN_MONTH->value,
             recurrenceMetadata: 6
         );
 
         // Assert
         $response->assertStatus(200);
-        $this->assertEquals($singleEventCount + 12, SingleEvent::query()->count());
+        $this->assertEquals($singleEventCount + (12 - Carbon::now()->month), SingleEvent::query()->count());
 
         /** @var RecurringEvent $recurringEvent */
         $recurringEvent = RecurringEvent::query()->where('title_de', $titleDe)->first();
@@ -1056,8 +1045,6 @@ class RecurringEventControllerTest extends TestCase
         $this->updateRequest(
             oldEventGuid: $oldEvent->guid,
             titleDe: $titleDe,
-            startFirstOccurrence: '2024-01-06T16:30:00.0Z',
-            endFirstOccurrence: '2024-01-06T18:00:00.0Z',
             recurrence: Recurrence::EVERY_THIRD_DAY_IN_MONTH->value,
             recurrenceMetadata: 6
         );
@@ -1513,11 +1500,11 @@ class RecurringEventControllerTest extends TestCase
             'titleEn' => 'test title en',
             'descriptionDe' => 'test description de',
             'descriptionEn' => 'test description en',
-            'startFirstOccurrence' => '2024-01-06T16:30:00.0Z',
-            'endFirstOccurrence' => '2024-01-06T18:00:00.0Z',
+            'startFirstOccurrence' => Carbon::now()->addMonth()->setDay(10)->toString(),
+            'endFirstOccurrence' => Carbon::now()->addMonth()->setDay(10)->addHour()->toString(),
             'recurrence' => Recurrence::EVERY_X_DAYS->value,
             'recurrenceMetadata' => 31,
-            'endRecurrence' => '2025-01-06T16:30:00.0Z'
+            'endRecurrence' => Carbon::now()->addYears()->toString()
         ];
     }
 

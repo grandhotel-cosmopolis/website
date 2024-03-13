@@ -7,6 +7,7 @@ use App\Http\Dtos\Event\ListRecurringEventDto;
 use App\Http\Dtos\Event\ListSingleEventDto;
 use App\Http\Dtos\Event\RecurringEventDto;
 use App\Http\Dtos\Event\SingleEventDto;
+use App\Http\Rules\ValidRecurrenceMetadata;
 use App\Models\EventLocation;
 use App\Models\FileUpload;
 use App\Models\RecurringEvent;
@@ -289,11 +290,11 @@ class RecurringEventController extends Controller
             'descriptionEn' => ['required', 'string'],
             'eventLocationGuid' => ['required', 'string'],
             'fileUploadGuid' => ['required', 'string'],
-            'startFirstOccurrence' => ['required', 'date'],
+            'startFirstOccurrence' => ['required', 'date', 'after_or_equal:today'],
             'endFirstOccurrence' => ['required', 'date'],
             'endRecurrence' => ['date'],
             'recurrence' => ['required', new Enum(Recurrence::class)],
-            'recurrenceMetadata' => ['required', 'integer']
+            'recurrenceMetadata' => ['required', 'numeric', new ValidRecurrenceMetadata($request['recurrence'])]
         ]);
     }
 }
