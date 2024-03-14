@@ -9,11 +9,10 @@ import {
 } from "./generated/openapi";
 import { AxiosRequestTransformer } from "axios";
 import { dateTransformer } from "./axios-date-transformer";
-
-const basePath = "http://127.0.0.1:8000";
+import { getApiBaseAddress } from "./stage-provider";
 
 const customConfiguration = new Configuration({
-  basePath: basePath,
+  basePath: getApiBaseAddress(),
 });
 
 const defaultTransformers = (): AxiosRequestTransformer[] => {
@@ -28,7 +27,7 @@ const defaultTransformers = (): AxiosRequestTransformer[] => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: basePath,
+  baseURL: getApiBaseAddress(),
   withCredentials: true,
   withXSRFToken: true,
   transformRequest: [...defaultTransformers(), dateTransformer],
@@ -73,7 +72,7 @@ axiosInstance.interceptors.response.use(
 );
 
 export const retrieveCsrfToken = () => {
-  return axios.get(`${basePath}/sanctum/csrf-cookie`, {
+  return axios.get(`${getApiBaseAddress()}/sanctum/csrf-cookie`, {
     withCredentials: true,
     withXSRFToken: true,
   });
@@ -81,30 +80,30 @@ export const retrieveCsrfToken = () => {
 
 export const loginClient = new LoginApi(
   customConfiguration,
-  basePath,
+  getApiBaseAddress(),
   axiosInstance
 );
 
 export const userClient = new UserApi(
   customConfiguration,
-  basePath,
+  getApiBaseAddress(),
   axiosInstance
 );
 
 export const eventApi = new EventApi(
   customConfiguration,
-  basePath,
+  getApiBaseAddress(),
   axiosInstance
 );
 
 export const fileApi = new FileApi(
   customConfiguration,
-  basePath,
+  getApiBaseAddress(),
   axiosInstance
 );
 
 export const eventLocationApi = new EventLocationApi(
   customConfiguration,
-  basePath,
+  getApiBaseAddress(),
   axiosInstance
 );
