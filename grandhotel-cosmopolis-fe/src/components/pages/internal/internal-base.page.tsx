@@ -20,6 +20,7 @@ import {
 import { Permissions } from "../../../infrastructure/generated/openapi";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Logo } from "../../../assets/general/logo";
+import { useHasPermissions } from "../../permissions/use-has-permissions";
 
 const drawerWidth = 240;
 
@@ -41,18 +42,19 @@ const navigationItems: SideBarNavigationItem[] = [
     title: "Administration",
     icon: ManageAccounts,
     navigation: "/internal/user-management",
-    requiredPermissions: [],
+    requiredPermissions: [Permissions.ViewUsers],
   },
   {
     title: "Events",
     icon: CalendarMonth,
     navigation: "/internal/events",
-    requiredPermissions: [],
+    requiredPermissions: [Permissions.ViewEvents],
   },
 ];
 
 export const InternalBasePage = () => {
   const navigate = useNavigate();
+  const hasPermissions = useHasPermissions();
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -84,18 +86,21 @@ export const InternalBasePage = () => {
         <Box sx={{ overflow: "auto" }}>
           <List>
             {navigationItems.map((item, index) => (
-              <ListItem
-                key={index}
-                disablePadding
-                onClick={() => navigate(item.navigation)}
-              >
-                <ListItemButton selected>
-                  <ListItemIcon>
-                    <item.icon />
-                  </ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </ListItemButton>
-              </ListItem>
+              <Box key={index}>
+                {hasPermissions(item.requiredPermissions) && (
+                  <ListItem
+                    disablePadding
+                    onClick={() => navigate(item.navigation)}
+                  >
+                    <ListItemButton selected>
+                      <ListItemIcon>
+                        <item.icon />
+                      </ListItemIcon>
+                      <ListItemText primary={item.title} />
+                    </ListItemButton>
+                  </ListItem>
+                )}
+              </Box>
             ))}
           </List>
         </Box>

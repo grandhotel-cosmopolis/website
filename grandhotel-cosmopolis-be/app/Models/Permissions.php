@@ -6,15 +6,15 @@ use OpenApi\Attributes as OA;
 #[OA\Schema]
 enum Permissions: string
 {
-    case CREATE_EVENT = 'create_event';
-    case PUBLISH_EVENT = 'publish_event';
-    case UNPUBLISH_EVENT = 'unpublish_event';
-    case EDIT_EVENT = 'edit_event';
-    case DELETE_EVENT = 'delete_event';
-    case VIEW_EVENTS = 'view_events';
+    case CREATE_EVENT = 'CREATE_EVENT';
+    case PUBLISH_EVENT = 'PUBLISH_EVENT';
+    case UNPUBLISH_EVENT = 'UNPUBLISH_EVENT';
+    case EDIT_EVENT = 'EDIT_EVENT';
+    case DELETE_EVENT = 'DELETE_EVENT';
+    case VIEW_EVENTS = 'VIEW_EVENTS';
 
-    case CREATE_USER = 'create_user';
-    case UPDATE_USER = 'update_user';
-    case DELETE_USER = 'delete_user';
-    case VIEW_USERS = 'view_users';
+    case CREATE_USER = 'CREATE_USER';
+    case UPDATE_USER = 'UPDATE_USER';
+    case DELETE_USER = 'DELETE_USER';
+    case VIEW_USERS = 'VIEW_USERS';
 }

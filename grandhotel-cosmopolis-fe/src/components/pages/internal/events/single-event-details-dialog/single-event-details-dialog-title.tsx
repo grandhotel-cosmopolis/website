@@ -3,11 +3,15 @@ import { EditButton } from "../../../../shared/buttons/edit-button";
 import { PreviewButton } from "../../../../shared/buttons/preview-button";
 import { Dispatch, SetStateAction } from "react";
 import { PublishButton } from "../../../../shared/buttons/publish-button";
-import { SingleEventDto } from "../../../../../infrastructure/generated/openapi";
+import {
+  Permissions,
+  SingleEventDto,
+} from "../../../../../infrastructure/generated/openapi";
 import { useSingleEventMutations } from "./single-event-dialog-edit-content/use-single-event-mutations";
 import { DeleteButton } from "../../../../shared/buttons/delete-button";
 import { Mode } from "./single-event-details-dialog";
 import { CancelButton } from "../../../../shared/buttons/cancel-button";
+import { useHasPermission } from "../../../../permissions/use-has-permission";
 
 type SingleEventDetailsDialogTitleProps = {
   readonly preview: boolean;
@@ -30,6 +34,8 @@ export const SingleEventDetailsDialogTitle = (
     uncancelEventMutation,
   } = useSingleEventMutations();
 
+  const hasPermission = useHasPermission();
+
   const { deleteEventMutataion } = useSingleEventMutations(props.closeDialog);
 
   return (
@@ -37,10 +43,12 @@ export const SingleEventDetailsDialogTitle = (
       <Box display="flex" justifyContent="space-between">
         <Typography>Event details</Typography>
         <Stack direction="row" spacing={2}>
-          <DeleteButton
-            onClick={() => deleteEventMutataion.mutate(props.singleEvent)}
-          />
-          {props.mode === "Update" && (
+          {hasPermission(Permissions.DeleteEvent) && (
+            <DeleteButton
+              onClick={() => deleteEventMutataion.mutate(props.singleEvent)}
+            />
+          )}
+          {props.mode === "Update" && hasPermission(Permissions.EditEvent) && (
             <CancelButton
               onClick={() => {
                 props.setSingleEvent((curr) => {
@@ -61,21 +69,23 @@ export const SingleEventDetailsDialogTitle = (
               isCancelled={!!props.singleEvent?.exception?.cancelled}
             />
           )}
-          <PublishButton
-            published={!!props.singleEvent?.isPublic}
-            onClick={() =>
-              props.setSingleEvent((curr) => {
-                if (props.mode !== "Create") {
-                  if (curr?.isPublic) {
-                    unpublishEventMutation.mutate(props.singleEvent);
-                  } else {
-                    publishEventMutation.mutate(props.singleEvent);
+          {hasPermission(Permissions.PublishEvent) && (
+            <PublishButton
+              published={!!props.singleEvent?.isPublic}
+              onClick={() =>
+                props.setSingleEvent((curr) => {
+                  if (props.mode !== "Create") {
+                    if (curr?.isPublic) {
+                      unpublishEventMutation.mutate(props.singleEvent);
+                    } else {
+                      publishEventMutation.mutate(props.singleEvent);
+                    }
                   }
-                }
-                return { ...curr, isPublic: !curr?.isPublic };
-              })
-            }
-          />
+                  return { ...curr, isPublic: !curr?.isPublic };
+                })
+              }
+            />
+          )}
           <PreviewButton
             active={props.preview}
             onClick={() =>
@@ -87,17 +97,19 @@ export const SingleEventDetailsDialogTitle = (
               })
             }
           />
-          <EditButton
-            active={props.editMode}
-            onClick={() =>
-              props.setEditMode((curr) => {
-                if (!curr) {
-                  props.setPreview(false);
-                }
-                return !curr;
-              })
-            }
-          />
+          {hasPermission(Permissions.EditEvent) && (
+            <EditButton
+              active={props.editMode}
+              onClick={() =>
+                props.setEditMode((curr) => {
+                  if (!curr) {
+                    props.setPreview(false);
+                  }
+                  return !curr;
+                })
+              }
+            />
+          )}
         </Stack>
       </Box>
     </DialogTitle>

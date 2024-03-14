@@ -5,6 +5,8 @@ import { RecurringEventsTab } from "./events/recurring-event-tab/recurring-event
 import { SingleEventDetailsDialog } from "./events/single-event-details-dialog/single-event-details-dialog";
 import { CreateButton } from "../../shared/buttons/create-button";
 import { RecurringEventDetailsDialog } from "./events/recurring-event-details-dialog/recurrong-event-details-dialog";
+import { Permissions } from "../../../infrastructure/generated/openapi";
+import { useHasPermission } from "../../permissions/use-has-permission";
 
 type Tabs = "SingleEvents" | "RecurringEvents";
 
@@ -15,9 +17,15 @@ export const Events = () => {
   const [isCreateRecurringEventDialogOpen, setIsCreateRecurringEventDialog] =
     useState(false);
 
+  const hasPermission = useHasPermission();
+
   const handleChange = (_: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue as Tabs);
   };
+
+  if (!hasPermission(Permissions.ViewEvents)) {
+    return <></>;
+  }
 
   return (
     <>
@@ -29,13 +37,15 @@ export const Events = () => {
           </Tabs>
         </Box>
         <Box sx={{ mr: 1 }}>
-          <CreateButton
-            onClick={() =>
-              selectedTab === "SingleEvents"
-                ? setIsCreateSingleEventDialogOpen(true)
-                : setIsCreateRecurringEventDialog(true)
-            }
-          />
+          {hasPermission(Permissions.CreateEvent) && (
+            <CreateButton
+              onClick={() =>
+                selectedTab === "SingleEvents"
+                  ? setIsCreateSingleEventDialogOpen(true)
+                  : setIsCreateRecurringEventDialog(true)
+              }
+            />
+          )}
         </Box>
       </Stack>
       <SingleEventDetailsDialog
