@@ -38,6 +38,7 @@ const isDate = (data: any): boolean => {
   return (
     !!data &&
     typeof data != "boolean" &&
+    typeof data != "number" &&
     //@ts-ignore
     new Date(data) !== "Invalid Date" &&
     //@ts-ignore

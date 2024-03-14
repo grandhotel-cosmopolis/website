@@ -25,15 +25,11 @@ export const SingleEventDetailsDialog = (
   const [preview, setPreview] = useState(false);
   const [saveEnabled, setSaveEnabled] = useState(false);
 
-  const { addEventMutation, updateEventMutation } = useSingleEventMutations(
-    () => {
-      setEditMode(false);
-      setPreview(false);
-      setCurrentSingleEvent(undefined);
-      setSaveEnabled(false);
-      props.closeDialog();
-    }
-  );
+  const {
+    addEventMutation,
+    updateEventMutation,
+    createOrUpdateExceptionMutation,
+  } = useSingleEventMutations();
 
   useEffect(() => {
     setCurrentSingleEvent(props.singleEvent);
@@ -69,6 +65,14 @@ export const SingleEventDetailsDialog = (
       } else {
         addEventMutation.mutate(currentSingleEvent);
       }
+      if (!!currentSingleEvent?.exception) {
+        createOrUpdateExceptionMutation.mutate(currentSingleEvent);
+      }
+      setEditMode(false);
+      setPreview(false);
+      setCurrentSingleEvent(undefined);
+      setSaveEnabled(false);
+      props.closeDialog();
     }
   };
 
@@ -91,6 +95,7 @@ export const SingleEventDetailsDialog = (
           <SingleEventDialogPreviewContent singleEvent={currentSingleEvent} />
         ) : (
           <SingleEventDialogEditContent
+            mode={props.mode}
             isReadOnly={!editMode}
             closeDialog={() => {
               setEditMode(false);

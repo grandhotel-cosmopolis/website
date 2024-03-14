@@ -71,11 +71,46 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
     },
   });
 
+  const cancelEventMutation = useMutation({
+    mutationFn: (event?: SingleEventDto) => eventApi.cancel(event?.guid ?? ""),
+    onSuccess: () => {
+      queryClient.invalidateQueries("all-single-events");
+      onSuccess && onSuccess();
+    },
+  });
+
+  const uncancelEventMutation = useMutation({
+    mutationFn: (event?: SingleEventDto) =>
+      eventApi.uncancel(event?.guid ?? ""),
+    onSuccess: () => {
+      queryClient.invalidateQueries("all-single-events");
+      onSuccess && onSuccess();
+    },
+  });
+
+  const createOrUpdateExceptionMutation = useMutation({
+    mutationFn: (event?: SingleEventDto) =>
+      eventApi.createOrUpdateException(
+        event?.guid ?? "",
+        event?.exception?.start ?? undefined,
+        event?.exception?.end ?? undefined,
+        event?.exception?.eventLocation?.guid,
+        event?.exception?.cancelled ?? undefined
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries("all-single-events");
+      onSuccess && onSuccess();
+    },
+  });
+
   return {
     addEventMutation,
     updateEventMutation,
     publishEventMutation,
     unpublishEventMutation,
     deleteEventMutataion,
+    cancelEventMutation,
+    uncancelEventMutation,
+    createOrUpdateExceptionMutation,
   };
 };

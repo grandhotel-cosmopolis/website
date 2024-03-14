@@ -7,6 +7,7 @@ import { SingleEventDto } from "../../../../../infrastructure/generated/openapi"
 import { useSingleEventMutations } from "./single-event-dialog-edit-content/use-single-event-mutations";
 import { DeleteButton } from "../../../../shared/buttons/delete-button";
 import { Mode } from "./single-event-details-dialog";
+import { CancelButton } from "../../../../shared/buttons/cancel-button";
 
 type SingleEventDetailsDialogTitleProps = {
   readonly preview: boolean;
@@ -22,8 +23,12 @@ type SingleEventDetailsDialogTitleProps = {
 export const SingleEventDetailsDialogTitle = (
   props: SingleEventDetailsDialogTitleProps
 ) => {
-  const { publishEventMutation, unpublishEventMutation } =
-    useSingleEventMutations();
+  const {
+    publishEventMutation,
+    unpublishEventMutation,
+    cancelEventMutation,
+    uncancelEventMutation,
+  } = useSingleEventMutations();
 
   const { deleteEventMutataion } = useSingleEventMutations(props.closeDialog);
 
@@ -35,6 +40,27 @@ export const SingleEventDetailsDialogTitle = (
           <DeleteButton
             onClick={() => deleteEventMutataion.mutate(props.singleEvent)}
           />
+          {props.mode === "Update" && (
+            <CancelButton
+              onClick={() => {
+                props.setSingleEvent((curr) => {
+                  if (curr?.exception?.cancelled) {
+                    uncancelEventMutation.mutate(curr);
+                  } else {
+                    cancelEventMutation.mutate(curr);
+                  }
+                  return {
+                    ...curr,
+                    exception: {
+                      ...curr?.exception,
+                      cancelled: !curr?.exception?.cancelled,
+                    },
+                  };
+                });
+              }}
+              isCancelled={!!props.singleEvent?.exception?.cancelled}
+            />
+          )}
           <PublishButton
             published={!!props.singleEvent?.isPublic}
             onClick={() =>

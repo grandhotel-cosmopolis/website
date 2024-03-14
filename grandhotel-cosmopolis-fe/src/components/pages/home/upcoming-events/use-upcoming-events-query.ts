@@ -1,9 +1,5 @@
 import { useQuery } from "react-query";
 import { eventApi } from "../../../../infrastructure/api";
-import {
-  ListSingleEventDto,
-  SingleEventDto,
-} from "../../../../infrastructure/generated/openapi/api";
 import { useMemo } from "react";
 
 export const useUpcomingEventsQuery = () => {
@@ -12,31 +8,22 @@ export const useUpcomingEventsQuery = () => {
     queryFn: () => eventApi.getSingleEvents(),
   });
 
-  const eventData = useMemo(() => {
-    const events = data?.data.events
-      ?.map(
-        (e) =>
-          ({
-            title_de: e.titleDe,
-            title_en: e.titleEn,
-            description_de: e.descriptionDe,
-            description_en: e.descriptionEn,
-            eventLocation: e.eventLocation,
-            start: e.start ? new Date(e.start) : undefined,
-            end: e.end ? new Date(e.end) : undefined,
-            image: e.image,
-          } as SingleEventDto)
-      )
-      .sort(
-        (a, b) =>
-          (a.start !== undefined ? a.start.getTime() : 0) -
-          (b.start !== undefined ? b.start.getTime() : 0)
-      );
-    const singleEvents: ListSingleEventDto = {
-      events: events,
-    };
-    return events ? singleEvents : undefined;
+  const events = useMemo(() => {
+    return data?.data.events?.sort((a, b) => {
+      const startA = a.exception?.start ?? a.start;
+      const startB = b.exception?.start ?? b.start;
+      if (!!startA && !startB) {
+        return 1;
+      }
+      if (!startA && !!startB) {
+        return -1;
+      }
+      if (startA !== undefined && startB !== undefined) {
+        return startA > startB ? 1 : -1;
+      }
+      return 0;
+    });
   }, [data]);
 
-  return { data: eventData, isLoading };
+  return { data: events, isLoading };
 };

@@ -1,5 +1,5 @@
-import { Box, Typography } from "@mui/material";
-import { ReactElement, useState } from "react";
+import { Box } from "@mui/material";
+import { useState } from "react";
 import { SingleEventDto } from "../../../../../infrastructure/generated/openapi";
 import { Table } from "../../../../shared/table/table";
 import { SingleEventDetailsDialog } from "../single-event-details-dialog/single-event-details-dialog";
@@ -32,64 +32,5 @@ export const SingleEventsTab = () => {
         onItemClick={(item) => setSelectedEvent(item)}
       />
     </Box>
-  );
-};
-
-export const renderDateCell = (start?: Date, end?: Date): ReactElement => {
-  if (!!start && !end) {
-    return <SingleDate date={start} />;
-  }
-  if (!!end && !start) {
-    return <SingleDate date={end} />;
-  }
-  if (!!start && !!end) {
-    return <DoubleDate start={start} end={end} />;
-  }
-  return <></>;
-};
-
-type SingleDateProps = {
-  readonly date: Date;
-};
-
-export const SingleDate = (props: SingleDateProps) => {
-  return <Typography>{props.date.toLocaleDateString("de-DE")}</Typography>;
-};
-
-type DoubleDateProps = {
-  readonly start: Date;
-  readonly end: Date;
-};
-
-export const DoubleDate = (props: DoubleDateProps) => {
-  if (props.start.getDate() === props.end.getDate()) {
-    return (
-      <Typography>
-        {props.start.toLocaleDateString("de-DE", { dateStyle: "short" })}
-        {", "}
-        {props.start.toLocaleTimeString("de-DE", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}{" "}
-        -{" "}
-        {props.end.toLocaleTimeString("de-DE", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-      </Typography>
-    );
-  }
-  return (
-    <Typography>
-      {props.start.toLocaleString("de-DE", {
-        dateStyle: "short",
-        timeStyle: "short",
-      })}{" "}
-      -{" "}
-      {props.end.toLocaleString("de-DE", {
-        dateStyle: "short",
-        timeStyle: "short",
-      })}
-    </Typography>
   );
 };

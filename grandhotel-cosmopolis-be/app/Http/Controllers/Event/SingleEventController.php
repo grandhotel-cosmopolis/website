@@ -6,8 +6,6 @@ use App\Exceptions\InvalidTimeRangeException;
 use App\Http\Controllers\Controller;
 use App\Http\Dtos\Event\ListSingleEventDto;
 use App\Http\Dtos\Event\SingleEventDto;
-use App\Models\EventLocation;
-use App\Models\FileUpload;
 use App\Models\SingleEvent;
 use App\Repositories\Interfaces\ISingleEventRepository;
 use App\Services\Interfaces\ISingleEventService;
@@ -71,11 +69,7 @@ class SingleEventController extends Controller
         $events = $this->eventService->list($start, $end);
 
         $eventDtos = $events->map(function (SingleEvent $event) {
-            /** @var EventLocation $eventLocation */
-            $eventLocation = $event->eventLocation()->first();
-            /** @var FileUpload $fileUpload */
-            $fileUpload = $event->fileUpload()->first();
-            return SingleEventDto::create($event, $eventLocation, $fileUpload);
+            return SingleEventDto::create($event);
         });
         return new JsonResponse(new ListSingleEventDto($eventDtos->toArray()));
     }
@@ -295,14 +289,9 @@ class SingleEventController extends Controller
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
                     properties: [
-                        new OA\Property(property: 'titleDe', type: 'string'),
-                        new OA\Property(property: 'titleEn', type: 'string'),
-                        new OA\Property(property: 'descriptionDe', type: 'string'),
-                        new OA\Property(property: 'descriptionEn', type: 'string'),
                         new OA\Property(property: 'start', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'end', type: 'string', format: 'date-time'),
                         new OA\Property(property: 'eventLocationGuid', type: 'string'),
-                        new OA\Property(property: 'fileUploadGuid', type: 'string'),
                         new OA\Property(property: 'cancelled', type: 'boolean')
                     ]
                 )
@@ -325,22 +314,17 @@ class SingleEventController extends Controller
     public function createOrUpdateException(Request $request, string $eventGuid): JsonResponse
     {
         $request->validate([
-            'titleDe' => ['string'],
-            'titleEn' => ['string'],
-            'descriptionDe' => ['string'],
-            'descriptionEn' => ['string'],
             'start' => ['date'],
             'end' => ['date'],
             'eventLocationGuid' => ['string'],
-            'fileUploadGuid' => ['string']
         ]);
 
-        $cancelled = $request['cancelled'] == true;
+        $cancelled = $request['cancelled'] == 'true';
 
         $event = $this->eventService->createOrUpdateEventException(
             $eventGuid,
-            $request['start'],
-            $request['end'],
+            is_null($request['start']) ? null : Carbon::parse($request['start']),
+            is_null($request['end']) ? null : Carbon::parse($request['end']),
             $request['eventLocationGuid'],
             $cancelled
         );

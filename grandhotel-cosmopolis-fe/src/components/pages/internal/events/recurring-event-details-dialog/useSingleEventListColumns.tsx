@@ -7,9 +7,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import { SingleEventDate } from "../../../../shared/date/single-event-date";
 import { SingleEventTypography } from "../../../../shared/single-event-typography";
 
-export const useSingleEventColumns = (): TableColumn<SingleEventDto>[] => [
+export const useSingleEventListColumns = (): TableColumn<SingleEventDto>[] => [
   {
-    id: "start",
+    id: "date",
     label: (
       <Stack direction="row">
         <CalendarTodayIcon />
@@ -18,6 +18,19 @@ export const useSingleEventColumns = (): TableColumn<SingleEventDto>[] => [
     ),
     renderCell: (item: SingleEventDto) => (
       <SingleEventDate singleEvent={item} />
+    ),
+  },
+  {
+    id: "exception",
+    label: <Typography>exception</Typography>,
+    renderCell: (item: SingleEventDto) => (
+      <>
+        {!!item.exception ? (
+          <Typography>yes</Typography>
+        ) : (
+          <Typography>no</Typography>
+        )}
+      </>
     ),
   },
   {

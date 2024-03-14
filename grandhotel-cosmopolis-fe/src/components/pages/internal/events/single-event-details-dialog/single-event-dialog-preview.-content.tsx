@@ -31,9 +31,10 @@ export const SingleEventDialogPreviewContent = (
       </Stack>
       <Box
         mt={2}
-        maxWidth={view === "mobile" ? 350 : undefined}
+        maxWidth={(theme) => (view === "mobile" ? 350 : theme.spacing(140))}
         border="1px solid black"
         borderRadius="2%"
+        width="100%"
       >
         <SingleEventView
           singleEvent={props.singleEvent}

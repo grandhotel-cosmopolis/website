@@ -1,39 +1,55 @@
-import { Stack, Typography } from "@mui/material";
+import { Stack } from "@mui/material";
+import { SingleEventTypography } from "./single-event-typography";
+import { SingleEventDto } from "../../infrastructure/generated/openapi";
 
 type DateIndicatorProps = {
   readonly start?: Date;
   readonly end?: Date;
+  readonly singleEvent?: SingleEventDto;
 };
 
 export const DateIndicator = (props: DateIndicatorProps) => {
   if (props.start?.getDate() === props.end?.getDate()) {
-    return <SingleDateIndicator date={props.start} />;
+    return (
+      <SingleDateIndicator date={props.start} singleEvent={props.singleEvent} />
+    );
   }
   return (
     <Stack>
-      <SingleDateIndicator date={props.start} />
+      <SingleDateIndicator date={props.start} singleEvent={props.singleEvent} />
       <Stack alignItems="center">
-        <Typography variant="h4">-</Typography>
+        <SingleEventTypography variant="h4" singleEvent={props.singleEvent}>
+          -
+        </SingleEventTypography>
       </Stack>
-      <SingleDateIndicator date={props.end} />
+      <SingleDateIndicator date={props.end} singleEvent={props.singleEvent} />
     </Stack>
   );
 };
 
 type SingleDateIndicatorProps = {
   readonly date?: Date;
+  readonly singleEvent?: SingleEventDto;
 };
 
 const SingleDateIndicator = (props: SingleDateIndicatorProps) => {
   return (
     <Stack alignItems="center">
-      <Typography variant="overline" lineHeight={1.2}>
+      <SingleEventTypography
+        variant="overline"
+        lineHeight={1.2}
+        singleEvent={props.singleEvent}
+      >
         {props.date?.toLocaleDateString("de-DE", {
           month: "short",
         })}
-      </Typography>
-      <Typography lineHeight={1.2}>{props.date?.getDate()}</Typography>
-      <Typography variant="caption">{props.date?.getFullYear()}</Typography>
+      </SingleEventTypography>
+      <SingleEventTypography lineHeight={1.2} singleEvent={props.singleEvent}>
+        {props.date?.getDate()}
+      </SingleEventTypography>
+      <SingleEventTypography variant="caption" singleEvent={props.singleEvent}>
+        {props.date?.getFullYear()}
+      </SingleEventTypography>
     </Stack>
   );
 };

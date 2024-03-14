@@ -1,5 +1,7 @@
 import { TextField, Stack, Typography } from "@mui/material";
 import { ChangeEvent } from "react";
+import { SingleEventTypography } from "./single-event-typography";
+import { SingleEventDto } from "../../infrastructure/generated/openapi";
 
 type EditableTextFieldProps = {
   readonly fullWidth?: boolean;
@@ -10,6 +12,7 @@ type EditableTextFieldProps = {
   readonly rows?: number;
   readonly isEditable?: boolean;
   readonly value?: string;
+  readonly singleEvent?: SingleEventDto;
 };
 
 export const EditableTextField = (props: EditableTextFieldProps) => {
@@ -32,7 +35,9 @@ export const EditableTextField = (props: EditableTextFieldProps) => {
           >
             {props.label}
           </Typography>
-          <Typography>{props.value}</Typography>
+          <SingleEventTypography singleEvent={props.singleEvent}>
+            {props.value}
+          </SingleEventTypography>
         </Stack>
       )}
     </>

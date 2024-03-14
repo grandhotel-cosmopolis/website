@@ -85,7 +85,9 @@ export function Table<T>(props: TableProps<T>) {
 
   return (
     <Paper sx={{ flexGrow: 1, width: "100%", overflow: "hidden" }}>
-      <TableContainer sx={{ overflow: "scroll", maxHeight: "100%" }}>
+      <TableContainer
+        sx={{ overflow: "scroll", maxHeight: "100%", height: "100%" }}
+      >
         <MuiTable size="medium" sx={{ minWidth: 650 }} stickyHeader>
           <TableHead
             order={order}
