@@ -40,6 +40,10 @@ Route::get('/create/{username}/{email}/{password}', function (string $username, 
     $user->save();
 });
 
+Route::get('/linkstorage', function () {
+    Artisan::call('storage:link');
+});
+
 Route::get('/{reactRoute?}', function() {
     return File::get(public_path().'/react.html');
 })->where('reactRoute', '^(?!\/storage\/uploads).+');
