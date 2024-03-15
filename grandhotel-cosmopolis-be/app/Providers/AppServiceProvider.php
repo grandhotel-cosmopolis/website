@@ -17,6 +17,7 @@ use App\Services\Interfaces\ISingleEventService;
 use App\Services\Interfaces\ITimeService;
 use App\Services\TimeService;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -59,5 +60,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+        Schema::defaultStringLength(191);
     }
 }
