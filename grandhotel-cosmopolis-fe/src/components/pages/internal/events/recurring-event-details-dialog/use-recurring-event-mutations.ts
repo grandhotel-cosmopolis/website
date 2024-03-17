@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RecurringEventDto } from "../../../../../infrastructure/generated/openapi";
 import { eventApi } from "../../../../../infrastructure/api";
 
@@ -22,7 +22,7 @@ export const useRecurringEventMutations = (onSuccess?: () => void) => {
         newEvent?.isPublic ?? false
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-recurring-events");
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -45,7 +45,7 @@ export const useRecurringEventMutations = (onSuccess?: () => void) => {
         editEvent?.isPublic ?? false
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-recurring-events");
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -54,7 +54,7 @@ export const useRecurringEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: RecurringEventDto) =>
       eventApi.publishRecurringEvent(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-recurring-events");
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -63,7 +63,7 @@ export const useRecurringEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: RecurringEventDto) =>
       eventApi.unpublishRecurringEvent(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-recurring-events");
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -72,7 +72,7 @@ export const useRecurringEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: RecurringEventDto) =>
       eventApi.deleteRecurringEvent(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-recurring-events");
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-events"] });
       onSuccess && onSuccess();
     },
   });

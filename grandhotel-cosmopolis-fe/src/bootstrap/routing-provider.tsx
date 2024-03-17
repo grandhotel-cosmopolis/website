@@ -5,6 +5,7 @@ import { Login } from "../components/pages/internal/login.page";
 import { AuthenticationProvider } from "./authentication-provider";
 import { InternalBasePage } from "../components/pages/internal/internal-base.page";
 import { Events } from "../components/pages/internal/events.page";
+import { Events as PublicEvents } from "../components/pages/events.page";
 import { Dashboard } from "../components/pages/internal/dashboard.page";
 import { Administration } from "../components/pages/internal/administration.page";
 
@@ -13,6 +14,7 @@ export const RoutingProvider = () => {
     <Routes>
       <Route path="/" element={<BasePage />}>
         <Route index element={<Home />} />
+        <Route path="/events" element={<PublicEvents />} />
         <Route path="/internal/login" element={<Login />} />
       </Route>
       <Route

@@ -1,5 +1,7 @@
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { eventApi } from "../../../../../infrastructure/api";
+import { useMemo } from "react";
+import { convertDatesForSingleEvents } from "../../../../../services/date-time.service";
 
 export const useSingleEventsQuery = () => {
   const { data, isLoading } = useQuery({
@@ -8,5 +10,10 @@ export const useSingleEventsQuery = () => {
     refetchOnWindowFocus: false,
   });
 
-  return { data: data?.data.events, isLoading };
+  const convertedData = useMemo(
+    () => data?.data.events?.map((e) => convertDatesForSingleEvents(e)),
+    [data]
+  );
+
+  return { data: convertedData, isLoading };
 };

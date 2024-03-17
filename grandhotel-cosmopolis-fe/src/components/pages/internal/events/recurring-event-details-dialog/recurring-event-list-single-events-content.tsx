@@ -7,7 +7,7 @@ import { Table } from "../../../../shared/table/table";
 import { useSingleEventListColumns } from "./useSingleEventListColumns";
 import { useState } from "react";
 import { SingleEventDetailsDialog } from "../single-event-details-dialog/single-event-details-dialog";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 type RecurringEventListSingleEventsContentProps = {
   readonly recurringEvent?: RecurringEventDto;
@@ -32,10 +32,9 @@ export const RecurringEventListSingleEventsContent = (
         open={!!selectedEvent}
         closeDialog={() => {
           setSelectedEvent(undefined);
-          queryClient.invalidateQueries([
-            "single-events",
-            props.recurringEvent?.guid ?? "",
-          ]);
+          queryClient.invalidateQueries({
+            queryKey: ["single-events", props.recurringEvent?.guid ?? ""],
+          });
         }}
         mode="Update"
       />

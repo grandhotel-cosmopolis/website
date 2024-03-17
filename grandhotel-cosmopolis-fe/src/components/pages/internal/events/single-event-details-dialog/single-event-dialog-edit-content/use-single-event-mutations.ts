@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventApi } from "../../../../../../infrastructure/api";
 import { SingleEventDto } from "../../../../../../infrastructure/generated/openapi";
 
@@ -19,7 +19,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
         newEvent?.image?.guid
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -39,7 +39,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
         editEvent?.image?.guid
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -48,7 +48,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: SingleEventDto) =>
       eventApi.publishSingleEvent(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -57,7 +57,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: SingleEventDto) =>
       eventApi.unpublishSingleEvent(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -66,7 +66,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: SingleEventDto) =>
       eventApi.deleteSingleEvent(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -74,7 +74,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
   const cancelEventMutation = useMutation({
     mutationFn: (event?: SingleEventDto) => eventApi.cancel(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -83,7 +83,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
     mutationFn: (event?: SingleEventDto) =>
       eventApi.uncancel(event?.guid ?? ""),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });
@@ -98,7 +98,7 @@ export const useSingleEventMutations = (onSuccess?: () => void) => {
         event?.exception?.cancelled ?? undefined
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries("all-single-events");
+      queryClient.invalidateQueries({ queryKey: ["all-single-events"] });
       onSuccess && onSuccess();
     },
   });

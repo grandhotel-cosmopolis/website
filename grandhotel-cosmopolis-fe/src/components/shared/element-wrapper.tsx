@@ -6,6 +6,7 @@ type ElementWrapperProps = {
   readonly fullWidthBackgroundColor?: string;
   readonly backgroundImage?: BackgroundImageProps;
   readonly children?: ReactElement;
+  readonly dense?: boolean;
 };
 
 type BackgroundImageProps = {
@@ -28,7 +29,8 @@ export const ElementWrapper = (props: ElementWrapperProps) => {
       justifyContent="center"
     >
       <Box
-        m={isMobileView ? 2 : 5}
+        my={props.dense ? 0 : isMobileView ? 2 : 5}
+        mx={isMobileView ? 2 : 5}
         width="100%"
         sx={(theme) => ({
           maxWidth: theme.spacing(140),
