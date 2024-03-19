@@ -1,7 +1,4 @@
-import {
-  RecurringEventDto,
-  SingleEventDto,
-} from "../infrastructure/generated/openapi";
+import { SingleEventDto } from "../infrastructure/generated/openapi";
 
 export const dateString = (date?: Date) => date?.toLocaleDateString("de-DE");
 export const timeString = (date?: Date) =>
@@ -169,45 +166,4 @@ export const singleEventIsOnDate = (
     }
   }
   return false;
-};
-
-export const convertDatesForSingleEvents = (
-  singleEvent: SingleEventDto
-): SingleEventDto => {
-  const test: SingleEventDto = {
-    ...singleEvent,
-    end: !!singleEvent.end ? new Date(singleEvent.end) : singleEvent.end,
-    exception: !!singleEvent.exception
-      ? {
-          ...singleEvent.exception,
-          start: !!singleEvent.exception.start
-            ? new Date(singleEvent.exception.start)
-            : singleEvent.exception.start,
-          end: !!singleEvent.exception.end
-            ? new Date(singleEvent.exception.end)
-            : singleEvent.exception.end,
-        }
-      : undefined,
-    start: !!singleEvent.start
-      ? new Date(singleEvent.start)
-      : singleEvent.start,
-  };
-  return test;
-};
-
-export const convertDatesForRecurringEvents = (
-  recurringEvent: RecurringEventDto
-): RecurringEventDto => {
-  return {
-    ...recurringEvent,
-    endFirstOccurrence: recurringEvent.endFirstOccurrence
-      ? new Date(recurringEvent.endFirstOccurrence)
-      : recurringEvent.endFirstOccurrence,
-    startFirstOccurrence: recurringEvent.startFirstOccurrence
-      ? new Date(recurringEvent.startFirstOccurrence)
-      : recurringEvent.startFirstOccurrence,
-    endRecurrence: recurringEvent.endRecurrence
-      ? new Date(recurringEvent.endRecurrence)
-      : recurringEvent.endRecurrence,
-  };
 };

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { eventApi } from "../../../../infrastructure/api";
 import { useMemo } from "react";
-import { convertDatesForSingleEvents } from "../../../../services/date-time.service";
 
 export const useUpcomingEventsQuery = () => {
   const { data, isLoading } = useQuery({
@@ -9,13 +8,8 @@ export const useUpcomingEventsQuery = () => {
     queryFn: () => eventApi.getSingleEvents(),
   });
 
-  const convertedData = useMemo(
-    () => data?.data.events?.map((e) => convertDatesForSingleEvents(e)),
-    [data]
-  );
-
   const events = useMemo(() => {
-    return convertedData?.sort((a, b) => {
+    return data?.data.events?.sort((a, b) => {
       const startA = a.exception?.start ?? a.start;
       const startB = b.exception?.start ?? b.start;
       if (!!startA && !startB) {

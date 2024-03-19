@@ -22,5 +22,6 @@
   },
   "files": ["src/custom.d.ts"],
   "include": ["src"],
+  "exclude": ["src/infrastructure/openappi/**"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
